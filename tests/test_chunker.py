@@ -1,0 +1,111 @@
+import pytest
+import pandas as pd
+import json
+import tempfile
+from pathlib import Path
+from model.core.chucker import DataFrameChunker
+
+
+@pytest.fixture
+def sample_dataframe():
+    """Create a sample DataFrame for testing."""
+    return pd.DataFrame({
+        'id': range(1, 11),  # 10 rows
+        'name': [f'Item {i}' for i in range(1, 11)],
+        'value': [i * 10 for i in range(1, 11)]
+    })
+
+
+def test_chunk_dataframe_basic(sample_dataframe):
+    """Test basic chunking functionality."""
+    chunker = DataFrameChunker(chunk_size=3)
+    chunks = chunker.chunk_dataframe(sample_dataframe)
+    
+    assert len(chunks) == 4  # 10 items / 3 per chunk = 4 chunks
+    assert len(chunks[0]) == 3  # First chunk has 3 items
+    assert len(chunks[-1]) == 1  # Last chunk has 1 item
+    assert chunker.chunks == chunks  # Test property access
+
+
+def test_chunk_dataframe_custom_size(sample_dataframe):
+    """Test chunking with custom chunk size."""
+    chunker = DataFrameChunker()
+    chunks = chunker.chunk_dataframe(sample_dataframe, chunk_size=5)
+    
+    assert len(chunks) == 2  # 10 items / 5 per chunk = 2 chunks
+    assert len(chunks[0]) == 5
+    assert len(chunks[1]) == 5
+
+
+def test_chunk_dataframe_empty():
+    """Test chunking an empty DataFrame."""
+    chunker = DataFrameChunker()
+    df = pd.DataFrame()
+    
+    # Empty DataFrame returns an empty list of chunks
+    chunks = chunker.chunk_dataframe(df)
+    assert chunks == []
+    
+    # Verify save_chunks_to_json raises an error with empty chunks
+    with pytest.raises(ValueError, match="No chunks to save"):
+        DataFrameChunker.save_chunks_to_json(chunks, "dummy.json")
+
+
+def test_chunk_dataframe_invalid_size(sample_dataframe):
+    """Test chunking with invalid chunk size uses default chunk size."""
+    chunker = DataFrameChunker(chunk_size=1000)  # Explicit default size
+    
+    # Test that invalid sizes use the default chunk size
+    chunks = chunker.chunk_dataframe(sample_dataframe, chunk_size=0)
+    assert len(chunks) == 1  # All rows in one chunk with default size 1000
+    
+    chunks = chunker.chunk_dataframe(sample_dataframe, chunk_size=-5)
+    assert len(chunks) == 1  # All rows in one chunk with default size 1000
+
+
+def test_save_chunks_to_json(sample_dataframe, tmp_path):
+    """Test saving chunks to JSON file."""
+    # Setup
+    chunker = DataFrameChunker(chunk_size=4)
+    chunks = chunker.chunk_dataframe(sample_dataframe)
+    output_file = tmp_path / "output.json"
+    
+    # Test with metadata and row limit
+    metadata = {"source": "test", "version": 1}
+    DataFrameChunker.save_chunks_to_json(
+        chunks,
+        str(output_file),
+        max_rows_per_chunk=2,
+        metadata=metadata
+    )
+    
+    # Verify file was created
+    assert output_file.exists()
+    
+    # Verify content
+    with open(output_file, 'r') as f:
+        data = json.load(f)
+    
+    # Check metadata
+    assert data['metadata'] == metadata
+    
+    # Check chunks structure
+    assert len(data['chunks']) == 3  # 3 chunks (4,4,2) with max 2 rows per chunk
+    assert data['summary']['total_chunks'] == 3
+    assert data['summary']['saved_rows'] == 6  # 2 rows per chunk * 3 chunks
+    
+    # Check first chunk data
+    first_chunk = data['chunks'][0]
+    assert first_chunk['chunk_number'] == 1
+    assert len(first_chunk['data']) == 2  # Limited by max_rows_per_chunk
+    assert first_chunk['original_rows'] == 4  # Original chunk size
+    assert first_chunk['saved_rows'] == 2  # Limited rows saved
+
+
+def test_chunks_property_before_chunking():
+    """Test accessing chunks property before chunking raises error."""
+    chunker = DataFrameChunker()
+    
+    # The implementation raises a ValueError with a specific message
+    with pytest.raises(ValueError, match="No chunks available - run chunk_dataframe\(\) first"):
+        _ = chunker.chunks
