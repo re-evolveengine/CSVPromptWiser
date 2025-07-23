@@ -1,1 +1,38 @@
 /env_promptpilot/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env/
+env/
+
+# Environment variables
+.env
+.secrets
+
+# IDE/Specific editor files
+.vscode/
+.idea/
+*.swp
+*.sublime-workspace
+
+# Build / distribution
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Logs and databases
+*.log
+*.sqlite
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Streamlit temporary files
+.streamlit/
