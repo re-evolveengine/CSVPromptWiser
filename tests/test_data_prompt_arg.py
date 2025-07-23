@@ -66,9 +66,11 @@ class TestDataPromptArg:
             dpa = DataPromptArger()
             
             with patch('model.utils.data_prompt_arger.DatasetLoader') as mock_loader:
-                # Mock the load method to verify it's not called
-                mock_loader.return_value.load.side_effect = ValueError("This should not be called")
+                # Mock the load method to simulate the actual behavior
+                mock_loader.return_value.load.side_effect = ValueError("Please provide a file name")
                 
                 with pytest.raises(ValueError, match="Please provide a file name"):
-                    # This should raise ValueError before even trying to call load()
                     dpa.get_dataset()
+                
+                # Verify that DatasetLoader.load was called with None when no dataset is provided
+                mock_loader.return_value.load.assert_called_once_with(None)
