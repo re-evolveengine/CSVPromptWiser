@@ -1,42 +1,43 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-from dotenv import load_dotenv
-import os
 import argparse
-
-def print_geni(name):
-
-    load_dotenv()  # Loads from .env
-    gemini_key = os.getenv("GEMINI_API_KEY")
-    print(gemini_key)
-
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--name', type=str, default='world', help='Name to greet')
-    return parser.parse_args()
-
-import argparse
+from model.utils.dataset_loader import DatasetLoader
 import pandas as pd
 
-def get_prompt_dataset():
-    # Set up CLI parser
-    parser = argparse.ArgumentParser(description="Process a dataset with an AI prompt.")
-    parser.add_argument("--prompt", type=str, required=True, help="AI prompt to apply")
-    parser.add_argument("--dataset", type=str, required=True, help="Path to dataset (CSV/Excel)")
-    args = parser.parse_args()
 
-    # Load data (supports CSV/Excel)
-    df = pd.read_csv(args.dataset) if args.dataset.endswith('.csv') else pd.read_excel(args.dataset)
+class DataPromptArg:
+    def __init__(self):
+        self.parser = argparse.ArgumentParser(description="Process data with AI prompt")
+        self.parser.add_argument("--prompt", required=True, help="AI prompt to execute")
+        self.parser.add_argument("--dataset", help="Path to dataset (CSV/Parquet). Default Directory: User's Documents")
+        self.args = self.parser.parse_args()
+        self.df = None
 
-    # Output
-    print(f"\nPrompt: '{args.prompt}'\n")
-    print("Dataset Head:")
-    print(df.head())
+    def get_prompt(self) -> str:
+        return self.args.prompt
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    get_prompt_dataset()
+    def get_dataset(self) -> pd.DataFrame:
+        if self.df is None:
+            loader = DatasetLoader()
+            self.df = loader.load(self.args.dataset)
+        return self.df
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    def print_df_head(self):
+        print(self.get_dataset().head())
+
+    def print_df_shape(self):
+        print(f"Dataset shape: {self.get_dataset().shape}")
+
+
+def main():
+    analyzer = DataPromptArg()
+    
+    try:
+        print(f"\nPrompt: {analyzer.get_prompt()}")
+        analyzer.print_df_head()
+        analyzer.print_df_shape()
+    except Exception as e:
+        print(f"Error: {e}")
+        exit(1)
+
+
+if __name__ == "__main__":
+    main()
