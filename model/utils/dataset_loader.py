@@ -6,16 +6,17 @@ import pandas as pd
 
 # Get the path to the user's Documents directory
 DOCUMENTS_PATH = os.path.join(os.path.expanduser("~"), "Documents")
+DATA_PATH = os.path.join(DOCUMENTS_PATH, "Data")
 
 
 class DatasetLoader:
     """Minimal dataset loader for CSV and Parquet files."""
 
-    def __init__(self, directory_path: str = DOCUMENTS_PATH):
+    def __init__(self, directory_path: str = DATA_PATH):
         self.file_path = None
         self.directory_path = directory_path
         print("Please ensure the dataset file is in the following directory:")
-        print(DOCUMENTS_PATH)
+        print(DATA_PATH)
 
     def load(self, file_name: Optional[str] = None) -> pd.DataFrame:
         """Load CSV/Parquet file. Falls back to default path if none provided."""
