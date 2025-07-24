@@ -5,6 +5,7 @@ import pandas as pd
 from model.core.chunker import DataFrameChunker
 from model.core.chunk_manager import ChunkManager
 from model.core.gemini_client import GeminiClient
+from model.core.gemini_model_provider import GeminiModelProvider
 from model.utils.dataset_loader import DatasetLoader
 
 # Load environment variables
@@ -28,31 +29,41 @@ def process_with_gemini(df: pd.DataFrame) -> str:
 
 
 
+# def main():
+#     json_path = "C:\\Users\\Alchemist\\Documents\\Data\\profiles.json"
+#
+#     loader = DatasetLoader()
+#     df = loader.load("profiles.csv")
+#
+#     chunker = DataFrameChunker(chunk_size=4)
+#     data_frame_chunks = chunker.chunk_dataframe(df)
+#     chunker.save_chunks_to_json(chunks=data_frame_chunks, file_path=json_path)
+#
+#     manager = ChunkManager(json_path)
+#     print(f"\nLoaded {manager.total_chunks} chunks.")
+#     print(f"Remaining chunks to process: {manager.remaining_chunks}")
+#     first_chunk = manager.get_next_chunk()
+#     print(f"\nFirst chunk:\n{first_chunk}")
+#
+#     results = manager.process_chunks(func=process_with_gemini,show_progress=True,max_chunks=1)
+#
+#     manager.mark_chunk_processed()
+#
+#     print(f"\nRemaining chunks to process: {manager.remaining_chunks}")
+#
+#     print("\nResults:")
+#     for i, result in enumerate(results):
+#         print(f"\n--- Chunk {i + 1} ---\n{result}")
+
+
 def main():
-    json_path = "C:\\Users\\Alchemist\\Documents\\Data\\profiles.json"
+    from pprint import pprint
+    dotenv.load_dotenv()
+    GEMINI_API_KEY = os.getenv("KEY")
 
-    loader = DatasetLoader()
-    df = loader.load("profiles.csv")
-
-    chunker = DataFrameChunker(chunk_size=4)
-    data_frame_chunks = chunker.chunk_dataframe(df)
-    chunker.save_chunks_to_json(chunks=data_frame_chunks, file_path=json_path)
-
-    manager = ChunkManager(json_path)
-    print(f"\nLoaded {manager.total_chunks} chunks.")
-    print(f"Remaining chunks to process: {manager.remaining_chunks}")
-    first_chunk = manager.get_next_chunk()
-    print(f"\nFirst chunk:\n{first_chunk}")
-
-    results = manager.process_chunks(func=process_with_gemini,show_progress=True,max_chunks=1)
-
-    manager.mark_chunk_processed()
-
-    print(f"\nRemaining chunks to process: {manager.remaining_chunks}")
-
-    print("\nResults:")
-    for i, result in enumerate(results):
-        print(f"\n--- Chunk {i + 1} ---\n{result}")
+    provider = GeminiModelProvider(GEMINI_API_KEY)
+    model_list = provider.get_usable_model_names()
+    pprint(model_list)
 
 
 if __name__ == "__main__":
