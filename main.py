@@ -4,8 +4,10 @@ import pandas as pd
 
 from model.core.chunker import DataFrameChunker
 from model.core.chunk_manager import ChunkManager
+from model.core.error_handler.gemini_error_handler import GeminiErrorHandler
 from model.core.gemini_client import GeminiClient
 from model.core.gemini_model_provider import GeminiModelProvider
+from model.core.runners.gemini_resilient_runner import GeminiResilientRunner
 from model.utils.dataset_loader import DatasetLoader
 
 # Load environment variables
@@ -57,13 +59,29 @@ def process_with_gemini(df: pd.DataFrame) -> str:
 
 
 def main():
-    from pprint import pprint
-    dotenv.load_dotenv()
-    GEMINI_API_KEY = os.getenv("KEY")
+    import pandas as pd
+    import os
+    from model.core.gemini_client import GeminiClient
+    from model.core.runners.gemini_resilient_runner import GeminiResilientRunner
 
-    provider = GeminiModelProvider(GEMINI_API_KEY)
-    model_list = provider.get_usable_model_names()
-    pprint(model_list)
+    prompt = "Summarize the sales performance in this table:"
+
+    df = pd.DataFrame({
+        "Product": ["A", "B", "C"],
+        "Units Sold": [100, 150, 80],
+        "Revenue": [1000, 2300, 900]
+    })
+
+    api_key = os.getenv("KEY")
+    if not api_key:
+        raise RuntimeError("Missing GEMINI_API_KEY in .env")
+
+    client = GeminiClient(api_key=api_key, model="models/gemini-1.5-flash")
+    runner = GeminiResilientRunner(client)
+
+    response = runner.run(prompt, df)
+    print(response)
+
 
 
 if __name__ == "__main__":
