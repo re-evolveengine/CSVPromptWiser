@@ -1,4 +1,5 @@
 # core/chunk_manager.py
+
 import json
 from typing import Any, Callable, Optional, Dict, List
 import pandas as pd
@@ -18,10 +19,10 @@ class ChunkManager:
         self._validate_json_file()
 
         with open(self.json_path) as f:
-            self.metadata = json.load(f)
+            self.data = json.load(f)
 
-        self._current_chunk = 0
-        self._processed_chunks = 0
+        self._check_version()
+        self._init_chunk_state()
 
     def _validate_json_file(self):
         if not self.json_path.exists():
@@ -29,73 +30,145 @@ class ChunkManager:
         if self.json_path.suffix != '.json':
             raise ValueError("File must be JSON format")
 
+    def _check_version(self):
+        version = self.data.get("version", None)
+        if version is None or version != 1.0:
+            raise ValueError(f"Unsupported or missing JSON version: {version}")
+
+    # def _init_chunk_state(self):
+    #     self.chunks = self.data.get("chunks", [])
+    #     self.summary = self.data.get("summary", {})
+    #     self._processed_set = set(self.summary.get("processed_ids", []))
+
+    def _init_chunk_state(self):
+        self.chunks = self.data.get("chunks", [])
+        self.summary = self.data.get("summary", {})
+        raw_ids = self.summary.get("processed_ids", [])
+        self._processed_set = set(str(i) for i in raw_ids)
+
     @property
     def total_chunks(self) -> int:
-        """Total chunks available in the file."""
-        return self.metadata['summary']['total_chunks']
+        return self.summary.get("total_chunks", len(self.chunks))
 
     @property
     def remaining_chunks(self) -> int:
-        """Chunks left to process."""
-        return self.total_chunks - self._processed_chunks
+        return len(self._get_unprocessed_chunks())
+
+    # def _get_unprocessed_chunks(self) -> List[Dict[str, Any]]:
+    #     return [
+    #         chunk for i, chunk in enumerate(self.chunks)
+    #         if i not in self._processed_set
+    #     ]
+
+    def _get_unprocessed_chunks(self) -> List[Dict[str, Any]]:
+        return [
+            chunk for chunk in self.chunks
+            if chunk.get("chunk_id") not in self._processed_set
+        ]
 
     def get_next_chunk(self) -> Optional[pd.DataFrame]:
-        """Loads and returns the next chunk as DataFrame."""
-        if self._current_chunk >= self.total_chunks:
-            return None
+        """Returns the next unprocessed chunk as a DataFrame."""
+        for i, chunk in enumerate(self.chunks):
+            if i not in self._processed_set:
+                self._current_index = i  # track for marking later
+                return pd.DataFrame(chunk["data"])
+        return None  # All processed
 
-        chunk_data = self.metadata['chunks'][self._current_chunk]
-        self._current_chunk += 1
-        self._processed_chunks += 1
-
-        return pd.DataFrame(chunk_data['data'])
-
-    def mark_chunk_processed(self, chunk_index: int):
-        """Mark a chunk as processed and remove it from the file."""
-        with open(self.json_path, 'r') as f:
-            data = json.load(f)
-
-        if 0 <= chunk_index < len(data['chunks']):
-            # Update metadata
-            data['summary']['processed_chunks'] = data['summary'].get('processed_chunks', 0) + 1
-
-            # Remove the chunk
-            del data['chunks'][chunk_index]
-
-            # Save changes
-            with open(self.json_path, 'w') as f:
-                json.dump(data, f, indent=2)
+    def mark_chunk_processed(self):
+        """Marks the last fetched chunk as processed."""
+        if hasattr(self, "_current_index"):
+            self._processed_set.add(self._current_index)
+            self.summary["processed"] = len(self._processed_set)
+            self.summary["processed_ids"] = sorted(self._processed_set)
+            self._save_state()
+            del self._current_index
         else:
-            raise IndexError(f"Invalid chunk index: {chunk_index}")
+            raise RuntimeError("No chunk fetched to mark as processed.")
 
-    def process_chunks(self,
-                       func: Callable[[pd.DataFrame], Any],
-                       show_progress: bool = True) -> List[Any]:
+    def _save_state(self):
+        # Persist updated summary
+        self.data["summary"] = self.summary
+        with open(self.json_path, "w") as f:
+            json.dump(self.data, f, indent=2)
+
+    def process_chunks(
+            self,
+            func: Callable[[pd.DataFrame], Any],
+            show_progress: bool = True
+    ) -> List[Any]:
         """
-        Processes all chunks sequentially.
+        Processes all unprocessed chunks with the provided function.
 
         Args:
-            func: Function that takes a DataFrame and returns processed result
-            show_progress: Whether to show progress bar
+            func: Function that takes a DataFrame and returns a result.
+            show_progress: Whether to display a progress bar.
 
         Returns:
-            List of results in chunk order
+            A list of results from processing each chunk.
         """
         results = []
-        iterator = range(self.remaining_chunks)
+        unprocessed_chunks = self._get_unprocessed_chunks()
 
+        iterator = enumerate(unprocessed_chunks)
         if show_progress:
-            iterator = tqdm(iterator,
-                            desc=f"Processing {self.json_path.name}",
-                            unit="chunk")
+            iterator = tqdm(
+                iterator,
+                desc=f"Processing {self.json_path.name}",
+                unit="chunk",
+                total=len(unprocessed_chunks)
+            )
 
-        for _ in iterator:
-            chunk = self.get_next_chunk()
-            results.append(func(chunk))
+        for _, chunk in iterator:
+            try:
+                df = pd.DataFrame(chunk["data"])
+                result = func(df)
+                results.append(result)
+
+                chunk_id = chunk.get("chunk_id")
+                if chunk_id:
+                    self._processed_set.add(chunk_id)
+            except Exception as e:
+                results.append(f"Error: {str(e)}")
+
+        # Save updated summary once at the end
+        self.summary["processed"] = len(self._processed_set)
+        self.summary["processed_ids"] = sorted(self._processed_set)
+        self._save_state()
 
         return results
 
+    # def process_chunks(
+    #     self,
+    #     func: Callable[[pd.DataFrame], Any],
+    #     show_progress: bool = True
+    # ) -> List[Any]:
+    #     """Processes all unprocessed chunks sequentially."""
+    #     results = []
+    #     unprocessed_chunks = self._get_unprocessed_chunks()
+    #
+    #     iterator = enumerate(unprocessed_chunks)
+    #     if show_progress:
+    #         iterator = tqdm(
+    #             iterator,
+    #             desc=f"Processing {self.json_path.name}",
+    #             unit="chunk",
+    #             total=self.remaining_chunks
+    #         )
+    #
+    #     for i, chunk in iterator:
+    #         try:
+    #             df = pd.DataFrame(chunk["data"])
+    #             result = func(df)
+    #             results.append(result)
+    #             # Mark using global index, not i from the filtered list
+    #             self._current_index = self.chunks.index(chunk)
+    #             self.mark_chunk_processed()
+    #         except Exception as e:
+    #             results.append(f"Error: {str(e)}")
+    #     return results
+
     def __repr__(self) -> str:
-        return (f"ChunkManager(file='{self.json_path.name}', "
-                f"processed={self._processed_chunks}/"
-                f"{self.total_chunks})")
+        return (
+            f"ChunkManager(file='{self.json_path.name}', "
+            f"processed={len(self._processed_set)}/{self.total_chunks})"
+        )
