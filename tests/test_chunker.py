@@ -3,7 +3,7 @@ import pandas as pd
 import json
 import tempfile
 from pathlib import Path
-from model.core.chucker import DataFrameChunker
+from model.core.chunker import DataFrameChunker
 
 
 @pytest.fixture
