@@ -50,6 +50,24 @@ class ChunkManager:
 
         return pd.DataFrame(chunk_data['data'])
 
+    def mark_chunk_processed(self, chunk_index: int):
+        """Mark a chunk as processed and remove it from the file."""
+        with open(self.json_path, 'r') as f:
+            data = json.load(f)
+
+        if 0 <= chunk_index < len(data['chunks']):
+            # Update metadata
+            data['summary']['processed_chunks'] = data['summary'].get('processed_chunks', 0) + 1
+
+            # Remove the chunk
+            del data['chunks'][chunk_index]
+
+            # Save changes
+            with open(self.json_path, 'w') as f:
+                json.dump(data, f, indent=2)
+        else:
+            raise IndexError(f"Invalid chunk index: {chunk_index}")
+
     def process_chunks(self,
                        func: Callable[[pd.DataFrame], Any],
                        show_progress: bool = True) -> List[Any]:
