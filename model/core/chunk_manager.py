@@ -1,10 +1,9 @@
-# core/chunk_manager.py
-
 import json
 from typing import Any, Callable, Optional, Dict, List
 import pandas as pd
 from pathlib import Path
 from tqdm import tqdm
+from threading import Event
 
 
 class ChunkManager:
@@ -23,6 +22,21 @@ class ChunkManager:
 
         self._check_version()
         self._init_chunk_state()
+
+        # 🧵 Pause event for CLI control
+        self.pause_event = Event()
+        self.pause_event.set()  # Start in 'resumed' state
+
+    def pause(self):
+        """Pause the chunk processing."""
+        self.pause_event.clear()
+
+    def resume(self):
+        """Resume the chunk processing."""
+        self.pause_event.set()
+
+    def is_paused(self) -> bool:
+        return not self.pause_event.is_set()
 
     def _validate_json_file(self):
         if not self.json_path.exists():
@@ -101,7 +115,6 @@ class ChunkManager:
         results = []
         unprocessed_chunks = self._get_unprocessed_chunks()
 
-        # ✳️ Respect max_chunks limit if provided
         if max_chunks is not None:
             unprocessed_chunks = unprocessed_chunks[:max_chunks]
 
@@ -116,12 +129,13 @@ class ChunkManager:
             )
 
         for i, chunk in iterator:
+            self.pause_event.wait()  # 🛑 Pause here if paused
+
             try:
                 df = pd.DataFrame(chunk["data"])
                 result = func(df)
                 results.append(result)
 
-                # ✅ Mark chunk as processed using its unique chunk_id
                 chunk_id = chunk.get("chunk_id")
                 if chunk_id:
                     self._processed_set.add(chunk_id)
@@ -129,7 +143,6 @@ class ChunkManager:
             except Exception as e:
                 results.append(f"Error: {str(e)}")
 
-        # ✅ Update summary and persist
         self.summary["processed"] = len(self._processed_set)
         self.summary["processed_ids"] = sorted(self._processed_set)
         self._save_state()

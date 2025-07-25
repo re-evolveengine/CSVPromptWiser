@@ -29,6 +29,20 @@ def process_with_gemini(df: pd.DataFrame) -> str:
     client = GeminiClient(model="gemini-1.5-flash", api_key=GEMINI_API_KEY)
     return client.call(prompt, df)
 
+def process_chunk_with_prompt(df):
+    try:
+        result = runner.run(prompt, df)
+        print("[✅ Success]")
+        return result
+    except runner.user_errors as e:
+        print(f"[❌ User Error] {type(e).__name__}: {e}")
+        return f"User Error: {str(e)}"
+    except runner.retryable_errors as e:
+        print(f"[🔁 Retryable Error] {type(e).__name__}: {e}")
+        return f"Retryable Error: {str(e)}"
+    except Exception as e:
+        print(f"[❓ Unknown Error] {type(e).__name__}: {e}")
+        return f"Unknown Error: {str(e)}"
 
 
 # def main():
