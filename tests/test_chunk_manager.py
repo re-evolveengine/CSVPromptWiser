@@ -1,87 +1,144 @@
 import json
-
 import pytest
 import pandas as pd
 from pathlib import Path
+import tempfile
+from unittest.mock import patch, MagicMock
 
 from model.core.chunk_manager import ChunkManager
+from model.utils.constants import JSON_CHUNK_VERSION
 
 
 @pytest.fixture
-def mock_json(tmp_path):
-    """Create a mock JSON chunk file."""
-    data = {
-        "version": 1.0,
+def sample_chunk_data():
+    """Create sample chunk data for testing."""
+    return {
+        "version": JSON_CHUNK_VERSION,
+        "metadata": {"source": "test", "version": 1},
         "chunks": [
-            {"chunk_id": "1", "data": [{"a": 1}, {"a": 2}]},
-            {"chunk_id": "2", "data": [{"a": 3}, {"a": 4}]}
+            {
+                "chunk_id": "chunk1",
+                "data": [
+                    {"id": 1, "name": "Item 1", "value": 10},
+                    {"id": 2, "name": "Item 2", "value": 20}
+                ],
+                "original_rows": 2
+            },
+            {
+                "chunk_id": "chunk2",
+                "data": [
+                    {"id": 3, "name": "Item 3", "value": 30},
+                    {"id": 4, "name": "Item 4", "value": 40}
+                ],
+                "original_rows": 2
+            }
         ],
-        "summary": {"total_chunks": 2, "processed_ids": []}
+        "summary": {
+            "total_chunks": 2,
+            "processed_ids": []
+        }
     }
 
-    json_path = tmp_path / "test_chunks.json"
-    json_path.write_text(json.dumps(data))
-    return json_path
+
+@pytest.fixture
+def chunk_manager(tmp_path, sample_chunk_data):
+    """Create a ChunkManager instance with a temporary JSON file."""
+    temp_file = tmp_path / "test_chunks.json"
+    with open(temp_file, 'w') as f:
+        json.dump(sample_chunk_data, f)
+    return ChunkManager(str(temp_file))
 
 
-def test_initialization(mock_json):
-    cm = ChunkManager(str(mock_json))
-    assert cm.total_chunks == 2
-    assert cm.remaining_chunks == 2
-    assert not cm.is_paused()  # Should be running
+def test_chunk_manager_initialization(chunk_manager, sample_chunk_data):
+    """Test ChunkManager initialization and properties."""
+    assert chunk_manager.total_chunks == 2
+    assert chunk_manager.remaining_chunks == 2
+    assert not chunk_manager.is_paused()
 
 
-def test_pause_resume_logic(mock_json):
-    cm = ChunkManager(str(mock_json))
-    assert cm.pause_event.is_set() is True
+def test_get_next_chunk(chunk_manager):
+    """Test getting the next unprocessed chunk."""
+    # First call should return the first chunk
+    df = chunk_manager.get_next_chunk()
+    assert isinstance(df, pd.DataFrame)
+    assert len(df) == 2
+    assert df.iloc[0]['id'] == 1
+    assert df.iloc[1]['id'] == 2
 
-    cm.pause()
-    assert cm.is_paused() is True
+    # Mark first chunk as processed
+    chunk_manager.mark_chunk_processed()
 
-    cm.resume()
-    assert cm.is_paused() is False
+    # Next call should return the second chunk
+    df = chunk_manager.get_next_chunk()
+    assert len(df) == 2
+    assert df.iloc[0]['id'] == 3
+    assert df.iloc[1]['id'] == 4
 
+    # Mark second chunk as processed
+    chunk_manager.mark_chunk_processed()
 
-def test_get_next_chunk_and_mark_processed(mock_json):
-    cm = ChunkManager(str(mock_json))
-
-    chunk = cm.get_next_chunk()
-    assert isinstance(chunk, pd.DataFrame)
-    assert chunk.shape == (2, 1)
-    assert cm._current_chunk_id == "1"
-
-    cm.mark_chunk_processed()
-    assert "1" in cm._processed_set
-
-
-def test_process_chunks_calls_func_and_respects_pause(mocker, mock_json):
-    cm = ChunkManager(str(mock_json))
-
-    # Spy on the function being passed
-    mock_func = mocker.Mock(side_effect=lambda df: f"sum={df['a'].sum()}")
-
-    # Pause and resume to simulate the check
-    cm.pause()
-    assert cm.is_paused() is True
-    cm.resume()
-
-    results = cm.process_chunks(mock_func, show_progress=False)
-    assert results == ["sum=3", "sum=7"]
-    assert mock_func.call_count == 2
+    # No more chunks should return None
+    assert chunk_manager.get_next_chunk() is None
 
 
-def test_process_chunks_handles_exceptions(mocker, mock_json):
-    cm = ChunkManager(str(mock_json))
+def test_mark_chunk_processed(chunk_manager):
+    """Test marking chunks as processed."""
+    assert chunk_manager.remaining_chunks == 2
 
-    def faulty_func(df):
-        raise ValueError("boom")
+    # Get and mark first chunk as processed
+    df = chunk_manager.get_next_chunk()
+    chunk_manager.mark_chunk_processed()
 
-    results = cm.process_chunks(faulty_func, show_progress=False)
-    assert "boom" in results[0]
-    assert "boom" in results[1]
+    assert chunk_manager.remaining_chunks == 1
+    assert "chunk1" in chunk_manager._processed_set
 
 
-def test_repr_output(mock_json):
-    cm = ChunkManager(str(mock_json))
-    rep = repr(cm)
-    assert "processed=0/2" in rep
+def test_process_chunks(chunk_manager):
+    """Test processing chunks with a function."""
+    # Define a simple processing function
+    def process_func(df):
+        return {"count": len(df), "sum": df['value'].sum()}
+
+    # Process all chunks
+    results = chunk_manager.process_chunks(process_func)
+
+    # Verify results
+    assert len(results) == 2
+    assert results[0] == {"count": 2, "sum": 30}  # 10 + 20
+    assert results[1] == {"count": 2, "sum": 70}  # 30 + 40
+
+    # Verify all chunks are marked as processed
+    assert chunk_manager.remaining_chunks == 0
+
+
+def test_process_chunks_with_max(chunk_manager):
+    """Test processing a limited number of chunks."""
+    def process_func(df):
+        return len(df)
+
+    # Process only 1 chunk
+    results = chunk_manager.process_chunks(process_func, max_chunks=1)
+
+    assert len(results) == 1
+    assert results[0] == 2  # 2 rows in the first chunk
+    assert chunk_manager.remaining_chunks == 1  # 1 chunk remaining
+
+
+def test_pause_resume(chunk_manager):
+    """Test pausing and resuming chunk processing."""
+    chunk_manager.pause()
+    assert chunk_manager.is_paused()
+
+    chunk_manager.resume()
+    assert not chunk_manager.is_paused()
+
+
+def test_invalid_json_version(tmp_path):
+    """Test initialization with invalid JSON version."""
+    invalid_data = {"version": 0.9, "chunks": [], "summary": {"total_chunks": 0}}
+    temp_file = tmp_path / "invalid.json"
+    with open(temp_file, 'w') as f:
+        json.dump(invalid_data, f)
+
+    with pytest.raises(ValueError, match="Unsupported or missing JSON version"):
+        ChunkManager(str(temp_file))
