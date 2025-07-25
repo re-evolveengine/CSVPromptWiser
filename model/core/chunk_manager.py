@@ -5,6 +5,8 @@ from pathlib import Path
 from tqdm import tqdm
 from threading import Event
 
+from model.utils.constants import JSON_CHUNK_VERSION
+
 
 class ChunkManager:
     """Manages sequential processing of chunks from JSON storage."""
@@ -46,7 +48,7 @@ class ChunkManager:
 
     def _check_version(self):
         version = self.data.get("version", None)
-        if version is None or version != 1.0:
+        if version is None or version != JSON_CHUNK_VERSION:
             raise ValueError(f"Unsupported or missing JSON version: {version}")
 
     def _init_chunk_state(self):

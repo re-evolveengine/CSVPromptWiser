@@ -1,4 +1,3 @@
-# core/chunker.py
 import json
 import os
 from pathlib import Path
@@ -6,12 +5,11 @@ from typing import List, Optional, Dict, Any
 from uuid import uuid4
 import pandas as pd
 
+from model.utils.constants import JSON_CHUNK_VERSION
+
 
 class DataFrameChunker:
     """Handles DataFrame chunking and JSON serialization only."""
-
-    # Current version of the JSON format
-    JSON_VERSION = 1.0
 
     def __init__(self, chunk_size: int = 1000):
         """
@@ -23,9 +21,11 @@ class DataFrameChunker:
         self.chunk_size = chunk_size
         self._chunks: List[pd.DataFrame] = []
 
-    def chunk_dataframe(self,
-                        df: pd.DataFrame,
-                        chunk_size: Optional[int] = None) -> List[pd.DataFrame]:
+    def chunk_dataframe(
+        self,
+        df: pd.DataFrame,
+        chunk_size: Optional[int] = None
+    ) -> List[pd.DataFrame]:
         """
         Split DataFrame into smaller chunks.
 
@@ -36,11 +36,7 @@ class DataFrameChunker:
         Returns:
             List of DataFrame chunks
         """
-        if chunk_size is None:
-            size = self.chunk_size
-        else:
-            # Use default chunk size if provided size is invalid
-            size = self.chunk_size if chunk_size <= 0 else chunk_size
+        size = self.chunk_size if chunk_size is None or chunk_size <= 0 else chunk_size
 
         total_rows = len(df)
         self._chunks = [
@@ -61,10 +57,10 @@ class DataFrameChunker:
 
     @staticmethod
     def save_chunks_to_json(
-            chunks: List[pd.DataFrame],
-            file_path: str,
-            max_rows_per_chunk: Optional[int] = None,
-            metadata: Optional[Dict[str, Any]] = None
+        chunks: List[pd.DataFrame],
+        file_path: str,
+        max_rows_per_chunk: Optional[int] = None,
+        metadata: Optional[Dict[str, Any]] = None
     ) -> None:
         """
         Safely save chunks to JSON with versioning and atomic writes.
@@ -72,7 +68,7 @@ class DataFrameChunker:
         Args:
             chunks: List of DataFrames to save
             file_path: Output JSON path
-            max_rows_per_chunk: Max rows per chunk (None for all)
+            max_rows_per_chunk: Max rows per chunk (None = all)
             metadata: Optional metadata to include
 
         Raises:
@@ -82,44 +78,35 @@ class DataFrameChunker:
         if not chunks:
             raise ValueError("No chunks to save")
 
-        # Prepare output structure with versioning
         output = {
-            "version": 1.0,
+            "version": JSON_CHUNK_VERSION,
             "metadata": metadata or {},
             "chunks": [],
             "summary": {
                 "total_chunks": len(chunks),
-                "saved_rows": 0,
-                "processed": 0  # Track processed chunks
+                "processed_ids": []  # Track processed UUIDs
             }
         }
 
-        # Add chunks with unique IDs
-        for idx, df in enumerate(chunks):
+        for df in chunks:
             chunk_data = df.head(max_rows_per_chunk) if max_rows_per_chunk else df
             output["chunks"].append({
-                "chunk_number": idx + 1,
+                "chunk_id": str(uuid4()),
                 "data": chunk_data.to_dict(orient='records'),
-                "original_rows": len(df),
-                "saved_rows": len(chunk_data)
+                "original_rows": len(df)
             })
-            output["summary"]["saved_rows"] += len(chunk_data)
 
-        # Atomic write operation
         path = Path(file_path)
         path.parent.mkdir(parents=True, exist_ok=True)
-
         temp_path = path.with_suffix('.tmp')
+
         try:
             with open(temp_path, 'w') as f:
                 json.dump(output, f, indent=2)
-
-            # Atomic replace
             os.replace(temp_path, path)
         except Exception as e:
             if temp_path.exists():
                 temp_path.unlink()
             raise OSError(f"Failed to save chunks: {str(e)}") from e
 
-        print(f"Saved {len(chunks)} chunks to {file_path} "
-              f"({output['summary']['saved_rows']} total rows)")
+        print(f"Saved {len(chunks)} chunks to {file_path}")

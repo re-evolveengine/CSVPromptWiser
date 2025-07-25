@@ -17,6 +17,26 @@ GEMINI_API_KEY = os.getenv("KEY")
 if not GEMINI_API_KEY:
     raise RuntimeError("Missing GEMINI_API_KEY in .env")
 
+
+# import threading
+#
+# def listen_for_pause(manager):
+#     while True:
+#         cmd = input("Press [p] to pause/resume: ").strip().lower()
+#         if cmd == "p":
+#             if manager.is_paused():
+#                 print("▶️  Resuming...")
+#                 manager.resume()
+#             else:
+#                 print("⏸️  Pausing...")
+#                 manager.pause()
+#
+# # Usage in your CLI entrypoint:
+# chunk_manager = ChunkManager("path/to/your.json")
+# threading.Thread(target=listen_for_pause, args=(chunk_manager,), daemon=True).start()
+# chunk_manager.process_chunks(my_processing_function)
+
+
 def process_with_gemini(df: pd.DataFrame) -> str:
     """
     Sends chunk to Gemini for summarization or analysis.
@@ -29,20 +49,20 @@ def process_with_gemini(df: pd.DataFrame) -> str:
     client = GeminiClient(model="gemini-1.5-flash", api_key=GEMINI_API_KEY)
     return client.call(prompt, df)
 
-def process_chunk_with_prompt(df):
-    try:
-        result = runner.run(prompt, df)
-        print("[✅ Success]")
-        return result
-    except runner.user_errors as e:
-        print(f"[❌ User Error] {type(e).__name__}: {e}")
-        return f"User Error: {str(e)}"
-    except runner.retryable_errors as e:
-        print(f"[🔁 Retryable Error] {type(e).__name__}: {e}")
-        return f"Retryable Error: {str(e)}"
-    except Exception as e:
-        print(f"[❓ Unknown Error] {type(e).__name__}: {e}")
-        return f"Unknown Error: {str(e)}"
+# def process_chunk_with_prompt(df):
+#     try:
+#         result = runner.run(prompt, df)
+#         print("[✅ Success]")
+#         return result
+#     except runner.user_errors as e:
+#         print(f"[❌ User Error] {type(e).__name__}: {e}")
+#         return f"User Error: {str(e)}"
+#     except runner.retryable_errors as e:
+#         print(f"[🔁 Retryable Error] {type(e).__name__}: {e}")
+#         return f"Retryable Error: {str(e)}"
+#     except Exception as e:
+#         print(f"[❓ Unknown Error] {type(e).__name__}: {e}")
+#         return f"Unknown Error: {str(e)}"
 
 
 # def main():
@@ -95,6 +115,9 @@ def main():
 
     response = runner.run(prompt, df)
     print(response)
+
+
+def manager
 
 
 

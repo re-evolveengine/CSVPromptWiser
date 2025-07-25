@@ -86,20 +86,20 @@ def test_save_chunks_to_json(sample_dataframe, tmp_path):
     with open(output_file, 'r') as f:
         data = json.load(f)
     
-    # Check metadata
+    # Check metadata and version
+    assert data['version'] == 1.0  # Changed from "1.0" to 1.0 (float)
     assert data['metadata'] == metadata
     
     # Check chunks structure
     assert len(data['chunks']) == 3  # 3 chunks (4,4,2) with max 2 rows per chunk
     assert data['summary']['total_chunks'] == 3
-    assert data['summary']['saved_rows'] == 6  # 2 rows per chunk * 3 chunks
+    assert 'processed_ids' in data['summary']
     
     # Check first chunk data
     first_chunk = data['chunks'][0]
-    assert first_chunk['chunk_number'] == 1
+    assert 'chunk_id' in first_chunk  # Now using UUID instead of chunk_number
     assert len(first_chunk['data']) == 2  # Limited by max_rows_per_chunk
     assert first_chunk['original_rows'] == 4  # Original chunk size
-    assert first_chunk['saved_rows'] == 2  # Limited rows saved
 
 
 def test_chunks_property_before_chunking():
