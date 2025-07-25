@@ -4,19 +4,21 @@ from typing import Optional
 
 import pandas as pd
 
-# Get the path to the user's Documents directory
-DOCUMENTS_PATH = os.path.join(os.path.expanduser("~"), "Documents")
-DATA_PATH = os.path.join(DOCUMENTS_PATH, "Data")
+from model.utils.constants import APP_PATH
 
 
 class DatasetLoader:
     """Minimal dataset loader for CSV and Parquet files."""
 
-    def __init__(self, directory_path: str = DATA_PATH):
+    def __init__(self, directory_path: str = APP_PATH):
+
+        if not os.path.exists(directory_path):
+            raise FileNotFoundError(f"Directory not found: {directory_path}")
+
         self.file_path = None
         self.directory_path = directory_path
         print("Please ensure the dataset file is in the following directory:")
-        print(DATA_PATH)
+        print(APP_PATH)
 
     def load(self, file_name: Optional[str] = None) -> pd.DataFrame:
         """Load CSV/Parquet file. Falls back to default path if none provided."""

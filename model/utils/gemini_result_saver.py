@@ -1,0 +1,78 @@
+import json
+import os
+from pathlib import Path
+from typing import List, Dict, Any
+from uuid import uuid4
+from datetime import datetime
+import pandas as pd
+
+from model.utils.constants import JSON_CHUNK_VERSION
+
+
+class GeminiResultSaver:
+    """Handles saving Gemini results along with input chunks to JSON."""
+
+    @staticmethod
+    def save_results_to_json(
+        results: List[Dict[str, Any]],
+        file_path: str,
+        metadata: Dict[str, Any] = None
+    ) -> None:
+        """
+        Save Gemini responses with input and prompt to JSON.
+
+        Args:
+            results: List of dicts each containing:
+                     - 'chunk': pd.DataFrame
+                     - 'prompt': str
+                     - 'response': str
+            file_path: Destination JSON file path
+            metadata: Optional additional metadata
+
+        Raises:
+            ValueError: If no results provided
+            OSError: If write fails
+        """
+        if not results:
+            raise ValueError("No results to save")
+
+        output = {
+            "version": JSON_CHUNK_VERSION,
+            "metadata": metadata or {},
+            "chunks": [],
+            "summary": {
+                "total_chunks": len(results),
+                "processed_ids": []
+            }
+        }
+
+        for item in results:
+            chunk = item["chunk"]
+            prompt = item["prompt"]
+            response = item["response"]
+
+            chunk_id = str(uuid4())
+            output["chunks"].append({
+                "chunk_id": chunk_id,
+                "data": chunk.to_dict(orient="records"),
+                "original_rows": len(chunk),
+                "prompt": prompt,
+                "response": response,
+                "timestamp": datetime.utcnow().isoformat() + "Z"
+            })
+            output["summary"]["processed_ids"].append(chunk_id)
+
+        path = Path(file_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temp_path = path.with_suffix(".tmp")
+
+        try:
+            with open(temp_path, 'w') as f:
+                json.dump(output, f, indent=2)
+            os.replace(temp_path, path)
+        except Exception as e:
+            if temp_path.exists():
+                temp_path.unlink()
+            raise OSError(f"Failed to save results: {str(e)}") from e
+
+        print(f"Saved {len(results)} Gemini results to {file_path}")

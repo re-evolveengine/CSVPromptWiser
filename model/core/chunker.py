@@ -5,13 +5,13 @@ from typing import List, Optional, Dict, Any
 from uuid import uuid4
 import pandas as pd
 
-from model.utils.constants import JSON_CHUNK_VERSION
+from model.utils.constants import JSON_CHUNK_VERSION, DEFAULT_CHUNK_SIZE
 
 
 class DataFrameChunker:
     """Handles DataFrame chunking and JSON serialization only."""
 
-    def __init__(self, chunk_size: int = 1000):
+    def __init__(self, chunk_size: Optional[int] = DEFAULT_CHUNK_SIZE):
         """
         Args:
             chunk_size: Default number of rows per chunk
@@ -20,6 +20,9 @@ class DataFrameChunker:
             raise ValueError("Chunk size must be positive")
         self.chunk_size = chunk_size
         self._chunks: List[pd.DataFrame] = []
+
+    def set_chunk_size(self, chunk_size: int):
+        self.chunk_size = chunk_size
 
     def chunk_dataframe(
         self,

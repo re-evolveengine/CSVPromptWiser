@@ -131,7 +131,6 @@ class ChunkManager:
             )
 
         for i, chunk in iterator:
-            self.pause_event.wait()  # 🛑 Pause here if paused
 
             try:
                 df = pd.DataFrame(chunk["data"])
@@ -148,6 +147,8 @@ class ChunkManager:
         self.summary["processed"] = len(self._processed_set)
         self.summary["processed_ids"] = sorted(self._processed_set)
         self._save_state()
+
+        self.pause_event.wait()  # 🛑 Pause here if paused
 
         return results
 
