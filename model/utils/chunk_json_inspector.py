@@ -13,12 +13,37 @@ class ChunkJSONInspector:
     """
 
     def __init__(self, directory_path: str = TEMP_DIR):
-        os.makedirs(directory_path, exist_ok=True)
+        """
+        Initialize the ChunkJSONInspector.
 
-        if not os.path.exists(directory_path):
-            raise FileNotFoundError(f"Directory not found: {directory_path}")
+        Args:
+            directory_path: Path to the directory containing chunk JSON files.
+                           If not provided, uses the default TEMP_DIR.
 
-        self.directory = Path(directory_path)
+        Raises:
+            FileNotFoundError: If the specified directory does not exist and its parent directory
+                             doesn't exist either.
+        """
+        # Convert to Path object for easier manipulation
+        dir_path = Path(directory_path).resolve()
+        
+        # If the directory doesn't exist
+        if not dir_path.exists():
+            # Check if parent directory exists
+            if not dir_path.parent.exists():
+                raise FileNotFoundError(
+                    f"Parent directory does not exist: {dir_path.parent}"
+                )
+            # If parent exists, create the directory
+            try:
+                dir_path.mkdir(exist_ok=True)
+            except OSError as e:
+                raise FileNotFoundError(
+                    f"Could not create directory {dir_path}: {e}"
+                ) from e
+        
+        # If we get here, either the directory existed or was successfully created
+        self.directory = dir_path
 
     def find_valid_chunk_file(self) -> Optional[Path]:
         """

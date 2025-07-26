@@ -1,7 +1,7 @@
 import os
 
 JSON_CHUNK_VERSION = 1.0
-APP_NAME = "Chunkwise"
+APP_NAME = "ChunkwisePrompter"
 DATA_FOLDER_NAME = "data"
 RESULTS_FOLDER_NAME = "results"
 TEMP_FOLDER_NAME = "temp"
