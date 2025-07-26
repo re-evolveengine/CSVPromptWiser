@@ -1,24 +1,34 @@
-# core/clients/base.py
+# core/clients/base_llm_client.py
 
 from abc import ABC, abstractmethod
 from typing import Any, Dict
-
 import pandas as pd
+
+from model.utils.constants import (
+    DEFAULT_TEMPERATURE,
+    DEFAULT_TOP_K,
+    DEFAULT_TOP_P
+)
 
 
 class BaseLLMClient(ABC):
     """
-    Abstract base class for all LangChain-based LLM clients.
+    Abstract base class for all LLM clients.
     """
 
     def __init__(self, model: str, api_key: str):
         self.model = model
         self.api_key = api_key
+        self.generation_config = {
+            "temperature": DEFAULT_TEMPERATURE,
+            "top_k": DEFAULT_TOP_K,
+            "top_p": DEFAULT_TOP_P
+        }
         self.llm = self._init_llm()
 
     @abstractmethod
     def _init_llm(self) -> Any:
-        """Initialize and return a LangChain-compatible LLM object."""
+        """Initialize and return a configured LLM client."""
         pass
 
     def call(self, prompt: str, df: pd.DataFrame) -> str:
@@ -30,14 +40,7 @@ class BaseLLMClient(ABC):
 
     def _format_input(self, prompt: str, df: pd.DataFrame) -> str:
         """
-        General-purpose formatter: combines prompt and a DataFrame in a clean bullet-list format.
-
-        Args:
-            prompt (str): The instruction or question for the LLM.
-            df (pd.DataFrame): Any structured data from ChunkManager.
-
-        Returns:
-            str: A readable string suitable for LLM input.
+        Combines prompt and DataFrame into a structured string.
         """
         output = [prompt.strip(), ""]
 
@@ -49,4 +52,3 @@ class BaseLLMClient(ABC):
             output.append("\n".join(lines))
 
         return "\n\n".join(output)
-

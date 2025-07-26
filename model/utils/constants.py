@@ -20,3 +20,9 @@ DEFAULT_CHUNK_SIZE = 100
 MODEL_PREFS_DB_NAME = "model_prefs.db"
 MODEL_PREFS_DB_PATH = os.path.join(CONFIG_DIR, MODEL_PREFS_DB_NAME)
 MODEL_KEY = "gemini_model"
+
+# Generation behavior
+DEFAULT_TEMPERATURE = 0.2
+DEFAULT_TOP_K = 40
+DEFAULT_TOP_P = 1.0
+
