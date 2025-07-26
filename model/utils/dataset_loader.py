@@ -4,13 +4,13 @@ from typing import Optional
 
 import pandas as pd
 
-from model.utils.constants import APP_PATH
+from model.utils.constants import  DATA_DIR
 
 
 class DatasetLoader:
     """Minimal dataset loader for CSV and Parquet files."""
 
-    def __init__(self, directory_path: str = APP_PATH):
+    def __init__(self, directory_path: str = DATA_DIR):
         # Create directory if it doesn't exist
         os.makedirs(directory_path, exist_ok=True)
         
@@ -20,7 +20,7 @@ class DatasetLoader:
         self.file_path = None
         self.directory_path = directory_path
         print("Please ensure the dataset file is in the following directory:")
-        print(APP_PATH)
+        print(self.directory_path)
 
     def load(self, file_name: Optional[str] = None) -> pd.DataFrame:
         """Load CSV/Parquet file. Falls back to default path if none provided."""

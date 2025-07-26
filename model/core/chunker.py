@@ -5,7 +5,7 @@ from typing import List, Optional, Dict, Any
 from uuid import uuid4
 import pandas as pd
 
-from model.utils.constants import JSON_CHUNK_VERSION, DEFAULT_CHUNK_SIZE
+from model.utils.constants import JSON_CHUNK_VERSION, DEFAULT_CHUNK_SIZE, TEMP_DIR
 
 
 class DataFrameChunker:
@@ -61,7 +61,7 @@ class DataFrameChunker:
     @staticmethod
     def save_chunks_to_json(
         chunks: List[pd.DataFrame],
-        file_path: str,
+        file_path: str = os.path.join(TEMP_DIR, "chunks.json"),
         max_rows_per_chunk: Optional[int] = None,
         metadata: Optional[Dict[str, Any]] = None
     ) -> None:
