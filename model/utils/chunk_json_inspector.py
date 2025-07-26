@@ -77,6 +77,7 @@ class ChunkJSONInspector:
 
         summary = data.get("summary", {})
         total = summary.get("total_chunks", 0)
+        chunk_size = summary.get("chunk_size", 0)
         processed_ids = set(summary.get("processed_ids", []))
 
         chunks = data.get("chunks", [])
@@ -89,7 +90,8 @@ class ChunkJSONInspector:
             "total_chunks": total,
             "processed_chunks": len(processed_ids),
             "unprocessed_chunks": len(unprocessed),
-            "can_resume": len(unprocessed) > 0
+            "can_resume": len(unprocessed) > 0,
+            "chunk_size": summary.get("chunk_size", None),  # ✅ Here’s the fix
         }
 
     @staticmethod

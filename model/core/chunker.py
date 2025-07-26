@@ -25,9 +25,9 @@ class DataFrameChunker:
         self.chunk_size = chunk_size
 
     def chunk_dataframe(
-        self,
-        df: pd.DataFrame,
-        chunk_size: Optional[int] = None
+            self,
+            df: pd.DataFrame,
+            chunk_size: Optional[int] = None
     ) -> List[pd.DataFrame]:
         """
         Split DataFrame into smaller chunks.
@@ -58,12 +58,12 @@ class DataFrameChunker:
             raise ValueError("No chunks available - run chunk_dataframe() first")
         return self._chunks
 
-    @staticmethod
     def save_chunks_to_json(
-        chunks: List[pd.DataFrame],
-        file_path: str = os.path.join(TEMP_DIR, "chunks.json"),
-        max_rows_per_chunk: Optional[int] = None,
-        metadata: Optional[Dict[str, Any]] = None
+            self,
+            chunks: List[pd.DataFrame],
+            file_path: str = os.path.join(TEMP_DIR, "chunks.json"),
+            max_rows_per_chunk: Optional[int] = None,
+            metadata: Optional[Dict[str, Any]] = None
     ) -> None:
         """
         Safely save chunks to JSON with versioning and atomic writes.
@@ -87,7 +87,8 @@ class DataFrameChunker:
             "chunks": [],
             "summary": {
                 "total_chunks": len(chunks),
-                "processed_ids": []  # Track processed UUIDs
+                "processed_ids": [],  # Track processed UUIDs
+                "chunk_size": self.chunk_size
             }
         }
 
