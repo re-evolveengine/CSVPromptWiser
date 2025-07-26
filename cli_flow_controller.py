@@ -1,6 +1,7 @@
 import os
 import threading
 import time
+from datetime import datetime
 from pathlib import Path
 
 import keyboard
@@ -9,10 +10,12 @@ import pandas as pd
 from model.core.chunk_manager import ChunkManager
 from model.core.chunker import DataFrameChunker
 from model.core.gemini_model_provider import GeminiModelProvider
-from model.utils.cli_utils import load_api_key, get_model_selection, ask_int_input, run_gemini_chunk_processor
-from model.utils.constants import TEMP_DIR, DATA_DIR
+from model.utils.cli_utils import load_api_key, get_model_selection, ask_int_input, run_gemini_chunk_processor, \
+    handle_model_selection
+from model.utils.constants import TEMP_DIR, DATA_DIR, RESULTS_DIR
 from model.utils.chunk_json_inspector import ChunkJSONInspector
 from model.utils.dataset_loader import DatasetLoader
+from model.utils.gemini_result_saver import GeminiResultSaver
 
 
 class CLIFlowController:
@@ -45,23 +48,8 @@ class CLIFlowController:
 
     def step_0_choose_model(self):
         print("=== Step 0: Select a Gemini Model ===")
-
         self.api_key = load_api_key()
-        provider = GeminiModelProvider(self.api_key)
-
-        print("\nFetching available Gemini models...\n")
-        model_names = provider.get_usable_model_names()
-
-        if not model_names:
-            print("❌ No usable models found. Please check your API key or network.")
-            exit(1)
-
-        print("Available Gemini Models:")
-        for idx, name in enumerate(model_names, 1):
-            print(f"{idx}. {name}")
-
-        self.model_name = get_model_selection(model_names)
-        print(f"\n✅ Selected model: {self.model_name}")
+        self.model_name = handle_model_selection(self.api_key)
 
     def step_1_check_existing_chunk_file(self):
         inspector = ChunkJSONInspector(directory_path=TEMP_DIR)
@@ -138,7 +126,17 @@ class CLIFlowController:
         finally:
             self.running = False
             keyboard_thread.join()
-            print(self.results)
+
+            if self.results:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                base_name = f"{self.model_name}_{timestamp}"
+                json_path = Path(RESULTS_DIR) / f"{base_name}.json"
+                csv_path = Path(RESULTS_DIR) / f"{base_name}.csv"
+
+                GeminiResultSaver.save_results_to_json(self.results, str(json_path))
+                GeminiResultSaver.save_results_to_csv(self.results, str(csv_path))
+            else:
+                print("⚠️ No results to save.")
 
     def _keyboard_listener(self):
         while self.running:

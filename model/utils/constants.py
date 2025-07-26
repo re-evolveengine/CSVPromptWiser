@@ -5,9 +5,18 @@ APP_NAME = "ChunkwisePrompter"
 DATA_FOLDER_NAME = "data"
 RESULTS_FOLDER_NAME = "results"
 TEMP_FOLDER_NAME = "temp"
+CONFIG_FOLDER_NAME = "config"  # Optional: for preferences/configs
+
 DOCUMENTS_DIR = os.path.join(os.path.expanduser("~"), "Documents")
 APP_DIR = os.path.join(DOCUMENTS_DIR, APP_NAME)
 DATA_DIR = os.path.join(APP_DIR, DATA_FOLDER_NAME)
 RESULTS_DIR = os.path.join(APP_DIR, RESULTS_FOLDER_NAME)
 TEMP_DIR = os.path.join(APP_DIR, TEMP_FOLDER_NAME)
+CONFIG_DIR = os.path.join(APP_DIR, CONFIG_FOLDER_NAME)
+
 DEFAULT_CHUNK_SIZE = 100
+
+# 🗄️ Model preference DB (shelve) file name and full path
+MODEL_PREFS_DB_NAME = "model_prefs.db"
+MODEL_PREFS_DB_PATH = os.path.join(CONFIG_DIR, MODEL_PREFS_DB_NAME)
+MODEL_KEY = "gemini_model"
