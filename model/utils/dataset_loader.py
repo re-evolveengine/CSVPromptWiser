@@ -11,7 +11,9 @@ class DatasetLoader:
     """Minimal dataset loader for CSV and Parquet files."""
 
     def __init__(self, directory_path: str = APP_PATH):
-
+        # Create directory if it doesn't exist
+        os.makedirs(directory_path, exist_ok=True)
+        
         if not os.path.exists(directory_path):
             raise FileNotFoundError(f"Directory not found: {directory_path}")
 

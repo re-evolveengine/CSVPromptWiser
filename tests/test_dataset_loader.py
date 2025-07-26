@@ -71,4 +71,4 @@ def test_directory_path_output(capsys):
     captured = capsys.readouterr()
     output = captured.out.strip()
     assert "Please ensure the dataset file is in the following directory:" in output
-    assert "Data" in output  # Should contain the default DATA_PATH
+    assert "Chunkwise" in output  # Check for the Chunkwise directory in the path

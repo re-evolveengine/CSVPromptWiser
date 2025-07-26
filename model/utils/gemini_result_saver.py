@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 from uuid import uuid4
 from datetime import datetime
 import pandas as pd
@@ -23,14 +23,14 @@ class GeminiResultSaver:
 
         Args:
             results: List of dicts each containing:
-                     - 'chunk': pd.DataFrame
-                     - 'prompt': str
-                     - 'response': str
+                     - 'chunk': Union[pd.DataFrame, List[Dict]] - Input data as DataFrame or list of dicts
+                     - 'prompt': str - The prompt used for this chunk
+                     - 'response': str - The model's response
             file_path: Destination JSON file path
             metadata: Optional additional metadata
 
         Raises:
-            ValueError: If no results provided
+            ValueError: If no results provided or invalid chunk format
             OSError: If write fails
         """
         if not results:
@@ -51,11 +51,24 @@ class GeminiResultSaver:
             prompt = item["prompt"]
             response = item["response"]
 
+            # Handle both DataFrame and list of dicts for chunk
+            if isinstance(chunk, pd.DataFrame):
+                chunk_data = chunk.to_dict(orient="records")
+                original_rows = len(chunk)
+            elif isinstance(chunk, list) and all(isinstance(x, dict) for x in chunk):
+                chunk_data = chunk
+                original_rows = len(chunk)
+            else:
+                raise ValueError(
+                    "Chunk must be a pandas DataFrame or a list of dictionaries. "
+                    f"Got {type(chunk).__name__} instead."
+                )
+
             chunk_id = str(uuid4())
             output["chunks"].append({
                 "chunk_id": chunk_id,
-                "data": chunk.to_dict(orient="records"),
-                "original_rows": len(chunk),
+                "data": chunk_data,
+                "original_rows": original_rows,
                 "prompt": prompt,
                 "response": response,
                 "timestamp": datetime.utcnow().isoformat() + "Z"
