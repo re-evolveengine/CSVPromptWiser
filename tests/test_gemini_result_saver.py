@@ -146,3 +146,85 @@ class TestGeminiResultSaver:
             data = json.load(f)
 
         assert data["metadata"] == metadata
+
+    def test_save_results_to_csv_valid_input(self, sample_results, temp_dir):
+        """Test saving results to CSV with valid input."""
+        output_path = os.path.join(temp_dir, "output.csv")
+
+        # Call the method under test
+        GeminiResultSaver.save_results_to_csv(
+            results=sample_results,
+            file_path=output_path
+        )
+
+        # Verify the file was created
+        assert os.path.exists(output_path)
+
+        # Verify the content
+        df = pd.read_csv(output_path)
+        
+        # Check we have the expected number of rows (2 from first chunk + 1 from second chunk)
+        assert len(df) == 3
+        
+        # Check all expected columns are present
+        expected_columns = {"chunk_id", "prompt", "response", "timestamp", "text", "id"}
+        assert set(df.columns) == expected_columns
+        
+        # Check the data was preserved
+        assert set(df["text"].tolist()) == {"sample text 1", "sample text 2", "sample text 3"}
+        assert set(df["id"].astype(str).tolist()) == {"1", "2", "3"}
+        assert "Test prompt 1" in df["prompt"].tolist()
+        assert "Test prompt 2" in df["prompt"].tolist()
+        assert "Test response 1" in df["response"].tolist()
+        assert "Test response 2" in df["response"].tolist()
+
+    def test_save_results_to_csv_empty_input(self):
+        """Test that empty results raise a ValueError."""
+        with pytest.raises(ValueError, match="No results to save"):
+            GeminiResultSaver.save_results_to_csv([], "dummy_path.csv")
+
+    def test_save_results_to_csv_invalid_chunk_format(self, temp_dir):
+        """Test that invalid chunk format raises a ValueError."""
+        invalid_results = [
+            {
+                "chunk": "not a dataframe or list",
+                "prompt": "test",
+                "response": "test"
+            }
+        ]
+        output_path = os.path.join(temp_dir, "output.csv")
+        
+        with pytest.raises(ValueError, match="Invalid chunk format at index 0"):
+            GeminiResultSaver.save_results_to_csv(invalid_results, output_path)
+
+    def test_save_results_to_csv_with_custom_columns(self, temp_dir):
+        """Test that custom columns in input data are preserved."""
+        custom_results = [
+            {
+                "chunk": pd.DataFrame({
+                    "custom_col1": [1, 2],
+                    "custom_col2": ["a", "b"]
+                }),
+                "prompt": "Custom prompt",
+                "response": "Custom response"
+            }
+        ]
+        output_path = os.path.join(temp_dir, "custom_output.csv")
+        
+        GeminiResultSaver.save_results_to_csv(custom_results, output_path)
+        
+        df = pd.read_csv(output_path)
+        assert set(df.columns) == {"chunk_id", "prompt", "response", "timestamp", "custom_col1", "custom_col2"}
+        assert set(df["custom_col1"].astype(str).tolist()) == {"1", "2"}
+        assert set(df["custom_col2"].tolist()) == {"a", "b"}
+
+    def test_save_results_to_csv_nested_directories(self, sample_results, temp_dir):
+        """Test that nested directories are created if they don't exist."""
+        output_path = os.path.join(temp_dir, "nested", "dir", "output.csv")
+        
+        # Should create the nested directories
+        GeminiResultSaver.save_results_to_csv(sample_results, output_path)
+        
+        assert os.path.exists(output_path)
+        df = pd.read_csv(output_path)
+        assert len(df) == 3  # 2 from first chunk + 1 from second chunk

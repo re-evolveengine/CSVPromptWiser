@@ -21,14 +21,12 @@ class DataFrameChunker:
         self.chunk_size = chunk_size
         self._chunks: List[pd.DataFrame] = []
 
-    def set_chunk_size(self, chunk_size: int):
-        self.chunk_size = chunk_size
-
     def chunk_dataframe(
             self,
             df: pd.DataFrame,
             chunk_size: Optional[int] = None
     ) -> List[pd.DataFrame]:
+
         """
         Split DataFrame into smaller chunks.
 
@@ -39,6 +37,7 @@ class DataFrameChunker:
         Returns:
             List of DataFrame chunks
         """
+        self.chunk_size = chunk_size
         size = self.chunk_size if chunk_size is None or chunk_size <= 0 else chunk_size
 
         total_rows = len(df)

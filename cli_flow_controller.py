@@ -8,6 +8,8 @@ import pandas as pd
 
 from model.core.chunk_manager import ChunkManager
 from model.core.chunker import DataFrameChunker
+from model.core.gemini_model_provider import GeminiModelProvider
+from model.utils.cli_utils import load_api_key, get_model_selection, ask_int_input, run_gemini_chunk_processor
 from model.utils.constants import TEMP_DIR, DATA_DIR
 from model.utils.chunk_json_inspector import ChunkJSONInspector
 from model.utils.dataset_loader import DatasetLoader
@@ -21,14 +23,18 @@ class CLIFlowController:
         self.resume = False
         self.running = True
         self.paused = False
+        self.results = None
 
         self.original_df = None
 
         self.loader = DatasetLoader()
         self.chunker = DataFrameChunker()
         self.chunk_manager = None
+        self.api_key = None
+        self.model_name = None
 
     def run(self):
+        self.step_0_choose_model()
         self.step_1_check_existing_chunk_file()
 
         if not self.resume:
@@ -36,6 +42,26 @@ class CLIFlowController:
             self.step_3_chunk_dataframe()
 
         self.step_4_process_chunks()
+
+    def step_0_choose_model(self):
+        print("=== Step 0: Select a Gemini Model ===")
+
+        self.api_key = load_api_key()
+        provider = GeminiModelProvider(self.api_key)
+
+        print("\nFetching available Gemini models...\n")
+        model_names = provider.get_usable_model_names()
+
+        if not model_names:
+            print("❌ No usable models found. Please check your API key or network.")
+            exit(1)
+
+        print("Available Gemini Models:")
+        for idx, name in enumerate(model_names, 1):
+            print(f"{idx}. {name}")
+
+        self.model_name = get_model_selection(model_names)
+        print(f"\n✅ Selected model: {self.model_name}")
 
     def step_1_check_existing_chunk_file(self):
         inspector = ChunkJSONInspector(directory_path=TEMP_DIR)
@@ -76,49 +102,43 @@ class CLIFlowController:
         self.original_df = self.loader.load(filename)
 
     def step_3_chunk_dataframe(self):
-        while True:
-            try:
-                chunk_size = int(input("\nReady to chunk dataset? Enter the chunk size: "))
-                break
-            except ValueError:
-                print("Please enter a valid integer.")
+        chunk_size = ask_int_input("\nReady to chunk dataset? Enter the chunk size: ")
 
         print("[Chunking started...]")
         chunks = self.chunker.chunk_dataframe(self.original_df, chunk_size)
 
-        # Set the path for the chunk file
         json_path = Path(TEMP_DIR) / "chunks.json"
         self.chunker.save_chunks_to_json(chunks=chunks, file_path=str(json_path))
-        self.chunk_file = json_path  # ← 💡 This line fixes your issue!
+        self.chunk_file = json_path
 
         print("[Chunking complete and saved to JSON]")
 
     def step_4_process_chunks(self):
-        prompt = input("\nEnter the prompt to process each chunk: ").strip()
+        self.prompt = input("\nEnter the prompt to process each chunk: ").strip()
+        self.num_chunks = ask_int_input("Enter number of chunks to process: ")
+
         self.chunk_manager = ChunkManager(json_path=str(self.chunk_file))
 
         self.paused = False
         self.running = True
+
         keyboard_thread = threading.Thread(target=self._keyboard_listener)
         keyboard_thread.start()
 
         print("\nProcessing... Press 'p' to pause, 'r' to resume, 'e' to exit")
 
-        def dummy_process(df: pd.DataFrame):
-            print(f"[Prompt] {prompt} applied to chunk of shape {df.shape}")
-            time.sleep(6)
-            return f"Processed {df.shape}"
-
         try:
-            self.chunk_manager.process_chunks(
-                func=dummy_process,
-                max_chunks=self.num_chunks,
-                show_progress=True,
+            self.results = run_gemini_chunk_processor(
+                prompt=self.prompt,
+                model_name=self.model_name,
+                api_key=self.api_key,
+                chunk_manager=self.chunk_manager,
             )
             print("\nProcessing complete.")
         finally:
             self.running = False
             keyboard_thread.join()
+            print(self.results)
 
     def _keyboard_listener(self):
         while self.running:
@@ -136,11 +156,3 @@ class CLIFlowController:
                 print("[Exiting...]")
                 break
             time.sleep(0.1)
-
-    def _ask_int_input(self, msg: str) -> int:
-        while True:
-            try:
-                return int(input(msg))
-            except ValueError:
-                print("Please enter a valid integer.")
-

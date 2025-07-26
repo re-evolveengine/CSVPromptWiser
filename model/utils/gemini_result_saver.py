@@ -89,3 +89,60 @@ class GeminiResultSaver:
             raise OSError(f"Failed to save results: {str(e)}") from e
 
         print(f"Saved {len(results)} Gemini results to {file_path}")
+
+
+
+    @staticmethod
+    def save_results_to_csv(
+        results: List[Dict[str, Any]],
+        file_path: str
+    ) -> None:
+        """
+        Save Gemini responses with input and prompt to a flat CSV where each row corresponds
+        to an input row from a chunk, enriched with metadata and model response.
+
+        Args:
+            results: List of dicts each containing:
+                     - 'chunk': pd.DataFrame or list of dicts
+                     - 'prompt': str
+                     - 'response': str
+            file_path: Destination CSV path
+
+        Raises:
+            ValueError: If results are empty or invalid
+        """
+        if not results:
+            raise ValueError("No results to save")
+
+        rows = []
+
+        for i, item in enumerate(results):
+            chunk = item["chunk"]
+            prompt = item["prompt"]
+            response = item["response"]
+            timestamp = item.get("timestamp") or datetime.utcnow().isoformat() + "Z"
+            chunk_id = item.get("chunk_id") or str(uuid4())
+
+            if isinstance(chunk, pd.DataFrame):
+                chunk_data = chunk.to_dict(orient="records")
+            elif isinstance(chunk, list) and all(isinstance(x, dict) for x in chunk):
+                chunk_data = chunk
+            else:
+                raise ValueError(f"Invalid chunk format at index {i}")
+
+            for row in chunk_data:
+                enriched_row = {
+                    **row,  # original input fields
+                    "chunk_id": chunk_id,
+                    "prompt": prompt,
+                    "response": response,
+                    "timestamp": timestamp
+                }
+                rows.append(enriched_row)
+
+        df = pd.DataFrame(rows)
+        path = Path(file_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        df.to_csv(path, index=False)
+        print(f"Saved {len(rows)} rows (from {len(results)} chunks) to {file_path}")
