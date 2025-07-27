@@ -13,7 +13,7 @@ def main():
     st.title(f"🤖 {APP_NAME}")
 
     # Get sidebar input
-    api_key, selected_model, uploaded_file = cwp_sidebar()
+    api_key, selected_model, uploaded_file,df = cwp_sidebar()
 
     # # Debug info or placeholder content
     # if uploaded_file:
