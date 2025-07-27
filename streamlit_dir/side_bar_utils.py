@@ -38,7 +38,6 @@ def model_selector_ui(api_key: str) -> str:
 
 
 
-import streamlit as st
 import os
 import dotenv
 
@@ -64,4 +63,3 @@ def load_api_key_ui() -> str:
         st.sidebar.info("✅ Using Saved API key")
 
     return api_key
-

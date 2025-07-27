@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 from pathlib import Path
 
-from model.cli.dataset_loader import DatasetLoader
+from cli import DatasetLoader
 
 # Test data
 TEST_DATA = pd.DataFrame({"col1": [1, 2], "col2": ["a", "b"]})

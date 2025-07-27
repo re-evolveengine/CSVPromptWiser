@@ -1,7 +1,6 @@
 import streamlit as st
-
 from model.utils.constants import APP_NAME
-from ui.side_bar import sidebar
+from streamlit_dir.side_bar import cwp_sidebar
 
 
 def main():
@@ -14,7 +13,7 @@ def main():
     st.title(f"🤖 {APP_NAME}")
 
     # Get sidebar input
-    num_chunks, start = sidebar()
+    api_key, selected_model, uploaded_file = cwp_sidebar()
 
     # # Debug info or placeholder content
     # if uploaded_file:

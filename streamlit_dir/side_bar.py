@@ -1,11 +1,10 @@
 import streamlit as st
-from pathlib import Path
-from model.utils.cli_utils import load_api_key, handle_model_selection
 from model.utils.constants import APP_NAME
-from ui.utils.side_bar_utils import model_selector_ui, load_api_key_ui
+from streamlit_dir.side_bar_utils import model_selector_ui, load_api_key_ui
+from streamlit_dir.stramlit_dataset_handler import StreamlitDatasetHandler
 
 
-def sidebar():
+def cwp_sidebar():
     st.sidebar.header(f"{APP_NAME} Controls")
 
     # Step 0: Load API Key and Fetch Available Models
@@ -14,7 +13,19 @@ def sidebar():
     selected_model = model_selector_ui(api_key)
 
     # # File upload (CSV/Parquet)
-    uploaded_file = st.sidebar.file_uploader("📂 Upload CSV or Parquet file", type=["csv", "parquet"])
+    handler = StreamlitDatasetHandler()
+
+    uploaded_file = st.sidebar.file_uploader("📂 Upload CSV or Parquet", type=["csv", "parquet"])
+    df = handler.load_from_upload(uploaded_file)
+
+    if df is not None:
+        st.success("✅ Dataset loaded successfully!")
+        st.dataframe(df.head())
+
+        if st.button("💾 Save file to disk"):
+            saved_path = handler.save_uploaded_file()
+            st.info(f"File saved to: `{saved_path}`")
+
     #
     # # Prompt input
     # prompt = st.sidebar.text_area("💬 Enter your prompt")
