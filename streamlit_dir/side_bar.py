@@ -1,6 +1,6 @@
 import streamlit as st
 from model.utils.constants import APP_NAME
-from streamlit_dir.side_bar_utils import model_selector_ui, load_api_key_ui
+from streamlit_dir.side_bar_utils import model_selector_ui, load_api_key_ui, prompt_input_ui
 from streamlit_dir.stramlit_dataset_handler import StreamlitDatasetHandler
 
 
@@ -35,7 +35,13 @@ def cwp_sidebar():
                 saved_path = handler.save_uploaded_file()
                 st.info(f"File saved to: `{saved_path}`")
 
-    return api_key, selected_model, uploaded_file, df
+    # Prompt Input
+    prompt_expander = st.sidebar.expander("✍️ Prompt Input", expanded=True)
+    with prompt_expander:
+        prompt_container = st.container()
+        prompt = prompt_input_ui(prompt_container)
+
+    return api_key, selected_model, uploaded_file, df, prompt
 
 
     #

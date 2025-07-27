@@ -2,6 +2,20 @@ import streamlit as st
 from model.utils.constants import APP_NAME
 from streamlit_dir.side_bar import cwp_sidebar
 
+# Place this near the top of your main script (after imports)
+st.markdown(
+    """
+    <style>
+        [data-testid="stSidebar"] {
+            min-width: 400px;
+            width: 500px;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
 
 def main():
     st.set_page_config(
@@ -13,7 +27,7 @@ def main():
     st.title(f"🤖 {APP_NAME}")
 
     # Get sidebar input
-    api_key, selected_model, uploaded_file,df = cwp_sidebar()
+    api_key, selected_model, uploaded_file,df,prompt = cwp_sidebar()
 
     # # Debug info or placeholder content
     # if uploaded_file:
