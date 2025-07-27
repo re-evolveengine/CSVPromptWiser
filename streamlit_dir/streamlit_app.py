@@ -7,8 +7,8 @@ st.markdown(
     """
     <style>
         [data-testid="stSidebar"] {
-            min-width: 400px;
-            width: 500px;
+            min-width: 300px;
+            width: 350px;
         }
     </style>
     """,
@@ -26,8 +26,20 @@ def main():
 
     st.title(f"🤖 {APP_NAME}")
 
-    # Get sidebar input
-    api_key, selected_model, uploaded_file,df,prompt = cwp_sidebar()
+    # Sidebar interaction
+    api_key, model_name, uploaded_file, df, prompt = cwp_sidebar()
+
+    st.title("🛠️ PromptPilot Dashboard")
+
+    # --- Dataset Preview ---
+    if df is not None:
+        st.subheader("📊 Dataset Preview")
+        st.dataframe(df.head(5), use_container_width=True)
+
+    # --- Prompt Echo ---
+    if prompt:
+        st.subheader("💬 Your Prompt")
+        st.code(prompt, language="markdown")
 
     # # Debug info or placeholder content
     # if uploaded_file:

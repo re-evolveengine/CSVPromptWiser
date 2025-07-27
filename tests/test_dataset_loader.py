@@ -28,14 +28,14 @@ def temp_files(tmp_path):
 def test_load_csv(temp_files):
     """Test loading a CSV file."""
     loader = DatasetLoader(directory_path=str(Path(temp_files["csv"]).parent))
-    df = loader.load("test.csv")
+    df = loader.load_from_upload("test.csv")
     pd.testing.assert_frame_equal(df, TEST_DATA)
 
 
 def test_load_parquet(temp_files):
     """Test loading a Parquet file."""
     loader = DatasetLoader(directory_path=str(Path(temp_files["parquet"]).parent))
-    df = loader.load("test.parquet")
+    df = loader.load_from_upload("test.parquet")
     pd.testing.assert_frame_equal(df, TEST_DATA)
 
 
@@ -47,21 +47,21 @@ def test_invalid_file_type(temp_files, tmp_path):
     
     loader = DatasetLoader(directory_path=str(tmp_path))
     with pytest.raises(ValueError, match="Only .csv and .parquet files are supported"):
-        loader.load("test.txt")
+        loader.load_from_upload("test.txt")
 
 
 def test_missing_file(temp_files):
     """Test handling of missing files."""
     loader = DatasetLoader(directory_path=str(Path(temp_files["missing"]).parent))
     with pytest.raises(FileNotFoundError):
-        loader.load("missing.csv")
+        loader.load_from_upload("missing.csv")
 
 
 def test_missing_filename():
     """Test handling of missing filename."""
     loader = DatasetLoader()
     with pytest.raises(ValueError, match="Please provide a file name"):
-        loader.load(None)
+        loader.load_from_upload(None)
 
 
 def test_directory_path_output(capsys):

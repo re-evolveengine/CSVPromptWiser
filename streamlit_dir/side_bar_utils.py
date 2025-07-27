@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import dotenv
 import streamlit as st
@@ -71,3 +72,44 @@ def prompt_input_ui(container):
             container.success("✅ Prompt saved")
 
     return prompt
+
+
+import streamlit as st
+from typing import Optional
+import pandas as pd
+
+from streamlit_dir.stramlit_dataset_handler import StreamlitDatasetHandler
+
+
+def handle_dataset_upload_or_load() -> Optional[pd.DataFrame]:
+    handler = StreamlitDatasetHandler()
+
+    # Check if a file has already been saved
+    saved_filename = st.session_state.get("saved_filename") or handler.get_saved_file_name()
+
+    if saved_filename and not st.session_state.get("upload_new_file"):
+        st.success(f"📁 Using saved file: `{saved_filename}`")
+
+        if st.button("📤 Upload a new file?"):
+            st.session_state["upload_new_file"] = True
+            st.rerun()
+
+        df = handler.load_saved_file(saved_filename)  # <-- FIXED: load from disk
+        return df
+
+    # Otherwise show uploader
+    uploaded_file = st.file_uploader("📂 Upload CSV or Parquet", type=["csv", "parquet"])
+    df = handler.load_from_upload(uploaded_file)
+
+    if df is not None:
+        if st.button("💾 Save file to disk"):
+            saved_path = handler.save_uploaded_file()
+            st.session_state["saved_filename"] = Path(saved_path).name  # store just the name
+            st.session_state["upload_new_file"] = False
+            st.success(f"✅ File saved: `{saved_path}`")
+            st.rerun()
+
+    return df
+
+
+

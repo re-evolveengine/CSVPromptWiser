@@ -43,7 +43,7 @@ def test_gemini_integration_with_chunking(sample_csv_file, mock_gemini_response,
         
         # Initialize components
         loader = DatasetLoader()
-        df = loader.load(sample_csv_file)
+        df = loader.load_from_upload(sample_csv_file)
         
         # Test chunking with max_chunk_size
         chunker = DataFrameChunker(chunk_size=max_chunk_size)

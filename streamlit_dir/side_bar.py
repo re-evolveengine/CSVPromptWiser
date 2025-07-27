@@ -1,6 +1,7 @@
 import streamlit as st
 from model.utils.constants import APP_NAME
-from streamlit_dir.side_bar_utils import model_selector_ui, load_api_key_ui, prompt_input_ui
+from streamlit_dir.side_bar_utils import model_selector_ui, load_api_key_ui, prompt_input_ui, \
+    handle_dataset_upload_or_load
 from streamlit_dir.stramlit_dataset_handler import StreamlitDatasetHandler
 
 
@@ -23,17 +24,7 @@ def cwp_sidebar():
     # Dataset Upload
     upload_section = st.sidebar.expander("📁 Dataset Upload", expanded=True)
     with upload_section:
-        handler = StreamlitDatasetHandler()
-        uploaded_file = upload_section.file_uploader("Upload CSV or Parquet", type=["csv", "parquet"])
-        df = handler.load_from_upload(uploaded_file)
-
-        if df is not None:
-            st.success("✅ Dataset loaded successfully!")
-            st.dataframe(df.head())
-
-            if st.button("💾 Save file to disk"):
-                saved_path = handler.save_uploaded_file()
-                st.info(f"File saved to: `{saved_path}`")
+        df = handle_dataset_upload_or_load()
 
     # Prompt Input
     prompt_expander = st.sidebar.expander("✍️ Prompt Input", expanded=True)
