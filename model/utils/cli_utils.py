@@ -81,19 +81,6 @@ def ask_int_input(msg: str) -> int:
             print("Please enter a valid integer.")
 
 
-# def run_gemini_chunk_processor(prompt: str, model_name: str, api_key: str, chunk_manager) -> list:
-#     """Run Gemini LLM over each chunk using resilient retry logic."""
-#     client = GeminiClient(model=model_name, api_key=api_key)
-#     runner = GeminiResilientRunner(client=client)
-#
-#     def process_fn(df: pd.DataFrame):
-#         result = runner.run(prompt, df)
-#         print(f"[Prompt] Applied to chunk of shape {df.shape}")
-#         return result
-#
-#     return chunk_manager.process_chunks(process_fn)
-
-
 def run_gemini_chunk_processor(prompt: str, model_name: str, api_key: str, chunk_manager) -> list:
     """Run Gemini LLM over each chunk using resilient retry logic."""
     client = GeminiClient(model=model_name, api_key=api_key)

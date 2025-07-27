@@ -11,7 +11,7 @@ from model.utils.cli_utils import load_api_key, ask_int_input, run_gemini_chunk_
     handle_model_selection
 from model.utils.constants import TEMP_DIR, DATA_DIR, RESULTS_DIR
 from model.core.chunk.chunk_json_inspector import ChunkJSONInspector
-from model.io.dataset_loader import DatasetLoader
+from model.cli.dataset_loader import DatasetLoader
 from model.io.gemini_result_saver import GeminiResultSaver
 
 

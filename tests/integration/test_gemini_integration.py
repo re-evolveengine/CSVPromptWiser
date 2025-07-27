@@ -4,7 +4,7 @@ from unittest.mock import patch, MagicMock
 
 from model.core.chunk.chunker import DataFrameChunker
 from model.core.chunk.chunk_manager import ChunkManager
-from model.io.dataset_loader import DatasetLoader
+from model.cli.dataset_loader import DatasetLoader
 
 # Sample data for testing
 SAMPLE_CSV = """id,name,value
