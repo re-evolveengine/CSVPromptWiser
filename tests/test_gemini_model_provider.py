@@ -1,6 +1,6 @@
 import pytest
-from unittest.mock import MagicMock, patch
-from model.core.gemini_model_provider import GeminiModelProvider
+from unittest.mock import patch
+from model.core.llms.gemini_model_provider import GeminiModelProvider
 
 
 class MockModel:

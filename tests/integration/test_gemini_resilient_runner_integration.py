@@ -4,8 +4,8 @@ import pytest
 import dotenv
 
 
-from model.core.gemini_client import GeminiClient
-from model.core.runners.gemini_resilient_runner import GeminiResilientRunner
+from model.core.llms.gemini_client import GeminiClient
+from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
 
 
 @pytest.mark.integration

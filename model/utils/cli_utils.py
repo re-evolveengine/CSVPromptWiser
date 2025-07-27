@@ -3,13 +3,13 @@
 import os
 import dotenv
 
-from model.core.gemini_client import GeminiClient
-from model.core.runners.gemini_resilient_runner import GeminiResilientRunner
+from model.core.llms.gemini_client import GeminiClient
+from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
 import pandas as pd
 
 
-from model.core.gemini_model_provider import GeminiModelProvider
-from model.utils.model_prefs import ModelPreference
+from model.core.llms.gemini_model_provider import GeminiModelProvider
+from model.io.model_prefs import ModelPreference
 
 
 def handle_model_selection(api_key: str) -> str:

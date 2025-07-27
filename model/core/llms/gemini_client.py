@@ -4,7 +4,7 @@ from typing import Any
 import pandas as pd
 import google.generativeai as genai
 
-from model.core.base_llm_client import BaseLLMClient
+from model.core.llms.base_llm_client import BaseLLMClient
 
 
 class GeminiClient(BaseLLMClient):

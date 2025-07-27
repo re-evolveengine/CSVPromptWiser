@@ -1,9 +1,7 @@
 import pytest
 import pandas as pd
 import json
-import tempfile
-from pathlib import Path
-from model.core.chunker import DataFrameChunker
+from model.core.chunk.chunker import DataFrameChunker
 
 
 @pytest.fixture

@@ -1,11 +1,8 @@
 import json
 import pytest
 import pandas as pd
-from pathlib import Path
-import tempfile
-from unittest.mock import patch, MagicMock
 
-from model.core.chunk_manager import ChunkManager
+from model.core.chunk.chunk_manager import ChunkManager
 from model.utils.constants import JSON_CHUNK_VERSION
 
 

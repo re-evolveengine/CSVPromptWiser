@@ -1,9 +1,8 @@
 import pytest
 from unittest.mock import MagicMock
 from google.api_core import exceptions as api_exceptions
-from google.auth import exceptions as auth_exceptions
 
-from model.core.runners.gemini_resilient_runner import GeminiResilientRunner
+from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
 
 
 @pytest.fixture

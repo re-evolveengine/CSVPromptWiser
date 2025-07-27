@@ -4,10 +4,8 @@ import tempfile
 import shutil
 import pytest
 import pandas as pd
-from pathlib import Path
-from unittest.mock import patch, mock_open
 
-from model.utils.gemini_result_saver import GeminiResultSaver
+from model.io.gemini_result_saver import GeminiResultSaver
 from model.utils.constants import JSON_CHUNK_VERSION
 
 

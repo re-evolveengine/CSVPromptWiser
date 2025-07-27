@@ -3,7 +3,7 @@
 from google.api_core import exceptions as api_exceptions
 from google.auth import exceptions as auth_exceptions
 
-from model.core.runners.resilient_llm_runner import ResilientLLMRunner
+from model.core.llms.resilient_llm_runner import ResilientLLMRunner
 
 
 class GeminiResilientRunner(ResilientLLMRunner):

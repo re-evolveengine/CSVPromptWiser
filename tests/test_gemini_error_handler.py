@@ -1,11 +1,10 @@
 import unittest
 from unittest.mock import Mock
-import time
 
 from google.api_core import exceptions as api_exceptions
 from google.auth import exceptions as auth_exceptions
 
-from model.core.error_handler.gemini_error_handler import GeminiErrorHandler
+from model.core.llms.gemini_error_handler import GeminiErrorHandler
 
 
 class TestGeminiErrorHandler(unittest.TestCase):

@@ -3,7 +3,7 @@
 from google.api_core import exceptions as api_exceptions
 from google.auth import exceptions as auth_exceptions
 
-from model.core.error_handler.llm_error_handler import LLMErrorHandler
+from model.core.llms.llm_error_handler import LLMErrorHandler
 
 
 class GeminiErrorHandler(LLMErrorHandler):

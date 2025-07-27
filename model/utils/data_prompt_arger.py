@@ -2,7 +2,7 @@ import argparse
 import pandas as pd
 
 from model.utils.constants import APP_NAME
-from model.utils.dataset_loader import DatasetLoader
+from model.io.dataset_loader import DatasetLoader
 
 
 class DataPromptArger:

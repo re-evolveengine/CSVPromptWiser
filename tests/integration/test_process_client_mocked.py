@@ -2,12 +2,11 @@ import json
 import pandas as pd
 import pytest
 from unittest.mock import MagicMock
-from pathlib import Path
 
-from model.core.chunker import DataFrameChunker
-from model.core.chunk_manager import ChunkManager
-from model.core.runners.gemini_resilient_runner import GeminiResilientRunner
-from model.utils.gemini_result_saver import GeminiResultSaver
+from model.core.chunk.chunker import DataFrameChunker
+from model.core.chunk.chunk_manager import ChunkManager
+from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
+from model.io.gemini_result_saver import GeminiResultSaver
 
 @pytest.fixture
 def dummy_df():

@@ -1,9 +1,8 @@
 import pytest
 import pandas as pd
 from pathlib import Path
-import os
 
-from model.utils.dataset_loader import DatasetLoader
+from model.io.dataset_loader import DatasetLoader
 
 # Test data
 TEST_DATA = pd.DataFrame({"col1": [1, 2], "col2": ["a", "b"]})

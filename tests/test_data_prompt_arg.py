@@ -1,10 +1,10 @@
 import pytest
 import sys
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import pandas as pd
 
 from model.utils.data_prompt_arger import DataPromptArger
-from model.utils.dataset_loader import DatasetLoader
+
 
 class TestDataPromptArg:
     def test_get_prompt(self):

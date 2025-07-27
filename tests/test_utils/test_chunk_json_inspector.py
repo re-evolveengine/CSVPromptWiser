@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 import pytest
 
-from model.utils.chunk_json_inspector import ChunkJSONInspector
+from model.core.chunk.chunk_json_inspector import ChunkJSONInspector
 
 
 @pytest.fixture

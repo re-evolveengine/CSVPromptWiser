@@ -2,13 +2,7 @@ import os
 import dotenv
 import pandas as pd
 
-from model.core.chunker import DataFrameChunker
-from model.core.chunk_manager import ChunkManager
-from model.core.error_handler.gemini_error_handler import GeminiErrorHandler
-from model.core.gemini_client import GeminiClient
-from model.core.gemini_model_provider import GeminiModelProvider
-from model.core.runners.gemini_resilient_runner import GeminiResilientRunner
-from model.utils.dataset_loader import DatasetLoader
+from model.core.llms.gemini_client import GeminiClient
 
 # Load environment variables
 dotenv.load_dotenv()
@@ -95,8 +89,8 @@ def process_with_gemini(df: pd.DataFrame) -> str:
 def main():
     import pandas as pd
     import os
-    from model.core.gemini_client import GeminiClient
-    from model.core.runners.gemini_resilient_runner import GeminiResilientRunner
+    from model.core.llms.gemini_client import GeminiClient
+    from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
 
     prompt = "Summarize the sales performance in this table:"
 
