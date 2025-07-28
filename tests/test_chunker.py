@@ -46,7 +46,7 @@ def test_chunk_dataframe_empty():
     
     # Verify save_chunks_to_json raises an error with empty chunks
     with pytest.raises(ValueError, match="No chunks to save"):
-        DataFrameChunker.save_chunks_to_json(chunks, "dummy.json")
+        chunker.save_chunks_to_json(chunks, "dummy.json")
 
 
 def test_chunk_dataframe_invalid_size(sample_dataframe):
@@ -70,7 +70,7 @@ def test_save_chunks_to_json(sample_dataframe, tmp_path):
     
     # Test with metadata and row limit
     metadata = {"source": "test", "version": 1}
-    DataFrameChunker.save_chunks_to_json(
+    chunker.save_chunks_to_json(
         chunks,
         str(output_file),
         max_rows_per_chunk=2,
@@ -85,7 +85,7 @@ def test_save_chunks_to_json(sample_dataframe, tmp_path):
         data = json.load(f)
     
     # Check metadata and version
-    assert data['version'] == 1.0  # Changed from "1.0" to 1.0 (float)
+    assert data['version'] == 1.0
     assert data['metadata'] == metadata
     
     # Check chunks structure

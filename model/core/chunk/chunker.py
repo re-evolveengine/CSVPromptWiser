@@ -11,14 +11,13 @@ from model.utils.constants import JSON_CHUNK_VERSION, DEFAULT_CHUNK_SIZE, TEMP_D
 class DataFrameChunker:
     """Handles DataFrame chunking and JSON serialization only."""
 
-    def __init__(self, chunk_size: Optional[int] = DEFAULT_CHUNK_SIZE):
+    def __init__(self, chunk_size: Optional[int] = None):
         """
         Args:
-            chunk_size: Default number of rows per chunk
+            chunk_size: Number of rows per chunk. If None, <= 0, or not provided,
+                      uses DEFAULT_CHUNK_SIZE.
         """
-        if chunk_size <= 0:
-            raise ValueError("Chunk size must be positive")
-        self.chunk_size = chunk_size
+        self.chunk_size = chunk_size if chunk_size and chunk_size > 0 else DEFAULT_CHUNK_SIZE
         self._chunks: List[pd.DataFrame] = []
 
     def chunk_dataframe(
@@ -26,19 +25,23 @@ class DataFrameChunker:
             df: pd.DataFrame,
             chunk_size: Optional[int] = None
     ) -> List[pd.DataFrame]:
-
         """
         Split DataFrame into smaller chunks.
 
         Args:
             df: Input DataFrame to split
-            chunk_size: Optional override for chunk size. If <= 0, uses default chunk size.
+            chunk_size: Optional override for chunk size. If None or <= 0, uses the instance's chunk_size.
 
         Returns:
             List of DataFrame chunks
         """
-        self.chunk_size = chunk_size
-        size = self.chunk_size if chunk_size is None or chunk_size <= 0 else chunk_size
+        # Use the provided chunk_size if valid, otherwise use the instance's chunk_size
+        size = chunk_size if chunk_size and chunk_size > 0 else self.chunk_size
+        
+        # Handle empty DataFrame
+        if df.empty:
+            self._chunks = []
+            return self._chunks
 
         total_rows = len(df)
         self._chunks = [
