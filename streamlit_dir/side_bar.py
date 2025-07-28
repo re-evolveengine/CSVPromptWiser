@@ -1,38 +1,40 @@
 import streamlit as st
 from model.utils.constants import APP_NAME
-from streamlit_dir.side_bar_utils import model_selector_ui, load_api_key_ui, prompt_input_ui, \
-    handle_dataset_upload_or_load
-from streamlit_dir.stramlit_dataset_handler import StreamlitDatasetHandler
-
+from streamlit_dir.side_bar_utils import (
+    model_selector_ui,
+    load_api_key_ui,
+    prompt_input_ui, handle_dataset_upload_or_load_and_chunk
+)
 
 def cwp_sidebar():
     st.sidebar.header(f"{APP_NAME} Controls")
-    
-    # Initialize variables
+
     api_key = None
     selected_model = None
-    uploaded_file = None
     df = None
-    
-    # Model Configuration
+    saved_filename = None
+    chunk_summary = None
+    prompt = None
+
+    # 🔐 Model Configuration
     model_config = st.sidebar.expander("🔐 Model Configuration", expanded=True)
     with model_config:
         api_key = load_api_key_ui(st.container())
-        if api_key:  # Only show model selection if we have an API key
+        if api_key:
             selected_model = model_selector_ui(st.container(), api_key)
-    
-    # Dataset Upload
-    upload_section = st.sidebar.expander("📁 Dataset Upload", expanded=True)
-    with upload_section:
-        df = handle_dataset_upload_or_load()
 
-    # Prompt Input
+    # 📁 Upload & Chunk
+    upload_chunk_section = st.sidebar.expander("📁 Upload & Chunk", expanded=True)
+    with upload_chunk_section:
+        df, saved_filename, chunk_summary = handle_dataset_upload_or_load_and_chunk()
+
+    # ✍️ Prompt Input
     prompt_expander = st.sidebar.expander("✍️ Prompt Input", expanded=True)
     with prompt_expander:
-        prompt_container = st.container()
-        prompt = prompt_input_ui(prompt_container)
+        prompt = prompt_input_ui(st.container())
 
-    return api_key, selected_model, uploaded_file, df, prompt
+    return api_key, selected_model, df, saved_filename, chunk_summary, prompt
+
 
 
     #

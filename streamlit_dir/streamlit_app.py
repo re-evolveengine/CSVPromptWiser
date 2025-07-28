@@ -2,7 +2,7 @@ import streamlit as st
 from model.utils.constants import APP_NAME
 from streamlit_dir.side_bar import cwp_sidebar
 
-# Place this near the top of your main script (after imports)
+# --- Style: Widen sidebar ---
 st.markdown(
     """
     <style>
@@ -15,39 +15,35 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-
 def main():
     st.set_page_config(
         page_title=APP_NAME,
         page_icon="🤖",
         initial_sidebar_state="expanded",
-        layout="wide")
+        layout="wide"
+    )
 
-    st.title(f"🤖 {APP_NAME}")
+    st.title(f"🤖 {APP_NAME} Dashboard")
 
-    # Sidebar interaction
-    api_key, model_name, uploaded_file, df, prompt = cwp_sidebar()
+    # --- Sidebar interaction ---
+    api_key, model_name, df, chunk_file_path, chunk_summary, prompt = cwp_sidebar()
 
-    st.title("🛠️ PromptPilot Dashboard")
+    # --- Chunk Summary ---
+    if chunk_summary:
+        st.subheader("📦 Chunk Summary")
+        for key, value in chunk_summary.items():
+            st.markdown(f"- **{key.replace('_', ' ').capitalize()}**: {value}")
 
     # --- Dataset Preview ---
     if df is not None:
         st.subheader("📊 Dataset Preview")
+        st.markdown(f"**Shape:** {df.shape[0]} rows × {df.shape[1]} columns")
         st.dataframe(df.head(5), use_container_width=True)
 
     # --- Prompt Echo ---
     if prompt:
         st.subheader("💬 Your Prompt")
         st.code(prompt, language="markdown")
-
-    # # Debug info or placeholder content
-    # if uploaded_file:
-    #     st.success(f"Uploaded file: {uploaded_file.name}")
-    # if prompt:
-    #     st.info(f"Prompt entered: {prompt[:50]}...")
-    # if start:
-    #     st.warning("🚧 Processing logic will go here next.")
 
 if __name__ == "__main__":
     main()
