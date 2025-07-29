@@ -44,26 +44,42 @@ def load_api_key_ui(container) -> str:
 def model_selector_ui(container, api_key: str) -> str:
     model_pref = ModelPreference()
     saved_model = model_pref.get_selected_model_name()
+    saved_models = model_pref.get_model_list()
 
-    if saved_model:
-        container.info(f"✅ Using saved model: `{saved_model}`")
-        fetch = container.checkbox("🔄 Fetch new model list?", value=False)
-        if not fetch:
-            return saved_model
+    # Step 1: Ask whether to use saved list or fetch new
+    fetch_new = False
+    if saved_models:
+        container.markdown("### 🧠 Model Selection")
+        container.info("📌 Found previously saved Gemini models.")
+        fetch_new = container.checkbox("🔄 Fetch latest model list from API?", value=False)
+    else:
+        container.warning("⚠️ No saved model list found. Fetching from API...")
+        fetch_new = True
 
-    model_names = get_available_models(api_key)
+    # Step 2: Fetch if requested
+    if fetch_new:
+        model_names = get_available_models(api_key)
+        if not model_names:
+            container.error("❌ No usable models found. Please check your API key.")
+            st.stop()
+        model_pref.save_model_list(model_names)
+    else:
+        model_names = saved_models
 
+    # Step 3: Let user choose from the model list
     if not model_names:
-        container.error("❌ No usable models found. Please check your API key.")
+        container.error("❌ No models available to display.")
         st.stop()
 
-    selected_model = container.selectbox("🧠 Select a Gemini model", model_names)
+    selected_model = container.selectbox("🧠 Select a Gemini model", model_names, index=model_names.index(saved_model) if saved_model in model_names else 0)
 
+    # Step 4: Save selected model if changed
     if selected_model != saved_model:
         model_pref.save_selected_model_name(selected_model)
         container.success(f"✅ Model `{selected_model}` saved.")
 
     return selected_model
+
 
 
 def prompt_input_ui(container):
