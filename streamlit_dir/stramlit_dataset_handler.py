@@ -5,10 +5,13 @@ from typing import Optional
 import pandas as pd
 import streamlit as st
 
+from model.utils.constants import DATA_DIR
+
+
 class StreamlitDatasetHandler:
     """Handles dataset upload, parsing, and optional saving for Streamlit."""
 
-    def __init__(self, save_dir: str = "data"):
+    def __init__(self, save_dir: str = DATA_DIR):
         self.save_dir = Path(save_dir)
         self.save_dir.mkdir(parents=True, exist_ok=True)
         self.uploaded_file = None
