@@ -1,0 +1,10 @@
+# Core Dependencies
+keyboard==0.13.5
+pandas==2.2.1
+python-dotenv==1.0.1
+google-generativeai==0.3.2
+tenacity==8.5.0
+pydantic==2.11.7
+pydantic_core==2.33.2
+typing-extensions==4.14.1  # Required by pydantic
+protobuf==4.25.8  # Required by google-generativeai

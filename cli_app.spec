@@ -4,13 +4,16 @@ block_cipher = None
 
 a = Analysis(
     ['cli/cli_app.py'],
-    pathex=[],
+    pathex=['.'],  # Add the project root to the Python path
     binaries=[],
     datas=[
         # Add any data files your application needs here
         # Format: ('source_file_or_dir', 'destination_dir')
     ],
-    hiddenimports=[],
+    hiddenimports=[
+        'cli.cli_flow_controller',
+        # Add any other modules that might be imported dynamically
+    ],
     hookspath=[],
     hooksconfig={},
     excludes=[],
