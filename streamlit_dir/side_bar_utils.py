@@ -43,7 +43,7 @@ def load_api_key_ui(container) -> str:
 
 def model_selector_ui(container, api_key: str) -> str:
     model_pref = ModelPreference()
-    saved_model = model_pref.get_model_name()
+    saved_model = model_pref.get_selected_model_name()
 
     if saved_model:
         container.info(f"✅ Using saved model: `{saved_model}`")
@@ -60,7 +60,7 @@ def model_selector_ui(container, api_key: str) -> str:
     selected_model = container.selectbox("🧠 Select a Gemini model", model_names)
 
     if selected_model != saved_model:
-        model_pref.save_model_name(selected_model)
+        model_pref.save_selected_model_name(selected_model)
         container.success(f"✅ Model `{selected_model}` saved.")
 
     return selected_model

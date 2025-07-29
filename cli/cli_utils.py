@@ -2,6 +2,7 @@
 
 import os
 import dotenv
+from tenacity import RetryError
 
 from model.core.llms.gemini_client import GeminiClient
 from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
@@ -10,21 +11,37 @@ import pandas as pd
 
 from model.core.llms.gemini_model_provider import GeminiModelProvider
 from model.io.model_prefs import ModelPreference
+from model.utils.constants import MODEL_PREFS_DB_PATH_CLI
 
 
 def handle_model_selection(api_key: str) -> str:
     """Handles model retrieval, selection, and persistence."""
-    model_pref = ModelPreference()
-    saved_model = model_pref.get_model_name()
+    model_pref = ModelPreference(db_path=MODEL_PREFS_DB_PATH_CLI)
+    saved_models = model_pref.get_model_list()
+    saved_selected_model = model_pref.get_selected_model_name()
 
-    if saved_model:
-        print(f"\n📌 A previously selected model was found: {saved_model}")
+    # 1. Check if a previously selected model exists
+    if saved_selected_model:
+        print(f"\n📌 A previously selected model was found: {saved_selected_model}")
         use_saved = input("Do you want to use the saved model? [Y/n]: ").strip().lower()
         if use_saved in ['', 'y', 'yes']:
-            print(f"\n✅ Using saved model: {saved_model}")
-            return saved_model
+            print(f"\n✅ Using saved model: {saved_selected_model}")
+            return saved_selected_model
 
-    # No saved model or user chose not to use it
+    # 2. Show saved model list, if available
+    if saved_models:
+        print("\n📌 Previously fetched models:")
+        for idx, name in enumerate(saved_models, 1):
+            print(f"{idx}. {name}")
+
+        result = input("Do you want to use the saved models? [Y/n]: ").strip().lower()
+        if result in ['', 'y', 'yes']:
+            print(f"\n✅ Using saved models.")
+            selected_model = get_model_selection(saved_models)
+            model_pref.save_selected_model_name(selected_model)
+            return selected_model
+
+    # 3. User chose not to use saved models OR no saved models exist → fetch new ones
     print("\nFetching available Gemini models...\n")
     provider = GeminiModelProvider(api_key)
     model_names = provider.get_usable_model_names()
@@ -38,10 +55,14 @@ def handle_model_selection(api_key: str) -> str:
         print(f"{idx}. {name}")
 
     selected_model = get_model_selection(model_names)
-    model_pref.save_model_name(selected_model)
+
+    # Persist selected model and full model list
+    model_pref.save_selected_model_name(selected_model)
+    model_pref.save_model_list(model_names)
 
     print(f"\n✅ Selected and saved model: {selected_model}")
     return selected_model
+
 
 
 
@@ -81,19 +102,39 @@ def ask_int_input(msg: str) -> int:
             print("Please enter a valid integer.")
 
 
-def run_gemini_chunk_processor(prompt: str, model_name: str, api_key: str, chunk_manager) -> list:
-    """Run Gemini LLM over each chunk using resilient retry logic."""
+
+def run_gemini_chunk_processor(prompt: str, model_name: str, api_key: str, chunk_manager):
     client = GeminiClient(model=model_name, api_key=api_key)
     runner = GeminiResilientRunner(client=client)
+    results = []
+    any_success = False
 
     def process_fn(df: pd.DataFrame):
-        response = runner.run(prompt, df)
-        print(f"[Prompt] Applied to chunk of shape {df.shape}")
-        return {
-            "chunk": df,
-            "prompt": prompt,
-            "response": response
-        }
+        nonlocal any_success
+        try:
+            response = runner.run(prompt, df)
+            print(f"[Prompt] Applied to chunk of shape {df.shape}")
+            results.append({
+                "chunk": df,
+                "prompt": prompt,
+                "response": response
+            })
+            any_success = True
+        except runner.user_errors as ue:
+            print(f"[User Error] Skipping chunk due to user error: {ue}")
+        except RetryError as re:
+            last_exc = re.last_attempt.exception()
+            print(f"[Retryable Error] Skipping chunk after max retries. Last error: {last_exc}")
+        except Exception as e:
+            print(f"[Unexpected Error] Skipping chunk due to unknown error: {e}")
 
-    return chunk_manager.process_chunks(process_fn)
+    try:
+        chunk_manager.process_chunks(process_fn)
+    except Exception as e:
+        print(f"[Fatal Error] Something went wrong during chunk processing: {e}")
+        return results, False
+
+    return results, any_success
+
+
 

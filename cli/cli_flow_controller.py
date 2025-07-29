@@ -9,7 +9,7 @@ from model.core.chunk.chunk_manager import ChunkManager
 from model.core.chunk.chunker import DataFrameChunker
 from cli.cli_utils import load_api_key, ask_int_input, run_gemini_chunk_processor, \
     handle_model_selection
-from model.utils.constants import TEMP_DIR, DATA_DIR, RESULTS_DIR
+from model.utils.constants import TEMP_DIR_CLI, DATA_DIR_CLI, RESULTS_DIR_CLI
 from model.core.chunk.chunk_json_inspector import ChunkJSONInspector
 from cli.dataset_loader import DatasetLoader
 from model.io.gemini_result_saver import GeminiResultSaver
@@ -49,7 +49,7 @@ class CLIFlowController:
         self.model_name = handle_model_selection(self.api_key)
 
     def step_1_check_existing_chunk_file(self):
-        inspector = ChunkJSONInspector(directory_path=TEMP_DIR)
+        inspector = ChunkJSONInspector(directory_path=TEMP_DIR_CLI)
         chunk_file = inspector.find_valid_chunk_file()
 
         if chunk_file:
@@ -70,21 +70,21 @@ class CLIFlowController:
 
     def step_2_ask_for_dataset(self):
         print("\nLooking for dataset files in the data directory...")
-        files = list(Path(DATA_DIR).glob("*.csv")) + list(Path(DATA_DIR).glob("*.parquet"))
+        files = list(Path(DATA_DIR_CLI).glob("*.csv")) + list(Path(DATA_DIR_CLI).glob("*.parquet"))
 
         if not files:
             print("No dataset found. Please copy your .csv or .parquet file into the data directory:")
-            print(f"  {DATA_DIR}")
+            print(f"  {DATA_DIR_CLI}")
 
         while True:
             filename = input("Enter dataset filename (e.g. sales.csv): ").strip()
-            dataset_path = Path(DATA_DIR) / filename
+            dataset_path = Path(DATA_DIR_CLI) / filename
             if dataset_path.exists():
                 print(f"Found: {dataset_path.name}")
                 break
             print("File not found. Please try again.")
 
-        self.original_df = self.loader.load(filename)
+        self.original_df = self.loader.load_from_upload(filename)
 
     def step_3_chunk_dataframe(self):
         chunk_size = ask_int_input("\nReady to chunk dataset? Enter the chunk size: ")
@@ -92,7 +92,7 @@ class CLIFlowController:
         print("[Chunking started...]")
         chunks = self.chunker.chunk_dataframe(self.original_df, chunk_size)
 
-        json_path = Path(TEMP_DIR) / "chunks.json"
+        json_path = Path(TEMP_DIR_CLI) / "chunks.json"
         self.chunker.save_chunks_to_json(chunks=chunks, file_path=str(json_path))
         self.chunk_file = json_path
 
@@ -113,13 +113,25 @@ class CLIFlowController:
         print("\nProcessing... Press 'p' to pause, 'r' to resume, 'e' to exit")
 
         try:
-            self.results = run_gemini_chunk_processor(
+            self.results, success = run_gemini_chunk_processor(
                 prompt=self.prompt,
                 model_name=self.model_name,
                 api_key=self.api_key,
                 chunk_manager=self.chunk_manager,
             )
+
+            if not success:
+                print("⚠️ No chunks processed successfully.")
+                self.paused = False  # Ensure it's unpaused if something failed
+                return
+
             print("\nProcessing complete.")
+
+        except Exception as e:
+            print(f"[Fatal Error] Unhandled exception during processing: {e}")
+            self.paused = False
+            return
+
         finally:
             self.running = False
             keyboard_thread.join()
@@ -127,8 +139,8 @@ class CLIFlowController:
             if self.results:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 base_name = f"{self.model_name}_{timestamp}"
-                json_path = Path(RESULTS_DIR) / f"{base_name}.json"
-                csv_path = Path(RESULTS_DIR) / f"{base_name}.csv"
+                json_path = Path(RESULTS_DIR_CLI) / f"{base_name}.json"
+                csv_path = Path(RESULTS_DIR_CLI) / f"{base_name}.csv"
 
                 GeminiResultSaver.save_results_to_json(self.results, str(json_path))
                 GeminiResultSaver.save_results_to_csv(self.results, str(csv_path))

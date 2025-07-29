@@ -5,7 +5,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 
 
 class ResilientLLMRunner(ABC):
-    def __init__(self, client, max_attempts=3, wait_seconds=2):
+    def __init__(self, client, max_attempts=3, wait_seconds=12):
         self.client = client
         self.max_attempts = max_attempts
         self.wait_seconds = wait_seconds
