@@ -43,38 +43,50 @@ def load_api_key_ui(container) -> str:
 
 def model_selector_ui(container, api_key: str) -> str:
     model_pref = ModelPreference()
-    saved_model = model_pref.get_selected_model_name()
     saved_models = model_pref.get_model_list()
+    saved_selected_model = model_pref.get_selected_model_name()
+    selected_model = None
 
-    # Step 1: Ask whether to use saved list or fetch new
-    fetch_new = False
-    if saved_models:
+    # Step 1: Check if previously selected model exists and prompt to use it
+    if saved_selected_model:
         container.markdown("### 🧠 Model Selection")
-        container.info("📌 Found previously saved Gemini models.")
-        fetch_new = container.checkbox("🔄 Fetch latest model list from API?", value=False)
-    else:
-        container.warning("⚠️ No saved model list found. Fetching from API...")
-        fetch_new = True
+        container.info(f"📌 A previously selected model was found: `{saved_selected_model}`")
+        use_saved = container.button("✅ Use saved model", key="use_saved_model")
+        if use_saved:
+            return saved_selected_model
 
-    # Step 2: Fetch if requested
+    # Step 2: If user chose not to use saved model or none exists, show saved model list if available
+    if saved_models and (not saved_selected_model or not use_saved):
+        if not container.checkbox("📌 Show previously used models", value=True):
+            saved_models = []
+
+    # Step 3: If no saved models or user wants to fetch new ones, fetch from API
+    fetch_new = not saved_models or container.checkbox("🔄 Fetch latest model list from API", value=not bool(saved_models))
+    
     if fetch_new:
-        model_names = get_available_models(api_key)
-        if not model_names:
-            container.error("❌ No usable models found. Please check your API key.")
-            st.stop()
-        model_pref.save_model_list(model_names)
+        with container.status("🔍 Fetching available models..."):
+            model_names = get_available_models(api_key)
+            if not model_names:
+                container.error("❌ No usable models found. Please check your API key.")
+                st.stop()
+            model_pref.save_model_list(model_names)
     else:
         model_names = saved_models
 
-    # Step 3: Let user choose from the model list
+    # Let user select from the available models
     if not model_names:
         container.error("❌ No models available to display.")
         st.stop()
 
-    selected_model = container.selectbox("🧠 Select a Gemini model", model_names, index=model_names.index(saved_model) if saved_model in model_names else 0)
+    selected_model = container.selectbox(
+        "🧠 Select a Gemini model",
+        model_names,
+        index=model_names.index(saved_selected_model) if saved_selected_model in model_names else 0
+    )
+    # hey ChatGPT. IT SHOULD BE HERE
 
-    # Step 4: Save selected model if changed
-    if selected_model != saved_model:
+    # Save selected model if changed
+    if selected_model != saved_selected_model:
         model_pref.save_selected_model_name(selected_model)
         container.success(f"✅ Model `{selected_model}` saved.")
 
@@ -96,13 +108,15 @@ def prompt_input_ui(container):
     return prompt
 
 def chunk_and_save_dataframe(df: pd.DataFrame, chunk_size: int) -> dict:
-    save_path = "temp\\chunks.json"  # Save to working dir
+    os.makedirs(TEMP_DIR, exist_ok=True)
+    save_path = os.path.join(TEMP_DIR, "chunks.json")
+
     chunker = DataFrameChunker(chunk_size)
     chunks = chunker.chunk_dataframe(df)
     chunker.save_chunks_to_json(chunks, file_path=save_path)
 
-    # Use inspector to extract all summary info
-    inspector = ChunkJSONInspector(directory_path=".")
+    # Inspect the chunk summary
+    inspector = ChunkJSONInspector(directory_path=TEMP_DIR)
     summary = inspector.inspect_chunk_file(Path(save_path))
 
     return {
@@ -110,9 +124,10 @@ def chunk_and_save_dataframe(df: pd.DataFrame, chunk_size: int) -> dict:
         "summary": summary
     }
 
+from model.utils.constants import TEMP_DIR
+
 def handle_dataset_upload_or_load_and_chunk() -> Tuple[Optional[pd.DataFrame], Optional[str], Optional[Dict]]:
     handler = StreamlitDatasetHandler()
-
     saved_filename = st.session_state.get("saved_filename") or handler.get_saved_file_name()
     df = None
     chunk_summary = None
@@ -125,7 +140,7 @@ def handle_dataset_upload_or_load_and_chunk() -> Tuple[Optional[pd.DataFrame], O
             st.session_state["upload_new_file"] = True
             st.rerun()
 
-        file_path = handler.save_dir / saved_filename  # Use the full path from save_dir
+        file_path = handler.save_dir / saved_filename
         if file_path.exists():
             try:
                 if file_path.suffix == ".csv":
@@ -150,6 +165,15 @@ def handle_dataset_upload_or_load_and_chunk() -> Tuple[Optional[pd.DataFrame], O
                 st.success(f"✅ File saved: `{saved_path}`")
                 st.rerun()
 
+    # --- Load chunk summary if exists ---
+    chunk_file = Path(TEMP_DIR) / "chunks.json"
+    if chunk_file.exists():
+        try:
+            inspector = ChunkJSONInspector(directory_path=TEMP_DIR)
+            chunk_summary = inspector.inspect_chunk_file(chunk_file)
+        except Exception as e:
+            st.warning(f"⚠️ Failed to read chunk summary: {e}")
+
     # --- Separator ---
     st.markdown("---")
 
@@ -162,10 +186,11 @@ def handle_dataset_upload_or_load_and_chunk() -> Tuple[Optional[pd.DataFrame], O
             chunk_summary = result["summary"]
             st.success(f"✅ Chunks saved to: `{chunk_file_path}`")
 
-        # If a summary already exists, show it
-        if chunk_summary:
-            st.subheader("📊 Chunk Summary")
-            for k, v in chunk_summary.items():
-                st.write(f"**{k.replace('_', ' ').capitalize()}:** {v}")
+    # --- Show chunk summary (if available) ---
+    if chunk_summary:
+        st.subheader("📊 Chunk Summary")
+        for k, v in chunk_summary.items():
+            st.write(f"**{k.replace('_', ' ').capitalize()}:** {v}")
 
     return df, saved_filename, chunk_summary
+
