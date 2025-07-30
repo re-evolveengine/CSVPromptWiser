@@ -2,8 +2,11 @@
 
 import os
 import dotenv
+from click import Tuple
+from factory import List
 from tenacity import RetryError
 
+from model.core.chunk.chunk_manager import ChunkManager
 from model.core.llms.gemini_client import GeminiClient
 from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
 import pandas as pd
@@ -103,7 +106,26 @@ def ask_int_input(msg: str) -> int:
 
 
 
-def run_gemini_chunk_processor(prompt: str, model_name: str, api_key: str, chunk_manager):
+def run_gemini_chunk_processor(
+    prompt: str,
+    model_name: str,
+    api_key: str,
+    chunk_manager,
+    max_chunks: int = None
+):
+    """
+    Applies the prompt to chunks via Gemini, respecting max_chunks and handling errors.
+
+    Args:
+        prompt (str): Prompt text to apply.
+        model_name (str): Gemini model name.
+        api_key (str): Gemini API key.
+        chunk_manager: Instance of ChunkManager.
+        max_chunks (int, optional): Max number of chunks to process.
+
+    Returns:
+        (results: list, any_success: bool)
+    """
     client = GeminiClient(model=model_name, api_key=api_key)
     runner = GeminiResilientRunner(client=client)
     results = []
@@ -129,12 +151,18 @@ def run_gemini_chunk_processor(prompt: str, model_name: str, api_key: str, chunk
             print(f"[Unexpected Error] Skipping chunk due to unknown error: {e}")
 
     try:
-        chunk_manager.process_chunks(process_fn)
+        chunk_manager.process_chunks(
+            func=process_fn,
+            show_progress=True,
+            max_chunks=max_chunks  # ✅ This was missing
+        )
     except Exception as e:
         print(f"[Fatal Error] Something went wrong during chunk processing: {e}")
         return results, False
 
     return results, any_success
+
+
 
 
 

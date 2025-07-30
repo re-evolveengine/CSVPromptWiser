@@ -118,6 +118,7 @@ class CLIFlowController:
                 model_name=self.model_name,
                 api_key=self.api_key,
                 chunk_manager=self.chunk_manager,
+                max_chunks=self.num_chunks,  # <-- now used!
             )
 
             if not success:

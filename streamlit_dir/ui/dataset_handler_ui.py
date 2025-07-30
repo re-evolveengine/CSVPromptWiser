@@ -88,10 +88,4 @@ def handle_dataset_upload_or_load_and_chunk() -> Tuple[Optional[pd.DataFrame], O
             chunk_summary = result["summary"]
             st.success(f"✅ Chunks saved to: `{chunk_file_path}`")
 
-    # --- Show chunk summary (if available) ---
-    if chunk_summary:
-        st.subheader("📊 Chunk Summary")
-        for k, v in chunk_summary.items():
-            st.write(f"**{k.replace('_', ' ').capitalize()}:** {v}")
-
     return df, saved_filename, chunk_summary

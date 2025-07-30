@@ -28,13 +28,6 @@ def cwp_sidebar():
     return api_key, selected_model, df, saved_filename, chunk_summary, prompt
 
 
-    #
-    # # Prompt input
-    # prompt = st.sidebar.text_area("💬 Enter your prompt")
-    #
-    # # Chunk size
-    # chunk_size = st.sidebar.number_input("🔢 Chunk size", min_value=1, value=100)
-    #
     # # Number of chunks to process
     # num_chunks = st.sidebar.number_input("⚙️ Number of chunks to process", min_value=1, value=5)
     #
