@@ -8,20 +8,17 @@ from model.core.llms.base_llm_client import BaseLLMClient
 
 
 class GeminiClient(BaseLLMClient):
-    """
-    Gemini LLM client using the official google-generativeai SDK.
-    """
-
     def _init_llm(self) -> Any:
         try:
             genai.configure(api_key=self.api_key)
 
             return genai.GenerativeModel(
                 model_name=self.model,
-                generation_config=self.generation_config
+                generation_config=self.generation_config  # Uses config from BaseLLMClient
             )
         except Exception as e:
             raise RuntimeError(f"Failed to initialize Gemini client: {str(e)}")
+
 
     def call(self, prompt: str, df: pd.DataFrame) -> str:
         """

@@ -16,10 +16,10 @@ class BaseLLMClient(ABC):
     Abstract base class for all LLM clients.
     """
 
-    def __init__(self, model: str, api_key: str):
+    def __init__(self, model: str, api_key: str, generation_config: dict = None):
         self.model = model
         self.api_key = api_key
-        self.generation_config = {
+        self.generation_config = generation_config or {
             "temperature": DEFAULT_TEMPERATURE,
             "top_k": DEFAULT_TOP_K,
             "top_p": DEFAULT_TOP_P
