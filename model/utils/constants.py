@@ -21,6 +21,7 @@ MODEL_PREFS_DB_NAME = "model_prefs.db"
 MODEL_PREFS_DB_PATH = os.path.join(CONFIG_DIR, MODEL_PREFS_DB_NAME)
 MODEL_KEY = "gemini_model"
 MODEL_LIST_KEY = "gemini_model_list"
+MODEL_CONFIG_KEY = "gemini_model_config"
 
 # Generation behavior
 DEFAULT_TEMPERATURE = 0.2

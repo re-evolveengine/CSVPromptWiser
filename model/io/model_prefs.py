@@ -1,14 +1,14 @@
 import os
 import shelve
-
-from model.utils.constants import MODEL_PREFS_DB_PATH, MODEL_KEY, MODEL_LIST_KEY
+from model.utils.constants import MODEL_PREFS_DB_PATH, MODEL_KEY, MODEL_LIST_KEY, MODEL_CONFIG_KEY
 
 
 class ModelPreference:
     def __init__(self, db_path=MODEL_PREFS_DB_PATH):
         self.db_path = db_path
         self.key = MODEL_KEY
-        self.list_key = MODEL_LIST_KEY  # New key for list
+        self.list_key = MODEL_LIST_KEY
+        self.config_key = MODEL_CONFIG_KEY
 
         # Ensure the directory exists
         db_dir = os.path.dirname(self.db_path)
@@ -41,3 +41,18 @@ class ModelPreference:
         with shelve.open(self.db_path) as db:
             if self.list_key in db:
                 del db[self.list_key]
+
+    # === Per-model generation config ===
+    def get_generation_config(self) -> dict:
+        """Return saved generation settings for the model or defaults."""
+        with shelve.open(self.db_path) as db:
+            return db.get(self.config_key, {
+                "temperature": 0.2,
+                "top_k": 40,
+                "top_p": 1.0
+            })
+
+    def save_generation_config(self, config: dict):
+        """Save generation settings (temperature, top_k, top_p) for a model."""
+        with shelve.open(self.db_path) as db:
+            db[self.config_key] = config
