@@ -7,8 +7,7 @@ a = Analysis(
     pathex=['.'],  # Add the project root to the Python path
     binaries=[],
     datas=[
-        # Add any data files your application needs here
-        # Format: ('source_file_or_dir', 'destination_dir')
+    ('.env', '.'),  # Load API key
     ],
     hiddenimports=[
         'cli.cli_flow_controller',
@@ -32,7 +31,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='PromptPilot_CLI',
+    name='PromptPilot',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -44,4 +43,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    onefile=True
 )

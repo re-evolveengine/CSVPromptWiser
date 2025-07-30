@@ -99,7 +99,7 @@ class CLIFlowController:
         print("[Chunking complete and saved to JSON]")
 
     def step_4_process_chunks(self):
-        self.prompt = input("\nEnter the prompt to process each chunk: ").strip()
+        self.prompt = read_multiline_input()
         self.num_chunks = ask_int_input("Enter number of chunks to process: ")
 
         self.chunk_manager = ChunkManager(json_path=str(self.chunk_file))
@@ -163,3 +163,14 @@ class CLIFlowController:
                 print("[Exiting...]")
                 break
             time.sleep(0.1)
+
+def read_multiline_input(end_token="END"):
+    print("\nEnter your prompt (type 'END' on a new line to finish):")
+    lines = []
+    while True:
+        line = input()
+        if line.strip() == end_token:
+            break
+        lines.append(line)
+    return "\n".join(lines)
+
