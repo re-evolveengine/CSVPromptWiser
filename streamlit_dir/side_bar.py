@@ -38,25 +38,20 @@ def cwp_sidebar():
             st.warning("⚠️ Please complete all previous steps: upload data, enter a prompt, and select a model.")
             st.session_state["start_processing"] = False
         else:
-            st.session_state["num_chunks"] = st.number_input(
-                "🔢 Number of chunks to process",
-                min_value=1,
-                max_value=100,
-                value=5,
-                step=1
-            )
-            if st.button("🚀 Start Processing"):
-                st.session_state["start_processing"] = True
+            with st.form("chunk_processing_form"):
+                st.session_state["num_chunks"] = st.number_input(
+                    "🔢 Number of chunks to process",
+                    min_value=1,
+                    max_value=100,
+                    value=5,
+                    step=1,
+                    key="num_chunks_input"
+                )
+                if st.form_submit_button("🚀 Start Processing"):
+                    st.session_state["start_processing"] = True
+                else:
+                    # Only reset if the form wasn't submitted
+                    if "start_processing" not in st.session_state:
+                        st.session_state["start_processing"] = False
 
     return api_key, selected_model, df, chunk_file_path, chunk_summary, prompt, generation_config, gemini_client
-
-
-
-    # # Number of chunks to process
-    # num_chunks = st.sidebar.number_input("⚙️ Number of chunks to process", min_value=1, value=5)
-    #
-    # # Start button
-    # start_processing = st.sidebar.button("🚀 Start Processing")
-
-    # return uploaded_file, prompt, model_name, api_key, chunk_size, num_chunks, start_processing
-    # return api_key, selected_model, uploaded_file

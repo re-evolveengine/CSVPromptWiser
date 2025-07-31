@@ -69,13 +69,18 @@ def main():
     api_key, model_name, df, chunk_file_path, chunk_summary, prompt, generation_config, gemini_client = cwp_sidebar()
 
     # --- Chunk Processing Output ---
-    if st.session_state.get("start_processing"):
-        process_chunks_ui(
-            gemini_client,
-            prompt,
-            chunk_file_path,
-            max_chunks=st.session_state.get("num_chunks", 5)
-        )
+    if "start_processing" in st.session_state and st.session_state.get("start_processing"):
+        try:
+            process_chunks_ui(
+                gemini_client,
+                prompt,
+                chunk_file_path,
+                max_chunks=st.session_state.get("num_chunks", 5)
+            )
+        finally:
+            # Reset the processing state when done
+            st.session_state["start_processing"] = False
+            st.rerun()  # Rerun to update the UI
 
     # --- Model Configuration ---
     if model_name and generation_config:
