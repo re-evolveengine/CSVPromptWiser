@@ -1,5 +1,5 @@
 /env_promptpilot/
-/env_cli_build/
+/env_streamlit/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
