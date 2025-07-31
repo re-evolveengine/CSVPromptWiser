@@ -33,7 +33,7 @@ def cwp_sidebar():
         prompt = prompt_input_ui(prompt_container)
 
     # 🧩 Chunk Processor Panel (main body)
-    with st.expander("🧩 Process Chunks", expanded=True):
+    with st.sidebar.expander("🧩 Process Chunks", expanded=True):
         if not all([gemini_client, prompt, chunk_file_path]):
             st.warning("⚠️ Please complete all previous steps: upload data, enter a prompt, and select a model.")
         else:
@@ -41,7 +41,7 @@ def cwp_sidebar():
 
 
 
-    return api_key, selected_model, df, saved_filename, chunk_summary, prompt
+    return api_key, selected_model, df, chunk_file_path, chunk_summary, prompt
 
 
 
