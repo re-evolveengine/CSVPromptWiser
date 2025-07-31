@@ -28,7 +28,7 @@ def model_selector_ui(container, api_key: str):
             try:
                 client = GeminiClient(model=saved_selected_model, api_key=api_key, 
                                    generation_config=model_pref.get_generation_config())
-                return saved_selected_model, client
+                return saved_selected_model, client, model_pref.get_generation_config()
             except Exception as e:
                 container.error(f"❌ Failed to create Gemini client: {e}")
                 st.stop()
@@ -93,4 +93,7 @@ def model_selector_ui(container, api_key: str):
         container.error(f"❌ Failed to create Gemini client: {e}")
         st.stop()
 
-    return selected_model, client
+    if selected_model:
+        return selected_model, client, updated_config
+    
+    return None, None, None

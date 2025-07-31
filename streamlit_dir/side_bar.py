@@ -18,10 +18,11 @@ def cwp_sidebar():
         # Initialize variables
         selected_model = None
         gemini_client = None
+        generation_config = None
         
         # Only try to get model if we have an API key
         if api_key:
-            selected_model, gemini_client = model_selector_ui(config_container, api_key)
+            selected_model, gemini_client, generation_config = model_selector_ui(config_container, api_key)
 
     # 📁 Upload & Chunk Section
     with st.sidebar.expander("📁 Upload & Chunk", expanded=True):
@@ -32,16 +33,22 @@ def cwp_sidebar():
         prompt_container = st.container()
         prompt = prompt_input_ui(prompt_container)
 
-    # 🧩 Chunk Processor Panel (main body)
     with st.sidebar.expander("🧩 Process Chunks", expanded=True):
         if not all([gemini_client, prompt, chunk_file_path]):
             st.warning("⚠️ Please complete all previous steps: upload data, enter a prompt, and select a model.")
+            st.session_state["start_processing"] = False
         else:
-            process_chunks_ui(gemini_client, prompt, chunk_file_path)
+            st.session_state["num_chunks"] = st.number_input(
+                "🔢 Number of chunks to process",
+                min_value=1,
+                max_value=100,
+                value=5,
+                step=1
+            )
+            if st.button("🚀 Start Processing"):
+                st.session_state["start_processing"] = True
 
-
-
-    return api_key, selected_model, df, chunk_file_path, chunk_summary, prompt
+    return api_key, selected_model, df, chunk_file_path, chunk_summary, prompt, generation_config, gemini_client
 
 
 

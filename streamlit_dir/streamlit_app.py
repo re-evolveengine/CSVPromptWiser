@@ -1,32 +1,96 @@
 import streamlit as st
 from model.utils.constants import APP_NAME
 from streamlit_dir.side_bar import cwp_sidebar
+from streamlit_dir.ui.chunk_processor_panel import process_chunks_ui
 
-# --- Style: Widen sidebar ---
+st.set_page_config(
+    page_title=APP_NAME,
+    page_icon="🤖",
+    initial_sidebar_state="expanded",
+    layout="wide"
+)
+
 st.markdown(
     """
     <style>
-        [data-testid="stSidebar"] {
-            min-width: 300px;
-            width: 350px;
+        /* Main app container */
+        .stApp {
+            max-width: 100% !important;
+            overflow-x: hidden !important;
+        }
+
+        /* Main content area */
+        .main .block-container {
+            max-width: 100% !important;
+            padding: 1rem 1rem 1rem 1rem !important;
+        }
+
+        /* Content wrapper */
+        .main > div {
+            max-width: 100% !important;
+        }
+
+        /* Text and code blocks */
+        .stMarkdown, .stText, .stCodeBlock, .stDataFrame {
+            max-width: 100% !important;
+        }
+
+        /* Code and text areas */
+        .stCodeBlock pre, .stTextArea textarea, pre, code {
+            white-space: pre-wrap !important;
+            word-break: break-word !important;
+            max-width: 100% !important;
+        }
+
+        /* Tables */
+        .stDataFrame {
+            display: block;
+            overflow-x: auto;
+            width: 100% !important;
+        }
+
+        /* Fix for Streamlit's dynamic content */
+        [data-testid="stAppViewContainer"] > .main > div {
+            padding: 0 !important;
         }
     </style>
     """,
     unsafe_allow_html=True
 )
 
+
+
+
 def main():
-    st.set_page_config(
-        page_title=APP_NAME,
-        page_icon="🤖",
-        initial_sidebar_state="expanded",
-        layout="wide"
-    )
 
     st.title(f"🤖 {APP_NAME} Dashboard")
 
     # --- Sidebar interaction ---
-    api_key, model_name, df, chunk_file_path, chunk_summary, prompt = cwp_sidebar()
+    api_key, model_name, df, chunk_file_path, chunk_summary, prompt, generation_config, gemini_client = cwp_sidebar()
+
+    # --- Chunk Processing Output ---
+    if st.session_state.get("start_processing"):
+        process_chunks_ui(
+            gemini_client,
+            prompt,
+            chunk_file_path,
+            max_chunks=st.session_state.get("num_chunks", 5)
+        )
+
+    # --- Model Configuration ---
+    if model_name and generation_config:
+        st.subheader("⚙️ Model Configuration")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Model", model_name)
+        with col2:
+            st.metric("Temperature", f"{generation_config.get('temperature', 0.2):.2f}")
+        with col3:
+            st.metric("Top K", generation_config.get('top_k', 40))
+        with col4:
+            st.metric("Top P", f"{generation_config.get('top_p', 1.0):.2f}")
 
     # --- Chunk Summary ---
     if chunk_summary:
