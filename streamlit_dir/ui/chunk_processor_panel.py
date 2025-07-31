@@ -75,5 +75,5 @@ def process_chunks_ui(
     GeminiResultSaver.save_results_to_csv(results, str(csv_path))
 
     st.success("✅ Processing complete and results saved.")
-    st.markdown(f"- 📁 [Download JSON Result]({json_path})")
-    st.markdown(f"- 📁 [Download CSV Result]({csv_path})")
+    # st.markdown(f"- 📁 [Download JSON Result]({json_path})")
+    # st.markdown(f"- 📁 [Download CSV Result]({csv_path})")
