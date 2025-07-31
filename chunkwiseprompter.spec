@@ -2,7 +2,7 @@
 
 import os
 import sys
-from PyInstaller.utils.hooks import collect_data_files
+from PyInstaller.utils.hooks import collect_data_files, copy_metadata
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
 
 block_cipher = None
@@ -10,11 +10,19 @@ block_cipher = None
 # Get the base directory - use the current working directory
 base_dir = os.getcwd()
 
+# Step 1 & 2: Include metadata from packages using importlib.metadata
+datas = []
+for pkg in ["streamlit", "pydantic", "google-api-core"]:
+    try:
+        datas += copy_metadata(pkg)
+    except Exception as e:
+        print(f"Warning: Could not copy metadata for {pkg}: {e}")
+
 a = Analysis(
     ['streamlit_dir/streamlit_app.py'],
     pathex=[base_dir],
     binaries=[],
-    datas=[],
+    datas=datas,
     hiddenimports=[
         'streamlit',
         'pandas',
@@ -93,5 +101,3 @@ coll = COLLECT(
     upx=True,
     name='ChunkwisePrompter',
 )
-
-
