@@ -25,7 +25,13 @@ def model_selector_ui(container, api_key: str):
         use_saved = container.button("✅ Use saved model", key=btn_key)
 
         if use_saved:
-            return saved_selected_model
+            try:
+                client = GeminiClient(model=saved_selected_model, api_key=api_key, 
+                                   generation_config=model_pref.get_generation_config())
+                return saved_selected_model, client
+            except Exception as e:
+                container.error(f"❌ Failed to create Gemini client: {e}")
+                st.stop()
 
     # Step 2: Show saved model list if available
     if not selected_model:

@@ -30,6 +30,10 @@ def run_gemini_chunk_processor_ui(
     results: List[dict] = []
     errors: List[str] = []
 
+    if client is None or prompt is None or chunk_manager is None:
+        errors.append("[Fatal Error] Client, prompt, or chunk manager is None.")
+        return results, errors
+
     def process_fn(df: pd.DataFrame):
         try:
             response = runner.run(prompt, df)

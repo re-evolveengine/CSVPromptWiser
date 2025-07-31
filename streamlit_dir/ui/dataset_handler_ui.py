@@ -6,6 +6,7 @@ import pandas as pd
 
 from model.core.chunk.chunk_json_inspector import ChunkJSONInspector
 from model.core.chunk.chunker import DataFrameChunker
+from model.utils.constants import TEMP_DIR
 from streamlit_dir.stramlit_dataset_handler import StreamlitDatasetHandler
 
 
@@ -26,9 +27,8 @@ def chunk_and_save_dataframe(df: pd.DataFrame, chunk_size: int) -> dict:
         "summary": summary
     }
 
-from model.utils.constants import TEMP_DIR
 
-def handle_dataset_upload_or_load_and_chunk() -> Tuple[Optional[pd.DataFrame], Optional[str], Optional[Dict]]:
+def handle_dataset_upload_or_load_and_chunk() -> Tuple[Optional[pd.DataFrame], Optional[str], Optional[str], Optional[Dict]]:
     handler = StreamlitDatasetHandler()
     saved_filename = st.session_state.get("saved_filename") or handler.get_saved_file_name()
     df = None
@@ -73,6 +73,7 @@ def handle_dataset_upload_or_load_and_chunk() -> Tuple[Optional[pd.DataFrame], O
         try:
             inspector = ChunkJSONInspector(directory_path=TEMP_DIR)
             chunk_summary = inspector.inspect_chunk_file(chunk_file)
+            chunk_file_path = str(chunk_file)  # <-- Set the chunk_file_path correctly
         except Exception as e:
             st.warning(f"⚠️ Failed to read chunk summary: {e}")
 
@@ -88,4 +89,4 @@ def handle_dataset_upload_or_load_and_chunk() -> Tuple[Optional[pd.DataFrame], O
             chunk_summary = result["summary"]
             st.success(f"✅ Chunks saved to: `{chunk_file_path}`")
 
-    return df, saved_filename, chunk_summary
+    return df, saved_filename, chunk_file_path, chunk_summary

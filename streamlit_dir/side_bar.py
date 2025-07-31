@@ -14,12 +14,18 @@ def cwp_sidebar():
     with st.sidebar.expander("🔐 Model Configuration", expanded=True):
         config_container = st.container()
         api_key = load_api_key_ui(config_container)
-        selected_model, gemini_client = model_selector_ui(config_container, api_key) if api_key else None
-        # ❌ Fails if api_key is None (None can't be unpacked into 2 values)
+        
+        # Initialize variables
+        selected_model = None
+        gemini_client = None
+        
+        # Only try to get model if we have an API key
+        if api_key:
+            selected_model, gemini_client = model_selector_ui(config_container, api_key)
 
     # 📁 Upload & Chunk Section
     with st.sidebar.expander("📁 Upload & Chunk", expanded=True):
-        df, saved_filename, chunk_summary = handle_dataset_upload_or_load_and_chunk()
+        df, saved_filename, chunk_file_path, chunk_summary = handle_dataset_upload_or_load_and_chunk()
 
     # ✍️ Prompt Input Section
     with st.sidebar.expander("✍️ Prompt Input", expanded=True):
@@ -28,10 +34,10 @@ def cwp_sidebar():
 
     # 🧩 Chunk Processor Panel (main body)
     with st.expander("🧩 Process Chunks", expanded=True):
-        if not all([gemini_client, prompt, saved_filename]):
+        if not all([gemini_client, prompt, chunk_file_path]):
             st.warning("⚠️ Please complete all previous steps: upload data, enter a prompt, and select a model.")
         else:
-            process_chunks_ui(gemini_client, prompt, saved_filename)
+            process_chunks_ui(gemini_client, prompt, chunk_file_path)
 
 
 

@@ -7,14 +7,14 @@ from typing import Any
 
 from model.core.chunk.chunk_manager import ChunkManager
 from model.io.gemini_result_saver import GeminiResultSaver
-from model.utils.constants import RESULTS_DIR
+from model.utils.constants import RESULTS_DIR, TEMP_DIR
 from streamlit_dir.ui.run_gemini_chunk_processor_ui import run_gemini_chunk_processor_ui
 
 
 def process_chunks_ui(
         client: Any,
         prompt: str,
-        chunk_file_path: str
+        chunk_file_path: str = TEMP_DIR + "/chunks.json"
 ):
     """
     Streamlit panel to process chunks with a pre-configured GeminiClient.
