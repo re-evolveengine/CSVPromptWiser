@@ -1,7 +1,16 @@
+import sys
+import os
+
+# Add the project root to Python path
+project_root = os.path.dirname(os.path.abspath(__file__))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 import streamlit as st
 from model.utils.constants import APP_NAME
 from streamlit_dir.side_bar import cwp_sidebar
 from streamlit_dir.ui.chunk_processor_panel import process_chunks_ui
+
 
 st.set_page_config(
     page_title=APP_NAME,
