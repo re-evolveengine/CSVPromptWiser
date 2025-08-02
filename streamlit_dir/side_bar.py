@@ -26,7 +26,7 @@ def cwp_sidebar():
 
     # 📁 Upload & Chunk Section
     with st.sidebar.expander("📁 Upload & Chunk", expanded=True):
-        df, saved_filename, chunk_file_path, chunk_summary = handle_dataset_upload_or_load_and_chunk()
+        df, saved_filename, chunk_file_path, chunk_summary = handle_dataset_upload_or_load_and_chunk(client=gemini_client)
 
     # ✍️ Prompt Input Section
     with st.sidebar.expander("✍️ Prompt Input", expanded=True):

@@ -1,13 +1,14 @@
 import streamlit as st
 from pathlib import Path
 import os
-from typing import Optional, Dict, Tuple
+from typing import Optional, Dict, Tuple, Any
 import pandas as pd
 
 from model.core.chunk.chunk_json_inspector import ChunkJSONInspector
 from model.core.chunk.chunker import DataFrameChunker
 from model.utils.constants import TEMP_DIR
 from streamlit_dir.stramlit_dataset_handler import StreamlitDatasetHandler
+from model.core.llms.base_llm_client import BaseLLMClient
 
 
 def chunk_and_save_dataframe(df: pd.DataFrame, chunk_size: int) -> dict:
@@ -28,7 +29,7 @@ def chunk_and_save_dataframe(df: pd.DataFrame, chunk_size: int) -> dict:
     }
 
 
-def handle_dataset_upload_or_load_and_chunk() -> Tuple[Optional[pd.DataFrame], Optional[str], Optional[str], Optional[Dict]]:
+def handle_dataset_upload_or_load_and_chunk(client: Optional[BaseLLMClient] = None) -> Tuple[Optional[pd.DataFrame], Optional[str], Optional[str], Optional[Dict]]:
     handler = StreamlitDatasetHandler()
     saved_filename = st.session_state.get("saved_filename") or handler.get_saved_file_name()
     df = None
@@ -73,20 +74,45 @@ def handle_dataset_upload_or_load_and_chunk() -> Tuple[Optional[pd.DataFrame], O
         try:
             inspector = ChunkJSONInspector(directory_path=TEMP_DIR)
             chunk_summary = inspector.inspect_chunk_file(chunk_file)
-            chunk_file_path = str(chunk_file)  # <-- Set the chunk_file_path correctly
+            chunk_file_path = str(chunk_file)
         except Exception as e:
             st.warning(f"⚠️ Failed to read chunk summary: {e}")
 
-    # --- Separator ---
-    st.markdown("---")
-
     # --- Chunking UI ---
     if df is not None:
-        chunk_size = st.number_input("🔢 Set Chunk Size", min_value=1, value=100)
+        st.markdown("### Chunking Settings")
+        
+        # Show optimal chunk size if client is provided
+        if client is not None and len(df) > 0:
+            example_prompt = "Analyze this data:"
+            example_response = "Analysis results would appear here"
+            try:
+                optimal_size = client.find_optimal_row_number(
+                    prompt=example_prompt,
+                    row_df=df.head(1),
+                    example_response=example_response
+                )
+                st.info(f"ℹ️ Recommended chunk size: **{optimal_size}** rows (based on model context window)")
+            except Exception as e:
+                st.warning(f"⚠️ Could not calculate optimal chunk size: {str(e)}")
+        else:
+            st.info("ℹ️ Connect an LLM client to see recommended chunk size")
+        
+        # Chunk size input
+        chunk_size = st.number_input(
+            "🔢 Set Chunk Size", 
+            min_value=1, 
+            value=100,
+            help="Number of rows per chunk. Consider the recommended size above for optimal performance."
+        )
+        
         if st.button("📦 Chunk & Save"):
             result = chunk_and_save_dataframe(df, chunk_size)
             chunk_file_path = result["chunk_file_path"]
             chunk_summary = result["summary"]
             st.success(f"✅ Chunks saved to: `{chunk_file_path}`")
+
+    # --- Separator ---
+    st.markdown("---")
 
     return df, saved_filename, chunk_file_path, chunk_summary

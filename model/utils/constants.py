@@ -38,6 +38,7 @@ TEMP_DIR_CLI = os.path.join(APP_DIR_CLI, TEMP_FOLDER_NAME)
 CONFIG_DIR_CLI = os.path.join(APP_DIR_CLI, CONFIG_FOLDER_NAME)
 MODEL_PREFS_DB_PATH_CLI = os.path.join(CONFIG_DIR_CLI, MODEL_PREFS_DB_NAME)
 
+# Model token limits (maximum context window sizes)
 MODEL_TOKEN_LIMITS = {
     "gpt-4": 8192,
     "gpt-4-32k": 32768,
@@ -48,8 +49,6 @@ MODEL_TOKEN_LIMITS = {
     "gemini-1.5-pro": 1048576,
     "gemini-1.5-flash": 1048576,
     "gemini-1.5-flash-8b": 1048576,
-    "gemini-1.5-flash-8b-001": 1048576,
-    "gemini-1.5-flash-8b-latest": 1048576,
     "gemini-2.5-flash-preview-05-20": 1048576,
     "gemini-2.5-flash": 1048576,
     "gemini-2.5-flash-lite-preview-06-17": 1048576,
@@ -73,3 +72,60 @@ MODEL_TOKEN_LIMITS = {
     "gemma-3n-e2b-it": 8192,
     "gemini-2.5-flash-lite": 1048576,
 }
+
+# Safe prompt limits for practical chunking (much lower than max context window)
+SAFE_PROMPT_LIMITS = {
+    # === Gemini Families ===
+    "gemini-1.5": 100000,
+    "gemini-1.5-pro": 100000,
+    "gemini-1.5-flash": 100000,
+    "gemini-1.5-flash-8b": 100000,
+    "gemini-1.5-flash-8b-001": 100000,
+    "gemini-1.5-flash-8b-latest": 100000,
+
+    "gemini-2.0": 50000,
+    "gemini-2.0-flash": 50000,
+    "gemini-2.0-flash-001": 50000,
+    "gemini-2.0-flash-exp": 50000,
+    "gemini-2.0-flash-lite": 50000,
+    "gemini-2.0-flash-lite-001": 50000,
+    "gemini-2.0-flash-lite-preview": 50000,
+    "gemini-2.0-flash-lite-preview-02-05": 50000,
+    "gemini-2.0-flash-thinking-exp": 50000,
+    "gemini-2.0-flash-thinking-exp-01-21": 50000,
+    "gemini-2.0-flash-thinking-exp-1219": 50000,
+
+    "gemini-2.5": 100000,
+    "gemini-2.5-pro": 100000,
+    "gemini-2.5-flash": 100000,
+    "gemini-2.5-flash-preview-05-20": 100000,
+    "gemini-2.5-flash-lite": 100000,
+    "gemini-2.5-flash-lite-preview-06-17": 100000,
+
+    # === LearnLM ===
+    "learnlm-2.0-flash-experimental": 50000,
+
+    # === Gemma === (typically smaller context, tuned conservatively)
+    "gemma-3-1b-it": 4000,
+    "gemma-3-4b-it": 4000,
+    "gemma-3-12b-it": 4000,
+    "gemma-3-27b-it": 4000,
+    "gemma-3n-e4b-it": 4000,
+    "gemma-3n-e2b-it": 4000,
+
+    # === GPT ===
+    "gpt-4": 6000,
+    "gpt-4-32k": 24000,
+    "gpt-4o": 100000,
+
+    "gpt-3.5": 3000,
+    "gpt-3.5-turbo": 3000,
+    "gpt-3.5-16k": 12000,
+    "gpt-3.5-turbo-16k": 12000,
+    "gpt-3.5-32k": 24000,
+    "gpt-3.5-turbo-32k": 24000,
+
+    # === Fallback ===
+    "default": 32000
+}
+
