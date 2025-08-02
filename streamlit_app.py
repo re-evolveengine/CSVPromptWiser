@@ -93,35 +93,28 @@ def main():
 
     # --- Model Configuration ---
     if model_name and generation_config:
-        st.subheader("⚙️ Model Configuration")
-        
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
+        with st.expander("⚙️ Model Configuration", expanded=False):
             st.metric("Model", model_name)
-        with col2:
             st.metric("Temperature", f"{generation_config.get('temperature', 0.2):.2f}")
-        with col3:
             st.metric("Top K", generation_config.get('top_k', 40))
-        with col4:
             st.metric("Top P", f"{generation_config.get('top_p', 1.0):.2f}")
 
     # --- Chunk Summary ---
     if chunk_summary:
-        st.subheader("📦 Chunk Summary")
-        for key, value in chunk_summary.items():
-            st.markdown(f"- **{key.replace('_', ' ').capitalize()}**: {value}")
+        with st.expander("📦 Chunk Summary", expanded=False):
+            for key, value in chunk_summary.items():
+                st.markdown(f"- **{key.replace('_', ' ').capitalize()}**: {value}")
 
     # --- Dataset Preview ---
     if df is not None:
-        st.subheader("📊 Dataset Preview")
-        st.markdown(f"**Shape:** {df.shape[0]} rows × {df.shape[1]} columns")
-        st.dataframe(df.head(5), use_container_width=True)
+        with st.expander("📊 Dataset Preview", expanded=False):
+            st.markdown(f"**Shape:** {df.shape[0]} rows × {df.shape[1]} columns")
+            st.dataframe(df.head(5), use_container_width=True)
 
     # --- Prompt Echo ---
     if prompt:
-        st.subheader("💬 Your Prompt")
-        st.code(prompt, language="markdown")
+        with st.expander("💬 Your Prompt", expanded=False):
+            st.code(prompt, language="markdown")
 
 if __name__ == "__main__":
     main()

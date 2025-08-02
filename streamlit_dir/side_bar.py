@@ -11,7 +11,7 @@ def cwp_sidebar():
     st.sidebar.header(f"{APP_NAME} Controls")
 
     # 🔐 Model Configuration Section
-    with st.sidebar.expander("🔐 Model Configuration", expanded=True):
+    with st.sidebar.expander("🔐 Model Configuration", expanded=False):
         config_container = st.container()
         api_key = load_api_key_ui(config_container)
         
@@ -25,15 +25,15 @@ def cwp_sidebar():
             selected_model, gemini_client, generation_config = model_selector_ui(config_container, api_key)
 
     # 📁 Upload & Chunk Section
-    with st.sidebar.expander("📁 Upload & Chunk", expanded=True):
+    with st.sidebar.expander("📁 Upload & Chunk", expanded=False):
         df, saved_filename, chunk_file_path, chunk_summary = handle_dataset_upload_or_load_and_chunk(client=gemini_client)
 
     # ✍️ Prompt Input Section
-    with st.sidebar.expander("✍️ Prompt Input", expanded=True):
+    with st.sidebar.expander("✍️ Prompt Input", expanded=False):
         prompt_container = st.container()
         prompt = prompt_input_ui(prompt_container)
 
-    with st.sidebar.expander("🧩 Process Chunks", expanded=True):
+    with st.sidebar.expander("🧩 Process Chunks", expanded=False):
         if not all([gemini_client, prompt, chunk_file_path]):
             st.warning("⚠️ Please complete all previous steps: upload data, enter a prompt, and select a model.")
             st.session_state["start_processing"] = False
