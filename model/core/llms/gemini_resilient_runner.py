@@ -13,6 +13,7 @@ class GeminiResilientRunner(ResilientLLMRunner):
             api_exceptions.DeadlineExceeded,
             api_exceptions.ServiceUnavailable,
             api_exceptions.InternalServerError,
+            api_exceptions.ResourceExhausted,
             api_exceptions.Aborted,
             ConnectionError,
             TimeoutError,
@@ -24,6 +25,5 @@ class GeminiResilientRunner(ResilientLLMRunner):
             api_exceptions.PermissionDenied,
             api_exceptions.Unauthenticated,
             api_exceptions.InvalidArgument,
-            api_exceptions.ResourceExhausted,
             auth_exceptions.DefaultCredentialsError,
         )

@@ -42,11 +42,12 @@ def run_gemini_chunk_processor_ui(
     def process_fn(df: pd.DataFrame):
         nonlocal count
         try:
-            response = runner.run(prompt, df)
+            response,used_tokens = runner.run(prompt, df)
             results.append({
                 "chunk": df,
                 "prompt": prompt,
-                "response": response
+                "response": response,
+                "used_tokens": used_tokens
             })
         except runner.user_errors as ue:
             errors.append(f"[User Error] Skipped chunk: {ue}")

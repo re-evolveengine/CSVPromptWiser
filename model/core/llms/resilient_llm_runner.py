@@ -1,7 +1,10 @@
 # model/core/runners/resilient_llm_runner.py
 
 from abc import ABC, abstractmethod
-from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
+import logging
+
+from responses import logger
+from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type, wait_exponential, before_sleep_log
 
 
 class ResilientLLMRunner(ABC):
@@ -28,24 +31,30 @@ class ResilientLLMRunner(ABC):
     def _should_fail_fast(self, exception):
         return isinstance(exception, self.user_errors)
 
+    logger = logging.getLogger(__name__)
+
     def run(self, prompt, df=None):
         @retry(
+            wait=wait_exponential(multiplier=1, min=2, max=60),
             stop=stop_after_attempt(self.max_attempts),
-            wait=wait_fixed(self.wait_seconds),
             retry=retry_if_exception_type(self.retryable_errors),
+            before_sleep=before_sleep_log(logger, logging.WARNING),
             reraise=True
         )
         def _call():
             try:
                 return self.client.call(prompt, df)
             except self.user_errors as e:
+                # Don't retry on user errors — re-raise immediately
                 print(f"[User Error] {type(e).__name__}: {e}")
                 raise
             except self.retryable_errors as e:
-                print(f"[Retrying] {type(e).__name__}: {e}")
+                # Will be retried by tenacity
+                print(f"[Retryable Error] {type(e).__name__}: {e}")
                 raise
             except Exception as e:
-                print(f"[Unknown Error] {type(e).__name__}: {e}")
+                # Unknown exceptions — raise to avoid silent failures
+                print(f"[Unexpected Error] {type(e).__name__}: {e}")
                 raise
 
         return _call()
