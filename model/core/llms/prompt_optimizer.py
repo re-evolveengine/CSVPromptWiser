@@ -97,3 +97,81 @@ class PromptOptimizer:
         for col in row.index:
             lines.append(f"- {col}: {row[col]}")
         return "\n".join(lines)
+
+    def calculate_used_tokens(self, prompt: str, row_df: pd.DataFrame, example_response: str, num_rows: int) -> int:
+        """
+        Calculate the total number of tokens used for a given prompt, number of rows, and example response.
+        
+        Args:
+            prompt: The prompt template being used
+            row_df: A DataFrame containing example row(s) to calculate token usage
+            example_response: Example response from the model for a single row
+            num_rows: Number of rows being processed
+            
+        Returns:
+            int: Total number of tokens used
+        """
+        try:
+            # Get encoding (fall back to cl100k_base if model not found)
+            try:
+                encoding = tiktoken.encoding_for_model(self.model_name)
+            except KeyError:
+                encoding = tiktoken.get_encoding("cl100k_base")
+
+            # Calculate prompt tokens
+            prompt_tokens = len(encoding.encode(prompt.strip()))
+
+            # Calculate tokens for a single row input and output
+            example_row_text = self._format_row(row_df.iloc[0])
+            row_input_tokens = len(encoding.encode(example_row_text))
+            row_output_tokens = len(encoding.encode(example_response))
+            
+            # Calculate total tokens: prompt + (input + output) * number of rows
+            total_tokens = prompt_tokens + (row_input_tokens + row_output_tokens) * num_rows
+            
+            return total_tokens
+            
+        except Exception as e:
+            print(f"Warning: Could not calculate token usage: {str(e)}")
+            return 0  # Return 0 if calculation fails
+
+
+    def calculate_max_chunks_with_quota(
+        self,
+        prompt: str,
+        row_df: pd.DataFrame,
+        example_response: str,
+        rows_per_chunk: int,
+        token_quota: int
+    ) -> int:
+        """
+        Calculate how many chunks can fit within a given token quota.
+
+        Args:
+            prompt: Prompt template used for chunk processing
+            row_df: A DataFrame with example data
+            example_response: Sample response used to estimate output tokens
+            rows_per_chunk: Number of rows per chunk
+            token_quota: Total tokens available (e.g., daily quota)
+
+        Returns:
+            int: Maximum number of chunks that can be processed within the quota
+        """
+        try:
+            tokens_per_chunk = self.calculate_used_tokens(
+                prompt=prompt,
+                row_df=row_df,
+                example_response=example_response,
+                num_rows=rows_per_chunk
+            )
+
+            if tokens_per_chunk == 0:
+                return 0  # Avoid division by zero
+
+            max_chunks = token_quota // tokens_per_chunk
+            return max_chunks
+
+        except Exception as e:
+            print(f"Warning: Could not calculate max chunks: {str(e)}")
+            return 0
+
