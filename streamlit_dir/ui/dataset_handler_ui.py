@@ -28,15 +28,18 @@ def chunk_and_save_dataframe(df: pd.DataFrame, chunk_size: int) -> dict:
     }
 
 
-def handle_dataset_upload_or_load_and_chunk(optimizer: Optional[PromptOptimizer] = None) -> Tuple[Optional[pd.DataFrame], Optional[str], Optional[str], Optional[Dict]]:
+def handle_dataset_upload_or_load() -> Tuple[Optional[pd.DataFrame], Optional[str]]:
+    """Handle file upload or load existing file.
+    
+    Returns:
+        Tuple containing (dataframe, saved_filename)
+    """
     handler = StreamlitDatasetHandler()
     saved_filename = st.session_state.get("saved_filename") or handler.get_saved_file_name()
     df = None
-    chunk_summary = None
-    chunk_file_path = None
 
     if saved_filename and not st.session_state.get("upload_new_file"):
-        st.success(f"📁 Using saved file: `{saved_filename}`")
+        st.success(f"📁 Using saved file: `{saved_filename}")
 
         if st.button("📤 Upload a new file?"):
             st.session_state["upload_new_file"] = True
@@ -66,7 +69,23 @@ def handle_dataset_upload_or_load_and_chunk(optimizer: Optional[PromptOptimizer]
                 st.session_state["upload_new_file"] = False
                 st.success(f"✅ File saved: `{saved_path}`")
                 st.rerun()
+    
+    return df, saved_filename
 
+
+def configure_and_process_chunks(df: pd.DataFrame, optimizer: Optional[PromptOptimizer] = None) -> Tuple[Optional[str], Optional[Dict]]:
+    """Configure chunking settings and process the dataframe into chunks.
+    
+    Args:
+        df: The dataframe to chunk
+        optimizer: Optional PromptOptimizer for optimal chunk size calculation
+    
+    Returns:
+        Tuple containing (chunk_file_path, chunk_summary)
+    """
+    chunk_summary = None
+    chunk_file_path = None
+    
     # Load existing chunk summary
     chunk_file = Path(TEMP_DIR) / "chunks.json"
     if chunk_file.exists():
@@ -77,67 +96,79 @@ def handle_dataset_upload_or_load_and_chunk(optimizer: Optional[PromptOptimizer]
         except Exception as e:
             st.warning(f"⚠️ Failed to read chunk summary: {e}")
 
-    # --- Chunking UI ---
+    st.markdown("### Chunking Settings")
+
+    example_prompt = "Analyze this data:"
+    example_response = "Analysis results would appear here"
+
+    # Show optimal chunk size
+    if optimizer is not None and len(df) > 0:
+        try:
+            optimal_size = optimizer.find_optimal_row_number(
+                prompt=example_prompt,
+                row_df=df.head(1),
+                example_response=example_response
+            )
+            st.info(f"ℹ️ Recommended chunk size: **{optimal_size}** rows (based on model context window)")
+        except Exception as e:
+            st.warning(f"⚠️ Could not calculate optimal chunk size: {str(e)}")
+    else:
+        st.info("ℹ️ Connect a model to see recommended chunk size")
+
+    # Token budget input
+    total_token_budget = st.number_input(
+        "💰 Enter Total Token Budget",
+        min_value=1,
+        value=100000,
+        help="The maximum number of tokens you'd like to spend across all chunks."
+    )
+
+    # Chunk size input
+    chunk_size = st.number_input(
+        "🔢 Set Chunk Size",
+        min_value=1,
+        value=100,
+        help="Number of rows per chunk. Consider the recommended size above for optimal performance."
+    )
+
+    # Show tokens per chunk and number of chunks possible
+    if optimizer is not None and len(df) > 0:
+        try:
+            tokens_per_chunk = optimizer.calculate_used_tokens(
+                prompt=example_prompt,
+                row_df=df.head(1),
+                example_response=example_response,
+                num_rows=chunk_size
+            )
+
+            if tokens_per_chunk > 0:
+                max_chunks = total_token_budget // tokens_per_chunk
+                st.caption(f"📊 Estimated tokens per chunk: **{tokens_per_chunk:,}**")
+                st.success(f"🔢 You can process approximately **{max_chunks} chunks** with your budget.")
+            else:
+                st.warning("⚠️ Could not estimate tokens per chunk.")
+        except Exception as e:
+            st.warning(f"⚠️ Error estimating chunks: {e}")
+
+    if st.button("📦 Chunk & Save"):
+        result = chunk_and_save_dataframe(df, chunk_size)
+        chunk_file_path = result["chunk_file_path"]
+        chunk_summary = result["summary"]
+        st.success(f"✅ Chunks saved to: `{chunk_file_path}`")
+    
+    return chunk_file_path, chunk_summary
+
+
+def handle_dataset_upload_or_load_and_chunk(optimizer: Optional[PromptOptimizer] = None) -> Tuple[Optional[pd.DataFrame], Optional[str], Optional[str], Optional[Dict]]:
+    """Handle dataset upload/load and chunking process.
+    
+    This is a wrapper function that combines the file handling and chunking operations.
+    """
+    df, saved_filename = handle_dataset_upload_or_load()
+    chunk_file_path, chunk_summary = (None, None)
+    
     if df is not None:
-        st.markdown("### Chunking Settings")
-
-        example_prompt = "Analyze this data:"
-        example_response = "Analysis results would appear here"
-
-        # Show optimal chunk size
-        if optimizer is not None and len(df) > 0:
-            try:
-                optimal_size = optimizer.find_optimal_row_number(
-                    prompt=example_prompt,
-                    row_df=df.head(1),
-                    example_response=example_response
-                )
-                st.info(f"ℹ️ Recommended chunk size: **{optimal_size}** rows (based on model context window)")
-            except Exception as e:
-                st.warning(f"⚠️ Could not calculate optimal chunk size: {str(e)}")
-        else:
-            st.info("ℹ️ Connect a model to see recommended chunk size")
-
-        # Token budget input
-        total_token_budget = st.number_input(
-            "💰 Enter Total Token Budget",
-            min_value=1,
-            value=100000,
-            help="The maximum number of tokens you'd like to spend across all chunks."
-        )
-
-        # Chunk size input
-        chunk_size = st.number_input(
-            "🔢 Set Chunk Size",
-            min_value=1,
-            value=100,
-            help="Number of rows per chunk. Consider the recommended size above for optimal performance."
-        )
-
-        # Show tokens per chunk and number of chunks possible
-        if optimizer is not None and len(df) > 0:
-            try:
-                tokens_per_chunk = optimizer.calculate_used_tokens(
-                    prompt=example_prompt,
-                    row_df=df.head(1),
-                    example_response=example_response,
-                    num_rows=chunk_size
-                )
-
-                if tokens_per_chunk > 0:
-                    max_chunks = total_token_budget // tokens_per_chunk
-                    st.caption(f"📊 Estimated tokens per chunk: **{tokens_per_chunk:,}**")
-                    st.success(f"🔢 You can process approximately **{max_chunks} chunks** with your budget.")
-                else:
-                    st.warning("⚠️ Could not estimate tokens per chunk.")
-            except Exception as e:
-                st.warning(f"⚠️ Error estimating chunks: {e}")
-
-        if st.button("📦 Chunk & Save"):
-            result = chunk_and_save_dataframe(df, chunk_size)
-            chunk_file_path = result["chunk_file_path"]
-            chunk_summary = result["summary"]
-            st.success(f"✅ Chunks saved to: `{chunk_file_path}`")
-
+        chunk_file_path, chunk_summary = configure_and_process_chunks(df, optimizer)
+    
     st.markdown("---")
     return df, saved_filename, chunk_file_path, chunk_summary

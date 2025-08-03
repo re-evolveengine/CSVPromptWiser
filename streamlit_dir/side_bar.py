@@ -4,7 +4,7 @@ from model.core.llms.prompt_optimizer import PromptOptimizer
 from model.utils.constants import APP_NAME
 from streamlit_dir.ui.api_key_ui import load_api_key_ui
 from streamlit_dir.ui.chunk_processor_panel import process_chunks_ui
-from streamlit_dir.ui.dataset_handler_ui import handle_dataset_upload_or_load_and_chunk
+from streamlit_dir.ui.dataset_handler_ui import handle_dataset_upload_or_load, configure_and_process_chunks
 from streamlit_dir.ui.model_selector_ui import model_selector_ui
 from streamlit_dir.ui.prompt_input_ui import prompt_input_ui
 
@@ -28,9 +28,17 @@ def cwp_sidebar():
             selected_model, gemini_client, generation_config = model_selector_ui(config_container, api_key)
             prompt_optimizer = PromptOptimizer(model_name=selected_model)
 
-    # 📁 Upload & Chunk Section
-    with st.sidebar.expander("📁 Upload & Chunk", expanded=False):
-        df, saved_filename, chunk_file_path, chunk_summary = handle_dataset_upload_or_load_and_chunk(optimizer=prompt_optimizer)
+    # 📁 Upload Section
+    with st.sidebar.expander("📁 Upload Data", expanded=False):
+        df, saved_filename = handle_dataset_upload_or_load()
+
+    # 🔪 Chunking Section
+    with st.sidebar.expander("🔪 Chunk Settings", expanded=False):
+        chunk_file_path, chunk_summary = (None, None)
+        if df is not None:
+            chunk_file_path, chunk_summary = configure_and_process_chunks(df, optimizer=prompt_optimizer)
+        else:
+            st.info("ℹ️ Upload a file first to configure chunking")
 
     # ✍️ Prompt Input Section
     with st.sidebar.expander("✍️ Prompt Input", expanded=False):
