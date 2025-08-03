@@ -1,0 +1,26 @@
+---
+files:
+- path: ".env"
+  readOnly: false
+- path: "setup.py"
+  readOnly: false
+- path: ".coverage"
+  readOnly: false
+- path: ".gitignore"
+  readOnly: false
+- path: "pytest.ini"
+  readOnly: false
+- path: "cli_app.spec"
+  readOnly: false
+- path: "streamlit_app.py"
+  readOnly: false
+- path: ".prompt_pref.json"
+  readOnly: false
+- path: "requirements_all.txt"
+  readOnly: false
+- path: "requirements_cli.txt"
+  readOnly: false
+- path: "requirements-test.txt"
+  readOnly: false
+- path: "requirements_streamlit.txt"
+  readOnly: false

@@ -24,7 +24,11 @@ class GeminiClient(BaseLLMClient):
         try:
             response = self.llm.generate_content(formatted_input)
             text = response.text
-            token_count = response.usage_metadata.total_tokens
+            # Handle case where usage_metadata is not available
+            try:
+                token_count = getattr(response, 'usage_metadata', {}).get('total_tokens', 0)
+            except AttributeError:
+                token_count = 0  # Fallback if usage_metadata is not available
             return text, token_count
         except Exception as e:
-            raise RuntimeError(f"Gemini call failed: {str(e)}")
+            raise RuntimeError(f"Gemini call failed: {e}")

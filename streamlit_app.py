@@ -12,6 +12,7 @@ import streamlit as st
 from model.utils.constants import APP_NAME
 from streamlit_dir.side_bar import cwp_sidebar
 from streamlit_dir.ui.chunk_processor_panel import process_chunks_ui
+from streamlit_dir.ui.token_usage_gauge import render_token_usage_gauge
 
 
 st.set_page_config(
@@ -68,43 +69,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-import streamlit as st
-import plotly.graph_objects as go
-
-def render_token_usage_gauge(percent_used: float):
-    fig = go.Figure(go.Indicator(
-        mode="number+gauge",
-        value=percent_used,
-        number={
-            'suffix': "%",
-            'font': {'size': 40}  # Reduced font size from default
-        },
-        gauge={
-            'shape': 'bullet',
-            'axis': {'range': [0, 100], 'visible': False},
-            'bar': {'color': "mediumseagreen", 'thickness': 1.0},
-            'steps': [
-                {'range': [0, 70], 'color': "#d3d3d3"},  # Light gray
-                {'range': [70, 90], 'color': "#ffd700"},  # Yellow
-                {'range': [90, 100], 'color': "#ff4500"},  # Red
-            ],
-            'threshold': {
-                'line': {'color': "black", 'width': 2},
-                'thickness': 1.0,
-                'value': 100
-            }
-        },
-        domain={'x': [0.05, 0.95], 'y': [0.2, 0.8]}  # Adjusted x-domain for longer bar
-    ))
-
-    fig.update_layout(
-        margin=dict(t=10, b=10, l=10, r=10),
-        height=150,
-        width=700  # Increased width from 400 to 600
-    )
-
-    st.plotly_chart(fig, use_container_width=False)
 
 
 def main():
