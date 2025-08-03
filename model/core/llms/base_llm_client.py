@@ -1,10 +1,7 @@
-# core/clients/base_llm_client.py
-
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 import pandas as pd
 
-from model.core.llms.prompt_optimizer import PromptOptimizer
 from model.utils.constants import (
     DEFAULT_TEMPERATURE,
     DEFAULT_TOP_K,
@@ -26,19 +23,19 @@ class BaseLLMClient(ABC):
             "top_p": DEFAULT_TOP_P
         }
         self.llm = self._init_llm()
-        self.prompt_optimizer = PromptOptimizer(model_name=model)
 
     @abstractmethod
     def _init_llm(self) -> Any:
         """Initialize and return a configured LLM client."""
         pass
 
-    def call(self, prompt: str, df: pd.DataFrame) -> str:
+    @abstractmethod
+    def call(self, prompt: str, df: pd.DataFrame) -> Tuple[str, int]:
         """
         Format input and call the LLM.
+        Returns a tuple of (response_text, token_count).
         """
-        formatted_input = self._format_input(prompt, df)
-        return self.llm.invoke(formatted_input)
+        pass
 
     def _format_input(self, prompt: str, df: pd.DataFrame) -> str:
         """

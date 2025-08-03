@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Tuple
 import pandas as pd
 import google.generativeai as genai
 
@@ -16,20 +16,15 @@ class GeminiClient(BaseLLMClient):
         except Exception as e:
             raise RuntimeError(f"Failed to initialize Gemini client: {str(e)}")
 
-    def call(self, prompt: str, df: pd.DataFrame) -> str:
+    def call(self, prompt: str, df: pd.DataFrame) -> Tuple[str, int]:
         """
-        Override base method to use `generate_content` (Gemini-specific).
+        Call Gemini LLM and return both the response and token count.
         """
         formatted_input = self._format_input(prompt, df)
         try:
             response = self.llm.generate_content(formatted_input)
-            return response.text
+            text = response.text
+            token_count = response.usage_metadata.total_tokens
+            return text, token_count
         except Exception as e:
             raise RuntimeError(f"Gemini call failed: {str(e)}")
-
-    def reconfigure(self, new_config: dict):
-        """
-        Optional: Update generation config and reinitialize model.
-        """
-        self.generation_config = new_config
-        self.llm = self._init_llm()
