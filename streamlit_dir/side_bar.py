@@ -39,6 +39,14 @@ def cwp_sidebar():
             st.session_state["start_processing"] = False
         else:
             with st.form("chunk_processing_form"):
+                st.session_state["max_tokens_to_spend"] = st.number_input(
+                    "💰 Max tokens to spend",
+                    min_value=1000,
+                    max_value=100000,
+                    value=10000,
+                    step=1000,
+                    help="Maximum number of tokens to use for this process"
+                )
                 st.session_state["num_chunks"] = st.number_input(
                     "🔢 Number of chunks to process",
                     min_value=1,

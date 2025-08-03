@@ -68,6 +68,9 @@ st.markdown(
 )
 
 
+def set_only_expanded(key):
+    for k in ["model_expanded", "chunk_expanded", "data_expanded", "prompt_expanded"]:
+        st.session_state[k] = (k == key)
 
 
 def main():
@@ -93,7 +96,7 @@ def main():
 
     # --- Model Configuration ---
     if model_name and generation_config:
-        with st.expander("⚙️ Model Configuration", expanded=False):
+        with st.expander("⚙️ Model Configuration", expanded=True):
             st.metric("Model", model_name)
             st.metric("Temperature", f"{generation_config.get('temperature', 0.2):.2f}")
             st.metric("Top K", generation_config.get('top_k', 40))
@@ -101,19 +104,19 @@ def main():
 
     # --- Chunk Summary ---
     if chunk_summary:
-        with st.expander("📦 Chunk Summary", expanded=False):
+        with st.expander("📦 Chunk Summary", expanded=True):
             for key, value in chunk_summary.items():
                 st.markdown(f"- **{key.replace('_', ' ').capitalize()}**: {value}")
 
     # --- Dataset Preview ---
     if df is not None:
-        with st.expander("📊 Dataset Preview", expanded=False):
+        with st.expander("📊 Dataset Preview", expanded=True):
             st.markdown(f"**Shape:** {df.shape[0]} rows × {df.shape[1]} columns")
             st.dataframe(df.head(5), use_container_width=True)
 
     # --- Prompt Echo ---
     if prompt:
-        with st.expander("💬 Your Prompt", expanded=False):
+        with st.expander("💬 Your Prompt", expanded=True):
             st.code(prompt, language="markdown")
 
 if __name__ == "__main__":
