@@ -1,4 +1,6 @@
 import streamlit as st
+
+from model.core.llms.prompt_optimizer import PromptOptimizer
 from model.utils.constants import APP_NAME
 from streamlit_dir.ui.api_key_ui import load_api_key_ui
 from streamlit_dir.ui.chunk_processor_panel import process_chunks_ui
@@ -19,14 +21,16 @@ def cwp_sidebar():
         selected_model = None
         gemini_client = None
         generation_config = None
+        prompt_optimizer = None
         
         # Only try to get model if we have an API key
         if api_key:
             selected_model, gemini_client, generation_config = model_selector_ui(config_container, api_key)
+            prompt_optimizer = PromptOptimizer(model_name=selected_model)
 
     # 📁 Upload & Chunk Section
     with st.sidebar.expander("📁 Upload & Chunk", expanded=False):
-        df, saved_filename, chunk_file_path, chunk_summary = handle_dataset_upload_or_load_and_chunk(client=gemini_client)
+        df, saved_filename, chunk_file_path, chunk_summary = handle_dataset_upload_or_load_and_chunk(optimizer=prompt_optimizer)
 
     # ✍️ Prompt Input Section
     with st.sidebar.expander("✍️ Prompt Input", expanded=False):
