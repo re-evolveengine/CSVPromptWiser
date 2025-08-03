@@ -43,37 +43,48 @@ def process_chunks_ui(
     progress_bar = st.progress(0)
     status_placeholder = st.empty()
 
-    # --- Run processor with callback ---
-    results, errors = run_gemini_chunk_processor_ui(
-        prompt=prompt,
-        client=client,
-        chunk_manager=chunk_manager,
-        max_chunks=max_chunks,
-        progress_callback=lambda i, n: [
-            progress_bar.progress(i / n),
-            status_placeholder.info(f"✅ Processed chunk {i} of {n}")
-        ]
-    )
+    # Always show the UI, but only process when start_processing is True
+    if "start_processing" in st.session_state and st.session_state.get("start_processing"):
+        try:
+            # --- Run processor with callback ---
+            results, errors = run_gemini_chunk_processor_ui(
+                prompt=prompt,
+                client=client,
+                chunk_manager=chunk_manager,
+                max_chunks=max_chunks,
+                progress_callback=lambda i, n: [
+                    progress_bar.progress(i / n),
+                    status_placeholder.info(f"✅ Processed chunk {i} of {n}")
+                ]
+            )
 
-    # --- Show any errors ---
-    if errors:
-        st.error("⚠️ Some chunks failed:")
-        for err in errors:
-            st.write(f"- {err}")
+            # --- Show any errors ---
+            if errors:
+                st.error("⚠️ Some chunks failed:")
+                for err in errors:
+                    st.write(f"- {err}")
 
-    if not results:
-        st.error("❌ No chunks were processed successfully.")
-        return
+            if not results:
+                st.error("❌ No chunks were processed successfully.")
+                return
 
-    # --- Save and show result links ---
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    base = f"{client.model}_{timestamp}"
-    json_path = Path(RESULTS_DIR) / f"{base}.json"
-    csv_path = Path(RESULTS_DIR) / f"{base}.csv"
+            # --- Save and show result links ---
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            base = f"{client.model}_{timestamp}"
+            json_path = Path(RESULTS_DIR) / f"{base}.json"
+            csv_path = Path(RESULTS_DIR) / f"{base}.csv"
 
-    GeminiResultSaver.save_results_to_json(results, str(json_path))
-    GeminiResultSaver.save_results_to_csv(results, str(csv_path))
+            GeminiResultSaver.save_results_to_json(results, str(json_path))
+            GeminiResultSaver.save_results_to_csv(results, str(csv_path))
 
-    st.success("✅ Processing complete and results saved.")
-    # st.markdown(f"- 📁 [Download JSON Result]({json_path})")
-    # st.markdown(f"- 📁 [Download CSV Result]({csv_path})")
+            st.success("✅ Processing complete and results saved.")
+            # st.markdown(f"- 📁 [Download JSON Result]({json_path})")
+            # st.markdown(f"- 📁 [Download CSV Result]({csv_path})")
+        finally:
+            # Reset the processing flag
+            st.session_state["start_processing"] = False
+            st.rerun()
+    else:
+        # Show idle state
+        progress_bar.empty()
+        status_placeholder.info("ℹ️ Click 'Start Processing' to begin chunk processing.")

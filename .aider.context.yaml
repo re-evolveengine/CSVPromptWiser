@@ -12,8 +12,6 @@ files:
   readOnly: false
 - path: "cli_app.spec"
   readOnly: false
-- path: "streamlit_app.py"
-  readOnly: false
 - path: ".prompt_pref.json"
   readOnly: false
 - path: "requirements_all.txt"

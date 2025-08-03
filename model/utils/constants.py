@@ -129,3 +129,50 @@ SAFE_PROMPT_LIMITS = {
     "default": 32000
 }
 
+
+# Streamlit CSS styles for the app
+STREAMLIT_CSS_STYLES = """
+    <style>
+        /* Main app container */
+        .stApp {
+            max-width: 100% !important;
+            overflow-x: hidden !important;
+        }
+
+        /* Main content area */
+        .main .block-container {
+            max-width: 100% !important;
+            padding: 1rem 1rem 1rem 1rem !important;
+        }
+
+        /* Content wrapper */
+        .main > div {
+            max-width: 100% !important;
+        }
+
+        /* Text and code blocks */
+        .stMarkdown, .stText, .stCodeBlock, .stDataFrame {
+            max-width: 100% !important;
+        }
+
+        /* Code and text areas */
+        .stCodeBlock pre, .stTextArea textarea, pre, code {
+            white-space: pre-wrap !important;
+            word-break: break-word !important;
+            max-width: 100% !important;
+        }
+
+        /* Tables */
+        .stDataFrame {
+            display: block;
+            overflow-x: auto;
+            width: 100% !important;
+        }
+
+        /* Fix for Streamlit's dynamic content */
+        [data-testid="stAppViewContainer"] > .main > div {
+            padding: 0 !important;
+        }
+    </style>
+"""
+
