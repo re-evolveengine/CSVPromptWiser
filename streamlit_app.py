@@ -73,7 +73,6 @@ def main():
         process_chunks_ui(
             gemini_client,
             prompt,
-            response_example,
             chunk_file_path,
             max_chunks=st.session_state.get("num_chunks", 5)
         )

@@ -11,13 +11,10 @@ from model.utils.constants import RESULTS_DIR, TEMP_DIR
 from streamlit_dir.ui.run_gemini_chunk_processor_ui import run_gemini_chunk_processor_ui
 from streamlit_dir.ui.token_usage_gauge import render_token_usage_gauge
 
-global dummy_value
-
 
 def process_chunks_ui(
         client: Any,
         prompt: str,
-        response_example: str,
         chunk_file_path: str,
         max_chunks: int
 ):
@@ -31,9 +28,6 @@ def process_chunks_ui(
         chunk_file_path: Path to the JSON file of chunks.
         max_chunks: Number of chunks to process.
     """
-    # Initialize dummy_value for token usage visualization
-    dummy_value = 0
-    
     st.markdown("### 🧠 Chunk Processing Progress")
 
     if not all([client, prompt, chunk_file_path]):
@@ -48,10 +42,9 @@ def process_chunks_ui(
     status_container = st.empty()
     progress_bar = st.progress(0)
     batch_status = st.empty()  # For showing current batch progress
-    dummy_value = 0  # Initialize dummy_value here
+    used_tokens = 0
 
     def update_status(current: int, batch_total: int):
-        nonlocal dummy_value  # Add this line to allow modification of the outer scope variable
         # Get the current remaining chunks from the manager
         current_remaining = chunk_manager.remaining_chunks
         # Show both batch progress and overall remaining
@@ -60,16 +53,11 @@ def process_chunks_ui(
         # Update progress bar based on current batch progress
         if batch_total > 0:  # Prevent division by zero
             progress_bar.progress(current / batch_total)
-        dummy_value += 20
-
-
-
-
 
     # ✅ Placeholder: Add gauge chart after processing
     st.subheader("🧮 Token Usage Summary")
-    percent_used = dummy_value  # Placeholder – replace with actual backend logic later
-    render_token_usage_gauge(dummy_value)
+    percent_used = 32  # Placeholder – replace with actual backend logic later
+    render_token_usage_gauge(percent_used)
 
     # Initial status display
     status_container.info(f"📦 Total Chunks: {total} 🔁 Remaining: {remaining}")
