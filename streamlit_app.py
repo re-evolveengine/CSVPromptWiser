@@ -27,11 +27,6 @@ st.markdown(STREAMLIT_CSS_STYLES,unsafe_allow_html=True)
 def main():
     st.title(f"🤖 {APP_NAME} Dashboard")
 
-    # ✅ Placeholder: Add gauge chart after processing
-    st.subheader("🧮 Token Usage Summary")
-    percent_used = 32  # Placeholder – replace with actual backend logic later
-    render_token_usage_gauge(percent_used)
-
     # --- Sidebar interaction ---
     api_key, model_name, df, chunk_file_path, chunk_summary, prompt, generation_config, gemini_client = cwp_sidebar()
 

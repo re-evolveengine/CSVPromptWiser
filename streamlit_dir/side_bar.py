@@ -32,6 +32,11 @@ def cwp_sidebar():
     with st.sidebar.expander("📁 Upload Data", expanded=False):
         df, saved_filename = handle_dataset_upload_or_load()
 
+    # ✍️ Prompt Input Section
+    with st.sidebar.expander("✍️ Prompt Input", expanded=False):
+        prompt_container = st.container()
+        prompt = prompt_input_ui(prompt_container)
+
     # 🔪 Chunking Section
     with st.sidebar.expander("🔪 Chunk Settings", expanded=False):
         chunk_file_path, chunk_summary = (None, None)
@@ -40,10 +45,6 @@ def cwp_sidebar():
         else:
             st.info("ℹ️ Upload a file first to configure chunking")
 
-    # ✍️ Prompt Input Section
-    with st.sidebar.expander("✍️ Prompt Input", expanded=False):
-        prompt_container = st.container()
-        prompt = prompt_input_ui(prompt_container)
 
     with st.sidebar.expander("🧩 Process Chunks", expanded=False):
         if not all([gemini_client, prompt, chunk_file_path]):

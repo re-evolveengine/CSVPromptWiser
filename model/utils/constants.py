@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 JSON_CHUNK_VERSION = 1.0
 APP_NAME = "ChunkWisePrompter"
@@ -13,6 +14,18 @@ DATA_DIR = os.path.join(APP_DIR, DATA_FOLDER_NAME)
 RESULTS_DIR = os.path.join(APP_DIR, RESULTS_FOLDER_NAME)
 TEMP_DIR = os.path.join(APP_DIR, TEMP_FOLDER_NAME)
 CONFIG_DIR = os.path.join(APP_DIR, CONFIG_FOLDER_NAME)
+
+DEFAULT_CHUNK_SIZE = 100
+
+# 🗄️ Model preference DB (shelve) file name and full path
+MODEL_PREFS_DB_NAME = "model_prefs.db"
+MODEL_PREFS_DB_PATH = os.path.join(CONFIG_DIR, MODEL_PREFS_DB_NAME)
+MODEL_KEY = "gemini_model"
+MODEL_LIST_KEY = "gemini_model_list"
+MODEL_CONFIG_KEY = "gemini_model_config"
+
+# 📝 Prompt preferences file
+PROMPT_PREF_PATH = Path(CONFIG_DIR) / ".prompt_pref.json"
 
 DEFAULT_CHUNK_SIZE = 100
 

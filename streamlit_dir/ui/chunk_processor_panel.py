@@ -9,6 +9,7 @@ from model.core.chunk.chunk_manager import ChunkManager
 from model.io.gemini_result_saver import GeminiResultSaver
 from model.utils.constants import RESULTS_DIR, TEMP_DIR
 from streamlit_dir.ui.run_gemini_chunk_processor_ui import run_gemini_chunk_processor_ui
+from streamlit_dir.ui.token_usage_gauge import render_token_usage_gauge
 
 
 def process_chunks_ui(
@@ -37,10 +38,31 @@ def process_chunks_ui(
     total = chunk_manager.total_chunks
     remaining = chunk_manager.remaining_chunks
 
-    st.info(f"📦 Total Chunks: {total} 🔁 Remaining: {remaining}")
+    # Create a status container that we can update
+    status_container = st.empty()
+    progress_bar = st.progress(0)
+    batch_status = st.empty()  # For showing current batch progress
+
+    def update_status(current: int, batch_total: int):
+        # Get the current remaining chunks from the manager
+        current_remaining = chunk_manager.remaining_chunks
+        # Show both batch progress and overall remaining
+        status_container.info(f"📦 Total Chunks: {total} 🔁 Remaining: {current_remaining}")
+        batch_status.info(f"🔄 Processing: {current} of {batch_total} in current batch")
+        # Update progress bar based on current batch progress
+        if batch_total > 0:  # Prevent division by zero
+            progress_bar.progress(current / batch_total)
+
+    # ✅ Placeholder: Add gauge chart after processing
+    st.subheader("🧮 Token Usage Summary")
+    percent_used = 32  # Placeholder – replace with actual backend logic later
+    render_token_usage_gauge(percent_used)
+
+    # Initial status display
+    status_container.info(f"📦 Total Chunks: {total} 🔁 Remaining: {remaining}")
+    batch_status.info("⏳ Waiting to start processing...")
 
     # --- Progress indicators in main panel ---
-    progress_bar = st.progress(0)
     status_placeholder = st.empty()
 
     # Always show the UI, but only process when start_processing is True
@@ -52,10 +74,7 @@ def process_chunks_ui(
                 client=client,
                 chunk_manager=chunk_manager,
                 max_chunks=max_chunks,
-                progress_callback=lambda i, n: [
-                    progress_bar.progress(i / n),
-                    status_placeholder.info(f"✅ Processed chunk {i} of {n}")
-                ]
+                progress_callback=update_status  # Add the callback
             )
 
             # --- Show any errors ---
