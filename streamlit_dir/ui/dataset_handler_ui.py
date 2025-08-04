@@ -73,7 +73,7 @@ def handle_dataset_upload_or_load() -> Tuple[Optional[pd.DataFrame], Optional[st
     return df, saved_filename
 
 
-def configure_and_process_chunks(df: pd.DataFrame, optimizer: Optional[PromptOptimizer] = None) -> Tuple[Optional[str], Optional[Dict]]:
+def configure_and_process_chunks(df: pd.DataFrame,prompt:str,response_example:str, optimizer: Optional[PromptOptimizer] = None) -> Tuple[Optional[str], Optional[Dict]]:
     """Configure chunking settings and process the dataframe into chunks.
     
     Args:
@@ -98,16 +98,13 @@ def configure_and_process_chunks(df: pd.DataFrame, optimizer: Optional[PromptOpt
 
     st.markdown("### Chunking Settings")
 
-    example_prompt = "Analyze this data:"
-    example_response = "Analysis results would appear here"
-
     # Show optimal chunk size
     if optimizer is not None and len(df) > 0:
         try:
             optimal_size = optimizer.find_optimal_row_number(
-                prompt=example_prompt,
+                prompt=prompt,
                 row_df=df.head(1),
-                example_response=example_response
+                example_response=response_example
             )
             st.info(f"ℹ️ Recommended chunk size: **{optimal_size}** rows (based on model context window)")
         except Exception as e:
@@ -135,9 +132,9 @@ def configure_and_process_chunks(df: pd.DataFrame, optimizer: Optional[PromptOpt
     if optimizer is not None and len(df) > 0:
         try:
             tokens_per_chunk = optimizer.calculate_used_tokens(
-                prompt=example_prompt,
+                prompt=prompt,
                 row_df=df.head(1),
-                example_response=example_response,
+                example_response=response_example,
                 num_rows=chunk_size
             )
 

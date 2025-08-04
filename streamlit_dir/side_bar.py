@@ -22,6 +22,7 @@ def cwp_sidebar():
         gemini_client = None
         generation_config = None
         prompt_optimizer = None
+        response_example = None
         
         # Only try to get model if we have an API key
         if api_key:
@@ -35,13 +36,13 @@ def cwp_sidebar():
     # ✍️ Prompt Input Section
     with st.sidebar.expander("✍️ Prompt Input", expanded=False):
         prompt_container = st.container()
-        prompt = prompt_input_ui(prompt_container)
+        prompt, response_example = prompt_input_ui(prompt_container)
 
     # 🔪 Chunking Section
     with st.sidebar.expander("🔪 Chunk Settings", expanded=False):
         chunk_file_path, chunk_summary = (None, None)
         if df is not None:
-            chunk_file_path, chunk_summary = configure_and_process_chunks(df, optimizer=prompt_optimizer)
+            chunk_file_path, chunk_summary = configure_and_process_chunks(df,prompt, response_example, optimizer=prompt_optimizer)
         else:
             st.info("ℹ️ Upload a file first to configure chunking")
 
@@ -52,14 +53,6 @@ def cwp_sidebar():
             st.session_state["start_processing"] = False
         else:
             with st.form("chunk_processing_form"):
-                st.session_state["max_tokens_to_spend"] = st.number_input(
-                    "💰 Max tokens to spend",
-                    min_value=1000,
-                    max_value=100000,
-                    value=10000,
-                    step=1000,
-                    help="Maximum number of tokens to use for this process"
-                )
                 st.session_state["num_chunks"] = st.number_input(
                     "🔢 Number of chunks to process",
                     min_value=1,
@@ -75,4 +68,4 @@ def cwp_sidebar():
                     if "start_processing" not in st.session_state:
                         st.session_state["start_processing"] = False
 
-    return api_key, selected_model, df, chunk_file_path, chunk_summary, prompt, generation_config, gemini_client
+    return api_key, selected_model, df, chunk_file_path, chunk_summary, prompt,response_example, generation_config, gemini_client

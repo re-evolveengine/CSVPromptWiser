@@ -15,6 +15,7 @@ from streamlit_dir.ui.token_usage_gauge import render_token_usage_gauge
 def process_chunks_ui(
         client: Any,
         prompt: str,
+        response_example: str,
         chunk_file_path: str,
         max_chunks: int
 ):
