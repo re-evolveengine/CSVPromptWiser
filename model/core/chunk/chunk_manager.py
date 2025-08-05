@@ -80,9 +80,11 @@ class ChunkManager:
                 return pd.DataFrame(chunk["data"])
         return None  # All processed
 
-    def mark_chunk_processed(self):
-        """Marks the most recently fetched chunk as processed."""
-        if hasattr(self, "_current_chunk_id"):
+    def mark_chunk_processed(self, chunk_id: Optional[str] = None):
+        """Marks a specific chunk or the most recently fetched chunk as processed."""
+        if chunk_id:
+            self._processed_set.add(str(chunk_id))
+        elif hasattr(self, "_current_chunk_id"):
             self._processed_set.add(self._current_chunk_id)
             self._current_chunk_id = None
         else:
