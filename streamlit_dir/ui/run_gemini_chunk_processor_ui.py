@@ -5,6 +5,7 @@ from typing import List, Tuple, Optional, Callable
 from model.core.chunk.chunk_manager import ChunkManager
 from model.core.llms.gemini_client import GeminiClient
 from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
+from model.io.model_prefs import ModelPreference
 
 
 def run_gemini_chunk_processor_ui(
@@ -12,7 +13,7 @@ def run_gemini_chunk_processor_ui(
     client: GeminiClient,
     chunk_manager: ChunkManager,
     max_chunks: Optional[int] = None,
-    progress_callback: Optional[Callable[[int, int], None]] = None
+    progress_callback: Optional[Callable[[int, int, int], None]] = None
 ) -> Tuple[List[dict], List[str]]:
     """
     Applies the given prompt to up to `max_chunks` data chunks using a pre-initialized Gemini client.
@@ -37,18 +38,27 @@ def run_gemini_chunk_processor_ui(
         return results, errors
 
     total = chunk_manager.remaining_chunks if max_chunks is None else min(max_chunks, chunk_manager.remaining_chunks)
+    prefs = ModelPreference()
     count = 0
+    current_remaining_total = prefs.get_remaining_total_tokens()
 
     def process_fn(df: pd.DataFrame):
-        nonlocal count
+        nonlocal count, current_remaining_total
         try:
-            response,used_tokens = runner.run(prompt, df)
+            response, used_tokens = runner.run(prompt, df)
+
+            # Persist token usage to disk immediately
+            current_remaining_total -= used_tokens
+            prefs.save_remaining_total_tokens(current_remaining_total)
+
+            # Save result
             results.append({
                 "chunk": df,
                 "prompt": prompt,
                 "response": response,
-                "used_tokens": used_tokens
+                "remaining_tokens": current_remaining_total
             })
+
         except runner.user_errors as ue:
             errors.append(f"[User Error] Skipped chunk: {ue}")
         except RetryError as re:
@@ -59,7 +69,7 @@ def run_gemini_chunk_processor_ui(
         finally:
             count += 1
             if progress_callback:
-                progress_callback(count, total)
+                progress_callback(count, total, current_remaining_total)
 
     try:
         chunk_manager.process_chunks(

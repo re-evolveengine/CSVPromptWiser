@@ -22,7 +22,7 @@ def cwp_sidebar():
         gemini_client = None
         generation_config = None
         prompt_optimizer = None
-        response_example = None
+        total_token_budget = None
         
         # Only try to get model if we have an API key
         if api_key:
@@ -42,7 +42,7 @@ def cwp_sidebar():
     with st.sidebar.expander("🔪 Chunk Settings", expanded=False):
         chunk_file_path, chunk_summary = (None, None)
         if df is not None:
-            chunk_file_path, chunk_summary = configure_and_process_chunks(df,prompt, response_example, optimizer=prompt_optimizer)
+            chunk_file_path, chunk_summary, total_token_budget = configure_and_process_chunks(df,prompt, response_example, optimizer=prompt_optimizer)
         else:
             st.info("ℹ️ Upload a file first to configure chunking")
 
@@ -68,4 +68,4 @@ def cwp_sidebar():
                     if "start_processing" not in st.session_state:
                         st.session_state["start_processing"] = False
 
-    return api_key, selected_model, df, chunk_file_path, chunk_summary, prompt,response_example, generation_config, gemini_client
+    return api_key, selected_model, df, chunk_file_path, chunk_summary, prompt,response_example, generation_config, gemini_client, total_token_budget

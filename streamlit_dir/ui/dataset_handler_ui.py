@@ -6,6 +6,7 @@ import pandas as pd
 
 from model.core.chunk.chunk_json_inspector import ChunkJSONInspector
 from model.core.chunk.chunker import DataFrameChunker
+from model.io.model_prefs import ModelPreference
 from model.utils.constants import TEMP_DIR
 from streamlit_dir.stramlit_dataset_handler import StreamlitDatasetHandler
 from model.core.llms.prompt_optimizer import PromptOptimizer
@@ -73,7 +74,7 @@ def handle_dataset_upload_or_load() -> Tuple[Optional[pd.DataFrame], Optional[st
     return df, saved_filename
 
 
-def configure_and_process_chunks(df: pd.DataFrame,prompt:str,response_example:str, optimizer: Optional[PromptOptimizer] = None) -> Tuple[Optional[str], Optional[Dict]]:
+def configure_and_process_chunks(df: pd.DataFrame,prompt:str,response_example:str, optimizer: Optional[PromptOptimizer] = None) -> Tuple[Optional[str], Optional[Dict], Optional[int]]:
     """Configure chunking settings and process the dataframe into chunks.
     
     Args:
@@ -119,6 +120,7 @@ def configure_and_process_chunks(df: pd.DataFrame,prompt:str,response_example:st
         value=100000,
         help="The maximum number of tokens you'd like to spend across all chunks."
     )
+    ModelPreference().save_remaining_total_tokens(total_token_budget)
 
     # Chunk size input
     chunk_size = st.number_input(
@@ -153,7 +155,7 @@ def configure_and_process_chunks(df: pd.DataFrame,prompt:str,response_example:st
         chunk_summary = result["summary"]
         st.success(f"✅ Chunks saved to: `{chunk_file_path}`")
     
-    return chunk_file_path, chunk_summary
+    return chunk_file_path, chunk_summary, total_token_budget
 
 
 def handle_dataset_upload_or_load_and_chunk(optimizer: Optional[PromptOptimizer] = None) -> Tuple[Optional[pd.DataFrame], Optional[str], Optional[str], Optional[Dict]]:

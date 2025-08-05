@@ -23,7 +23,7 @@ MODEL_PREFS_DB_PATH = os.path.join(CONFIG_DIR, MODEL_PREFS_DB_NAME)
 MODEL_KEY = "gemini_model"
 MODEL_LIST_KEY = "gemini_model_list"
 MODEL_CONFIG_KEY = "gemini_model_config"
-USED_TOKENS_KEY = "total_tokens_used"
+REMAINING_TOTAL_TOKENS = "remaining_total_tokens"
 
 # 📝 Prompt preferences file
 PROMPT_PREF_PATH = Path(CONFIG_DIR) / ".prompt_pref.json"

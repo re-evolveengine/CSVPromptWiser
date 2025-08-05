@@ -28,7 +28,7 @@ def main():
     st.title(f"🤖 {APP_NAME} Dashboard")
 
     # --- Sidebar interaction ---
-    api_key, model_name, df, chunk_file_path, chunk_summary, prompt, response_example, generation_config, gemini_client = cwp_sidebar()
+    api_key, model_name, df, chunk_file_path, chunk_summary, prompt, response_example, generation_config, gemini_client, total_tokens = cwp_sidebar()
 
     # Initialize session state for expanded state
     if 'expanders' not in st.session_state:
@@ -74,7 +74,8 @@ def main():
             gemini_client,
             prompt,
             chunk_file_path,
-            max_chunks=st.session_state.get("num_chunks", 5)
+            max_chunks=st.session_state.get("num_chunks", 5),
+            total_tokens=total_tokens
         )
     else:
         st.warning("Please provide all required parameters (API key, model, prompt, and chunks) to enable processing.")
