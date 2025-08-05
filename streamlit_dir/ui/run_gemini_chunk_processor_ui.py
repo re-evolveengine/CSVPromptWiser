@@ -1,6 +1,6 @@
 import pandas as pd
 from tenacity import RetryError
-from typing import List, Tuple, Optional, Callable
+from typing import List, Tuple, Optional, Callable, Generator
 
 from model.core.chunk.chunk_manager import ChunkManager
 from model.core.llms.gemini_client import GeminiClient
@@ -81,3 +81,81 @@ def run_gemini_chunk_processor_ui(
         errors.append(f"[Fatal Error] Processing aborted: {e}")
 
     return results, errors
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def process_next_chunk_generator(
+    prompt: str,
+    client: GeminiClient,
+    chunk_manager: ChunkManager,
+    max_chunks: Optional[int] = None,
+    progress_callback: Optional[Callable[[int, int, int], None]] = None
+) -> Generator[Tuple[dict, Optional[str]], None, None]:
+    """
+    Generator that processes one chunk at a time using Gemini and yields results incrementally.
+
+    Yields:
+        Tuple[dict, Optional[str]]: On success, a result dict. On failure, an error string.
+    """
+    runner = GeminiResilientRunner(client=client)
+    prefs = ModelPreference()
+
+    total = chunk_manager.remaining_chunks if max_chunks is None else min(max_chunks, chunk_manager.remaining_chunks)
+    count = 0
+    current_remaining_total = prefs.get_remaining_total_tokens()
+
+    chunks_processed = 0
+    for chunk_id, chunk_df in chunk_manager.get_chunk_iterator(max_chunks=max_chunks):
+        error = None
+        result = None
+
+        try:
+            response, used_tokens = runner.run(prompt, chunk_df)
+
+            # Update token count
+            current_remaining_total -= used_tokens
+            prefs.save_remaining_total_tokens(current_remaining_total)
+
+            # Build result
+            result = {
+                "chunk": chunk_df,
+                "prompt": prompt,
+                "response": response,
+                "remaining_tokens": current_remaining_total
+            }
+
+        except runner.user_errors as ue:
+            error = f"[User Error] Skipped chunk: {ue}"
+        except RetryError as re:
+            last_exc = re.last_attempt.exception()
+            error = f"[Retryable Error] Skipped chunk after retries: {last_exc}"
+        except Exception as e:
+            error = f"[Unexpected Error] Skipped chunk: {e}"
+
+        # Update count and progress
+        count += 1
+        if progress_callback:
+            progress_callback(count, total, current_remaining_total)
+
+        # Yield result or error
+        yield result, error
+
+        # Optional: break early if max_chunks is reached
+        chunks_processed += 1
+        if max_chunks and chunks_processed >= max_chunks:
+            break
+

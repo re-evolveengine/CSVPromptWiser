@@ -152,6 +152,28 @@ class ChunkManager:
 
         return results
 
+    def get_chunk_iterator(self, max_chunks: Optional[int] = None):
+        """
+        Yields one unprocessed chunk at a time (as DataFrames), up to max_chunks.
+
+        Args:
+            max_chunks (Optional[int]): Number of chunks to yield. If None, yield all remaining.
+
+        Yields:
+            Tuple[str, pd.DataFrame]: chunk_id and the corresponding chunk as a DataFrame
+        """
+        count = 0
+        for chunk in self._get_unprocessed_chunks():
+            if max_chunks is not None and count >= max_chunks:
+                break
+
+            chunk_id = str(chunk.get("chunk_id"))
+            if chunk_id not in self._processed_set:
+                df = pd.DataFrame(chunk["data"])
+                self._current_chunk_id = chunk_id
+                yield chunk_id, df
+                count += 1
+
     def __repr__(self) -> str:
         return (
             f"ChunkManager(file='{self.json_path.name}', "
