@@ -17,16 +17,13 @@ class GeminiChunkProcessor:
         prompt: str,
         client: GeminiClient,
         chunk_manager: ChunkManager,
-        progress_callback: Optional[Callable[[int, int, int], None]] = None,
     ):
         self.prompt = prompt
         self.client = client
         self.chunk_manager = chunk_manager
-        self.progress_callback = progress_callback
 
         self.runner = GeminiResilientRunner(client=self.client)
         self.prefs = ModelPreference()
-        self.count = 0
         self.remaining_tokens = self.prefs.get_remaining_total_tokens()
 
         self._validate_inputs()
@@ -51,11 +48,6 @@ class GeminiChunkProcessor:
             self.prefs.save_remaining_total_tokens(self.remaining_tokens)
 
             self.chunk_manager.mark_chunk_processed()
-            self.count += 1
-
-            if self.progress_callback:
-                total = self.chunk_manager.total_chunks
-                self.progress_callback(self.count, total, self.remaining_tokens)
 
             return ChunkProcessResult(
                 result_type=ResultType.SUCCESS,
