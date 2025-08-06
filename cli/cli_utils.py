@@ -142,7 +142,7 @@ def run_gemini_chunk_processor(
                 "response": response
             })
             any_success = True
-        except runner.user_errors as ue:
+        except runner.fatal_errors as ue:
             print(f"[User Error] Skipping chunk due to user error: {ue}")
         except RetryError as re:
             last_exc = re.last_attempt.exception()

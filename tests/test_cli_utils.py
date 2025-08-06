@@ -111,7 +111,7 @@ def test_run_gemini_chunk_processor_success(mock_chunk_manager):
     with patch('cli.cli_utils.GeminiClient') as mock_client, \
          patch('cli.cli_utils.GeminiResilientRunner') as mock_runner:
         # Setup mocks
-        mock_runner.return_value.user_errors = (ValueError,)
+        mock_runner.return_value.fatal_errors = (ValueError,)
         mock_runner.return_value.run.return_value = "test response"
 
         # Call function
@@ -134,7 +134,7 @@ def test_run_gemini_chunk_processor_user_error(mock_chunk_manager):
          patch('cli.cli_utils.GeminiResilientRunner') as mock_runner, \
          patch('builtins.print') as mock_print:
         # Setup mocks to raise user error
-        mock_runner.return_value.user_errors = (ValueError,)
+        mock_runner.return_value.fatal_errors = (ValueError,)
         mock_runner.return_value.run.side_effect = ValueError("Invalid API key")
 
         # Call function

@@ -21,7 +21,7 @@ class ResilientLLMRunner(ABC):
 
     @property
     @abstractmethod
-    def user_errors(self):
+    def fatal_errors(self):
         """Define which exceptions must be shown to user immediately."""
         pass
 
@@ -29,7 +29,7 @@ class ResilientLLMRunner(ABC):
         return isinstance(exception, self.retryable_errors)
 
     def _should_fail_fast(self, exception):
-        return isinstance(exception, self.user_errors)
+        return isinstance(exception, self.fatal_errors)
 
     logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class ResilientLLMRunner(ABC):
         def _call():
             try:
                 return self.client.call(prompt, df)
-            except self.user_errors as e:
+            except self.fatal_errors as e:
                 # Don't retry on user errors — re-raise immediately
                 print(f"[User Error] {type(e).__name__}: {e}")
                 raise

@@ -13,15 +13,15 @@ class GeminiResilientRunner(ResilientLLMRunner):
             api_exceptions.DeadlineExceeded,
             api_exceptions.ServiceUnavailable,
             api_exceptions.InternalServerError,
-            api_exceptions.ResourceExhausted,
             api_exceptions.Aborted,
             ConnectionError,
             TimeoutError,
         )
 
     @property
-    def user_errors(self):
+    def fatal_errors(self):
         return (
+            api_exceptions.ResourceExhausted,
             api_exceptions.PermissionDenied,
             api_exceptions.Unauthenticated,
             api_exceptions.InvalidArgument,

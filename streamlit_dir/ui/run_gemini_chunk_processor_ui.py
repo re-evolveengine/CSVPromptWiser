@@ -60,7 +60,7 @@ def run_gemini_chunk_processor_ui(
                 "remaining_tokens": current_remaining_total
             })
 
-        except runner.user_errors as ue:
+        except runner.fatal_errors as ue:
             errors.append(f"[User Error] Skipped chunk: {ue}")
         except RetryError as re:
             last_exc = re.last_attempt.exception()
