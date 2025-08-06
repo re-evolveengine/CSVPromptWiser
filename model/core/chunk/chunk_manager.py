@@ -103,7 +103,7 @@ class ChunkManager:
             self,
             func: Callable[[pd.DataFrame], Any],
             show_progress: bool = True,
-            max_chunks: Optional[int] = None
+            chunk_count: Optional[int] = None
     ) -> List[Any]:
         """
         Process a specified number of unprocessed chunks sequentially.
@@ -111,7 +111,7 @@ class ChunkManager:
         Args:
             func: Function that takes a DataFrame and returns any result.
             show_progress: Whether to show a progress bar.
-            max_chunks: Optional number of chunks to process (None = all remaining).
+            chunk_count: Optional number of chunks to process (None = all remaining).
 
         Returns:
             List of results from processing each chunk.
@@ -119,8 +119,8 @@ class ChunkManager:
         results = []
         unprocessed_chunks = self._get_unprocessed_chunks()
 
-        if max_chunks is not None:
-            unprocessed_chunks = unprocessed_chunks[:max_chunks]
+        if chunk_count is not None:
+            unprocessed_chunks = unprocessed_chunks[:chunk_count]
 
         iterator = enumerate(unprocessed_chunks)
 
@@ -153,28 +153,6 @@ class ChunkManager:
         self._save_state()
 
         return results
-
-    def get_chunk_iterator(self, max_chunks: Optional[int] = None):
-        """
-        Yields one unprocessed chunk at a time (as DataFrames), up to max_chunks.
-
-        Args:
-            max_chunks (Optional[int]): Number of chunks to yield. If None, yield all remaining.
-
-        Yields:
-            Tuple[str, pd.DataFrame]: chunk_id and the corresponding chunk as a DataFrame
-        """
-        count = 0
-        for chunk in self._get_unprocessed_chunks():
-            if max_chunks is not None and count >= max_chunks:
-                break
-
-            chunk_id = str(chunk.get("chunk_id"))
-            if chunk_id not in self._processed_set:
-                df = pd.DataFrame(chunk["data"])
-                self._current_chunk_id = chunk_id
-                yield chunk_id, df
-                count += 1
 
     def __repr__(self) -> str:
         return (

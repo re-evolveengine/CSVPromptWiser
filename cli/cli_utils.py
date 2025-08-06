@@ -154,7 +154,7 @@ def run_gemini_chunk_processor(
         chunk_manager.process_chunks(
             func=process_fn,
             show_progress=True,
-            max_chunks=max_chunks  # ✅ This was missing
+            chunk_count=max_chunks  # ✅ This was missing
         )
     except Exception as e:
         print(f"[Fatal Error] Something went wrong during chunk processing: {e}")

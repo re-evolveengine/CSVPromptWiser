@@ -114,7 +114,7 @@ def test_process_chunks_with_max(chunk_manager):
         return len(df)
 
     # Process only 1 chunk
-    results = chunk_manager.process_chunks(process_func, max_chunks=1)
+    results = chunk_manager.process_chunks(process_func, chunk_count=1)
 
     assert len(results) == 1
     assert results[0] == 2  # 2 rows in the first chunk

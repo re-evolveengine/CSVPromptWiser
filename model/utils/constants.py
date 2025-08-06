@@ -5,6 +5,7 @@ JSON_CHUNK_VERSION = 1.0
 APP_NAME = "ChunkWisePrompter"
 DATA_FOLDER_NAME = "data"
 RESULTS_FOLDER_NAME = "results"
+RESULTS_DB_NAME = "processed_chunks.db"
 TEMP_FOLDER_NAME = "temp"
 CONFIG_FOLDER_NAME = "config"  # Optional: for preferences/configs
 
@@ -14,6 +15,7 @@ DATA_DIR = os.path.join(APP_DIR, DATA_FOLDER_NAME)
 RESULTS_DIR = os.path.join(APP_DIR, RESULTS_FOLDER_NAME)
 TEMP_DIR = os.path.join(APP_DIR, TEMP_FOLDER_NAME)
 CONFIG_DIR = os.path.join(APP_DIR, CONFIG_FOLDER_NAME)
+RESULTS_DB_PATH = os.path.join(RESULTS_DIR, RESULTS_DB_NAME)
 
 DEFAULT_CHUNK_SIZE = 100
 
