@@ -1,8 +1,12 @@
 from typing import Any, Tuple
+import logging
 import pandas as pd
 import google.generativeai as genai
 
 from model.core.llms.base_llm_client import BaseLLMClient
+
+# Add logger
+logger = logging.getLogger(__name__)
 
 
 class GeminiClient(BaseLLMClient):
@@ -22,13 +26,22 @@ class GeminiClient(BaseLLMClient):
         """
         formatted_input = self._format_input(prompt, df)
         try:
+            # First get the token count
+            count_response = self.llm.count_tokens(contents=formatted_input)
+            input_tokens = count_response.total_tokens
+            
+            # Then generate the response
             response = self.llm.generate_content(formatted_input)
             text = response.text
-            # Handle case where usage_metadata is not available
-            try:
-                token_count = getattr(response, 'usage_metadata', {}).get('total_tokens', 0)
-            except AttributeError:
-                token_count = 0  # Fallback if usage_metadata is not available
-            return text, token_count
+            
+            # Log the token usage
+            logger.info(f"Token count for Gemini API call - Input: {input_tokens}")
+            
+            # Note: The Gemini API doesn't provide output token count in the response
+            # For now, we'll return input_tokens as the token count
+            # You might want to estimate output tokens or find another way to get this info
+            return text, input_tokens
+            
         except Exception as e:
+            logger.error(f"Gemini call failed: {e}")
             raise RuntimeError(f"Gemini call failed: {e}")
