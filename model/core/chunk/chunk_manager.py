@@ -1,21 +1,15 @@
 import json
-from typing import Any, Callable, Optional, Dict, List
+from typing import Any, Dict, Optional, List
 import pandas as pd
 from pathlib import Path
-from tqdm import tqdm
-from threading import Event
 
 from model.utils.constants import JSON_CHUNK_VERSION
 
 
 class ChunkManager:
-    """Manages sequential processing of chunks from JSON storage."""
+    """Manages loading and tracking of chunks from JSON storage."""
 
     def __init__(self, json_path: str):
-        """
-        Args:
-            json_path: Path to JSON file created by DataFrameChunker.save_chunks_to_json()
-        """
         self.json_path = Path(json_path)
         self._validate_json_file()
 
@@ -24,21 +18,6 @@ class ChunkManager:
 
         self._check_version()
         self._init_chunk_state()
-
-        # 🧵 Pause event for CLI control
-        self.pause_event = Event()
-        self.pause_event.set()  # Start in 'resumed' state
-
-    def pause(self):
-        """Pause the chunk processing."""
-        self.pause_event.clear()
-
-    def resume(self):
-        """Resume the chunk processing."""
-        self.pause_event.set()
-
-    def is_paused(self) -> bool:
-        return not self.pause_event.is_set()
 
     def _validate_json_file(self):
         if not self.json_path.exists():
@@ -78,81 +57,26 @@ class ChunkManager:
             if chunk_id and chunk_id not in self._processed_set:
                 self._current_chunk_id = chunk_id
                 return pd.DataFrame(chunk["data"])
-        return None  # All processed
+        return None
 
     def mark_chunk_processed(self, chunk_id: Optional[str] = None):
-        """Marks a specific chunk or the most recently fetched chunk as processed."""
+        """Mark the most recent or specified chunk as processed."""
         if chunk_id:
             self._processed_set.add(str(chunk_id))
         elif hasattr(self, "_current_chunk_id"):
             self._processed_set.add(self._current_chunk_id)
             self._current_chunk_id = None
         else:
-            raise RuntimeError("No chunk fetched to mark as processed.")
+            raise RuntimeError("No chunk to mark as processed.")
 
-    def _save_state(self):
-        """Writes updated metadata back to the JSON file."""
+    def save_state(self):
+        """Save updated processed chunk IDs to the JSON file."""
         self.summary["processed"] = len(self._processed_set)
         self.summary["processed_ids"] = sorted(self._processed_set)
         self.data["summary"] = self.summary
 
         with open(self.json_path, "w") as f:
             json.dump(self.data, f, indent=2)
-
-    def process_chunks(
-            self,
-            func: Callable[[pd.DataFrame], Any],
-            show_progress: bool = True,
-            chunk_count: Optional[int] = None
-    ) -> List[Any]:
-        """
-        Process a specified number of unprocessed chunks sequentially.
-
-        Args:
-            func: Function that takes a DataFrame and returns any result.
-            show_progress: Whether to show a progress bar.
-            chunk_count: Optional number of chunks to process (None = all remaining).
-
-        Returns:
-            List of results from processing each chunk.
-        """
-        results = []
-        unprocessed_chunks = self._get_unprocessed_chunks()
-
-        if chunk_count is not None:
-            unprocessed_chunks = unprocessed_chunks[:chunk_count]
-
-        iterator = enumerate(unprocessed_chunks)
-
-        if show_progress:
-            iterator = tqdm(
-                iterator,
-                total=len(unprocessed_chunks),
-                desc=f"Processing {self.json_path.name}",
-                unit="chunk"
-            )
-
-        for i, chunk in iterator:
-
-            self.pause_event.wait()  # 🛑 Pause here if paused
-
-            try:
-                df = pd.DataFrame(chunk["data"])
-                result = func(df)
-                results.append(result)
-
-                chunk_id = chunk.get("chunk_id")
-                if chunk_id:
-                    self._processed_set.add(chunk_id)
-
-            except Exception as e:
-                results.append(f"Error: {str(e)}")
-
-        self.summary["processed"] = len(self._processed_set)
-        self.summary["processed_ids"] = sorted(self._processed_set)
-        self._save_state()
-
-        return results
 
     def __repr__(self) -> str:
         return (
