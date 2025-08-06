@@ -1,34 +1,30 @@
 import logging
-from datetime import datetime
-from pathlib import Path
 from typing import Any
+from datetime import datetime
 
 import streamlit as st
 
 from streamlit_dir.chunk_process_state import ChunkProcessorState
-from streamlit_dir.ui.run_gemini_chunk_processor_ui import run_gemini_chunk_processor_ui
+from model.core.chunk.chunk_manager import ChunkManager
+from model.core.llms.gemini_client import GeminiClient
+from model.utils.result_type import ResultType
+from streamlit_dir.gemini_chunk_processor import GeminiChunkProcessor
 
-# Setup logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-from model.core.chunk.chunk_manager import ChunkManager
-from model.io.gemini_result_saver import GeminiResultSaver
-from model.utils.constants import RESULTS_DIR
-from streamlit_dir.ui.token_usage_gauge import render_token_usage_gauge
-
 def process_chunks_ui(
-        client: Any,
-        prompt: str,
-        chunk_file_path: str,
-        chunk_count: int,
-        total_tokens: int
+    client: Any,
+    prompt: str,
+    chunk_file_path: str,
+    chunk_count: int,
+    total_tokens: int
 ):
     """
-    Streamlit panel to process chunks with a pre-configured GeminiClient.
+    Streamlit panel to process multiple chunks using GeminiChunkProcessor.
     """
 
     st.markdown("### 🧠 Chunk Processing Progress")
@@ -37,7 +33,6 @@ def process_chunks_ui(
         st.warning("⚠️ Please make sure client, prompt, and chunk file are all set.")
         return
 
-    # Init state object if not present
     if "chunk_state" not in st.session_state:
         st.session_state.chunk_state = ChunkProcessorState(total_tokens=total_tokens)
 
@@ -47,74 +42,48 @@ def process_chunks_ui(
     total_chunks = chunk_manager.total_chunks
     remaining_chunks = chunk_manager.remaining_chunks
 
-    # UI placeholders
-    status_container = st.empty()
-    gauge_placeholder = st.empty()
-    progress_bar = st.progress(0)
-    batch_status = st.empty()
-    status_placeholder = st.empty()
+    st.info(f"📦 Total Chunks: {total_chunks} 🔁 Remaining: {remaining_chunks}")
 
-    def update_status(current: int, batch_total: int, remaining_tokens: int):
-        """Callback to update processing state only."""
-        state.current_chunk = current
-        state.batch_total = batch_total
-        state.remaining_tokens = remaining_tokens
+    processor = GeminiChunkProcessor(prompt=prompt, client=client, chunk_manager=chunk_manager)
 
-    # ⏳ Display Initial Status
-    status_container.info(f"📦 Total Chunks: {total_chunks} 🔁 Remaining: {remaining_chunks}")
-    batch_status.info("⏳ Waiting to start processing...")
-
-
-    # 🔄 Processing
     if "start_processing" in st.session_state and st.session_state.get("start_processing"):
-        try:
-            results, errors = run_gemini_chunk_processor_ui(
-                prompt=prompt,
-                client=client,
-                chunk_manager=chunk_manager,
-                chunk_count=chunk_count,
-                progress_callback=update_status
-            )
+        results = []
+        errors = []
 
-            if errors:
-                st.error("⚠️ Some chunks failed:")
-                for err in errors:
-                    st.write(f"- {err}")
+        for i in range(chunk_count):
+            result = processor.process_one_chunk()
 
-            if not results:
-                st.error("❌ No chunks were processed successfully.")
-                return
+            state.processed_chunk_count = i + 1
+            state.chunk_count = chunk_count
+            state.remaining_tokens = result.remaining_tokens or state.remaining_tokens
 
-            # ✅ Save results
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            base = f"{client.model}_{timestamp}"
-            json_path = Path(RESULTS_DIR) / f"{base}.json"
-            csv_path = Path(RESULTS_DIR) / f"{base}.csv"
+            if result.result_type == ResultType.SUCCESS:
+                results.append(result)
+            elif result.result_type == ResultType.FATAL_ERROR:
+                errors.append(result.error)
+                break
+            elif result.result_type in (ResultType.RETRYABLE_ERROR, ResultType.UNEXPECTED_ERROR):
+                errors.append(result.error)
+                continue
+            elif result.result_type == ResultType.NO_MORE_CHUNKS:
+                break
 
-            GeminiResultSaver.save_results_to_json(results, str(json_path))
-            GeminiResultSaver.save_results_to_csv(results, str(csv_path))
+        if errors:
+            st.error("⚠️ Some chunks failed:")
+            for err in errors:
+                st.write(f"- {err}")
 
-            st.success("✅ Processing complete and results saved.")
-            # Optionally: Show download links
-            # st.markdown(f"- 📁 [Download JSON Result]({json_path})")
-            # st.markdown(f"- 📁 [Download CSV Result]({csv_path})")
+        if not results:
+            st.error("❌ No chunks were processed successfully.")
+        else:
+            st.success("✅ Processing complete.")
 
-        finally:
-            st.session_state["start_processing"] = False
-            st.rerun()
-
+        st.session_state["start_processing"] = False
+        st.rerun()
     else:
-        # Idle state
-        progress_bar.empty()
-        status_placeholder.info("ℹ️ Click 'Start Processing' to begin chunk processing.")
+        st.info("ℹ️ Click 'Start Processing' to begin chunk processing.")
 
-
-    # 🎯 Show token usage gauge
     st.subheader("🧮 Token Usage Summary")
-    current_percent = ((state.total_tokens - state.remaining_tokens) / state.total_tokens) * 100
-    gauge_placeholder.markdown("🧮 Token Usage")
-    render_token_usage_gauge(current_percent)
-
-    batch_status.info(f"🔄 Processing: {state.current_chunk} of {state.batch_total}")
+    current_percent = ((state.total_tokens - state.remaining_tokens) / state.total_tokens) * 100 if state.total_tokens else 0
+    st.progress(current_percent / 100.0)
     st.info(f"🪙 Remaining Tokens So Far: {state.remaining_tokens}")
-
