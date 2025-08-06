@@ -38,7 +38,7 @@ class GeminiChunkProcessor:
 
     def process_one_chunk(self) -> ChunkProcessResult:
         """Processes a single chunk and returns a typed result."""
-        df = self.chunk_manager.get_next_chunk()
+        df,chunk_id = self.chunk_manager.get_next_chunk()
         if df is None:
             return ChunkProcessResult(ResultType.NO_MORE_CHUNKS)
 
@@ -47,7 +47,8 @@ class GeminiChunkProcessor:
             self.remaining_tokens -= used_tokens
             self.prefs.save_remaining_total_tokens(self.remaining_tokens)
 
-            self.chunk_manager.mark_chunk_processed()
+            self.chunk_manager.mark_chunk_processed(chunk_id)
+            self.chunk_manager.save_state()
 
             return ChunkProcessResult(
                 result_type=ResultType.SUCCESS,

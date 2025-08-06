@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, Optional, List, Tuple
 import pandas as pd
 from pathlib import Path
 
@@ -50,13 +50,13 @@ class ChunkManager:
             if str(chunk.get("chunk_id")) not in self._processed_set
         ]
 
-    def get_next_chunk(self) -> Optional[pd.DataFrame]:
+    def get_next_chunk(self) -> Tuple[pd.DataFrame, Optional[str]]:
         """Returns the next unprocessed chunk as a DataFrame."""
         for chunk in self.chunks:
             chunk_id = str(chunk.get("chunk_id"))
             if chunk_id and chunk_id not in self._processed_set:
                 self._current_chunk_id = chunk_id
-                return pd.DataFrame(chunk["data"])
+                return pd.DataFrame(chunk["data"]), chunk_id
         return None
 
     def mark_chunk_processed(self, chunk_id: Optional[str] = None):

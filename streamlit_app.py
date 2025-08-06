@@ -74,7 +74,7 @@ def main():
             gemini_client,
             prompt,
             chunk_file_path,
-            chunk_count=st.session_state.get("num_chunks", 5),
+            chunk_count=st.session_state.get("num_chunks", 2),
             total_tokens=total_tokens
         )
     else:
