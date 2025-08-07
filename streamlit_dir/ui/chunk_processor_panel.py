@@ -1,17 +1,13 @@
 import logging
-from datetime import datetime
-from typing import Any
 
 import streamlit as st
 
 from model.core.chunk.chunk_manager import ChunkManager
-from model.core.llms.base_llm_client import BaseLLMClient
 from model.core.llms.gemini_client import GeminiClient
-from model.io.gemini_result_saver import GeminiResultSaver
 from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
 from model.io.model_prefs import ModelPreference
 from model.utils.result_type import ResultType
-from model.utils.save_processed_chunks_to_db import save_processed_chunk_to_db
+from model.io.save_processed_chunks_to_db import save_processed_chunk_to_db
 from streamlit_dir.gemini_chunk_processor import GeminiChunkProcessor
 from streamlit_dir.ui.token_usage_gauge import render_token_usage_gauge
 
