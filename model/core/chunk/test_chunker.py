@@ -107,3 +107,40 @@ def test_chunks_property_before_chunking():
     # The implementation raises a ValueError with a specific message
     with pytest.raises(ValueError, match="No chunks available - run chunk_dataframe\(\) first"):
         _ = chunker.chunks
+
+
+def test_chunk_dataframe_adds_source_id(sample_dataframe):
+    """Test that chunk_dataframe adds a source_id column with UUIDs."""
+    chunker = DataFrameChunker(chunk_size=3)
+    chunks = chunker.chunk_dataframe(sample_dataframe)
+    
+    # Check that source_id was added to each chunk
+    for chunk in chunks:
+        assert 'source_id' in chunk.columns
+        # Verify all source_ids are strings that look like UUIDs
+        assert all(isinstance(id, str) and len(id) == 36 for id in chunk['source_id'])
+        # Verify all source_ids are unique within the chunk
+        assert len(chunk['source_id']) == len(chunk['source_id'].unique())
+
+
+def test_save_chunks_preserves_source_id(sample_dataframe, tmp_path):
+    """Test that source_id is preserved when saving chunks to JSON."""
+    chunker = DataFrameChunker(chunk_size=4)
+    chunks = chunker.chunk_dataframe(sample_dataframe)
+    output_file = tmp_path / "output.json"
+    
+    chunker.save_chunks_to_json(chunks, str(output_file))
+    
+    # Verify file was created
+    assert output_file.exists()
+    
+    # Verify content
+    with open(output_file, 'r') as f:
+        data = json.load(f)
+    
+    # Check that source_id is present in the saved data
+    for chunk in data['chunks']:
+        for row in chunk['data']:
+            assert 'source_id' in row
+            assert isinstance(row['source_id'], str)
+            assert len(row['source_id']) == 36  # UUID string length

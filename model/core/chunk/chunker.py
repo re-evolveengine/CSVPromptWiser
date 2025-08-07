@@ -26,7 +26,7 @@ class DataFrameChunker:
             chunk_size: Optional[int] = None
     ) -> List[pd.DataFrame]:
         """
-        Split DataFrame into smaller chunks.
+        Split DataFrame into smaller chunks and add a unique source_id per row.
 
         Args:
             df: Input DataFrame to split
@@ -37,11 +37,15 @@ class DataFrameChunker:
         """
         # Use the provided chunk_size if valid, otherwise use the instance's chunk_size
         size = chunk_size if chunk_size and chunk_size > 0 else self.chunk_size
-        
+
         # Handle empty DataFrame
         if df.empty:
             self._chunks = []
             return self._chunks
+
+        # ✅ NEW: Add a UUID to each row as 'source_id'
+        df = df.copy()
+        df["source_id"] = [str(uuid4()) for _ in range(len(df))]
 
         total_rows = len(df)
         self._chunks = [
