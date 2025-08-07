@@ -2,6 +2,7 @@ import os
 import shelve
 from model.utils.constants import MODEL_PREFS_DB_PATH, MODEL_KEY, MODEL_LIST_KEY, MODEL_CONFIG_KEY, REMAINING_TOTAL_TOKENS
 
+# refactoring todo: convert functions to properties
 
 class ModelPreference:
     def __init__(self, db_path=MODEL_PREFS_DB_PATH):

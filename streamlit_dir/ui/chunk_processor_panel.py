@@ -6,6 +6,7 @@ import streamlit as st
 
 from model.core.chunk.chunk_manager import ChunkManager
 from model.io.gemini_result_saver import GeminiResultSaver
+from model.io.model_prefs import ModelPreference
 from model.utils.result_type import ResultType
 from streamlit_dir.gemini_chunk_processor import GeminiChunkProcessor
 from streamlit_dir.ui.token_usage_gauge import render_token_usage_gauge
@@ -17,25 +18,47 @@ logging.basicConfig(
 )
 
 
-def render_status_panel(processor, chunk_manager, processed, total_chunks, total_tokens):
+def render_status_panel(chunk_manager:ChunkManager
+                        ,model_prefs:ModelPreference,
+                        curr_processed_chunks:int,
+                        curr_total_chunks:int):
     """Unified display of chunk progress, token usage, and stats."""
-    render_progress_with_info("Chunks Processed", processed, total_chunks)
-    remaining_ratio = processor.remaining_tokens / total_tokens * 100
-    render_token_usage_gauge(remaining_ratio)
+
+    total_chunks = chunk_manager.total_chunks
+    remaining_chunks = chunk_manager.remaining_chunks
+    processed_chunks = remaining_to_processed(remaining_chunks, total_chunks)
+
+    st.markdown("### 🧠 Chunk Processing Progress")
+    render_progress_with_info("Current Chunk Processed", curr_processed_chunks, curr_total_chunks)
+
+    st.markdown("### 🧠 Total Chunk Processing Progress")
+    render_progress_with_info("Total Chunks Processed", processed_chunks, total_chunks)
+
+    total_tokens = model_prefs.get_remaining_total_tokens()
+    remaining_tokens = model_prefs.get_remaining_total_tokens()
+    processed_tokens = remaining_to_processed(remaining_tokens, total_tokens)
+    processed_ratio = processed_tokens / total_tokens * 100
+
+    st.markdown("### 🧠 Token Usage Gauge")
+    st.info(f"Total Tokens: {total_tokens} 🔁 Remaining: {remaining_tokens} 🔁 Consumed: {processed_tokens}")
+    render_token_usage_gauge(processed_ratio)
 
 
-def render_progress_with_info(label: str, current: int, total: int, icon: str = "📦"):
+def remaining_to_processed(remaining: int, total: int):
+    return total - remaining
+
+
+def render_progress_with_info(label: str, processed: int, total: int, icon: str = "📦"):
     """Renders a progress bar and a stat info block below it."""
-    st.progress(current / total, text=f"{label}: {current}/{total}")
+    st.progress(processed / total, text=f"{label}: {processed}/{total}")
     st.info(f"{icon} {label}: {total} 🔁 Total: {total}")
 
 
 def process_chunks_ui(
-    client: Any,
-    prompt: str,
-    chunk_file_path: str,
-    chunk_count: int,
-    total_tokens: int
+        client: Any,
+        prompt: str,
+        chunk_file_path: str,
+        chunk_count: int,
 ):
     st.markdown("### 🧠 Chunk Processing Progress")
 
@@ -46,6 +69,7 @@ def process_chunks_ui(
     # Load manager & processor
     chunk_manager = ChunkManager(json_path=chunk_file_path)
     processor = GeminiChunkProcessor(client=client, prompt=prompt, chunk_manager=chunk_manager)
+    prefs = ModelPreference()
 
     start = st.button("Start Processing")
 
@@ -71,7 +95,7 @@ def process_chunks_ui(
             elif result.result_type == ResultType.FATAL_ERROR:
                 update_area.error(f"❌ Fatal Error: {result.error}", icon="🚨")
                 with update_area.container():
-                    render_status_panel(processor, chunk_manager, processed, chunk_count, total_tokens)
+                    render_status_panel(chunk_manager, prefs, processed, chunk_count)
                 break
 
             elif result.result_type == ResultType.RETRYABLE_ERROR:
@@ -86,11 +110,11 @@ def process_chunks_ui(
 
             # UI updates after every step
             with update_area.container():
-                render_status_panel(processor, chunk_manager, processed, chunk_count, total_tokens)
+                render_status_panel(chunk_manager, prefs, processed, chunk_count)
 
         else:
             with update_area.container():
-                render_status_panel(processor, chunk_manager, processed, chunk_count, total_tokens)
+                render_status_panel(chunk_manager, prefs, processed, chunk_count)
                 st.success("✅ Finished processing all requested chunks.")
 
     else:

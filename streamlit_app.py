@@ -75,7 +75,6 @@ def main():
             prompt,
             chunk_file_path,
             chunk_count=st.session_state.get("num_chunks", 2),
-            total_tokens=total_tokens
         )
     else:
         st.warning("Please provide all required parameters (API key, model, prompt, and chunks) to enable processing.")
