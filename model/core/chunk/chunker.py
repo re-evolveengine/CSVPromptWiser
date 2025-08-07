@@ -5,19 +5,20 @@ from typing import List, Optional, Dict, Any
 from uuid import uuid4
 import pandas as pd
 
-from model.utils.constants import JSON_CHUNK_VERSION, DEFAULT_CHUNK_SIZE, TEMP_DIR
+from model.utils.constants import JSON_CHUNK_VERSION, DEFAULT_CHUNK_SIZE, JSON_CHUNK_FILE
 
 
 class DataFrameChunker:
     """Handles DataFrame chunking and JSON serialization only."""
 
-    def __init__(self, chunk_size: Optional[int] = None):
+    def __init__(self, chunk_size: Optional[int] = None, json_file_path: Optional[str] = JSON_CHUNK_FILE):
         """
         Args:
             chunk_size: Number of rows per chunk. If None, <= 0, or not provided,
                       uses DEFAULT_CHUNK_SIZE.
         """
         self.chunk_size = chunk_size if chunk_size and chunk_size > 0 else DEFAULT_CHUNK_SIZE
+        self.json_file_path = json_file_path
         self._chunks: List[pd.DataFrame] = []
 
     def chunk_dataframe(
@@ -67,7 +68,7 @@ class DataFrameChunker:
     def save_chunks_to_json(
             self,
             chunks: List[pd.DataFrame],
-            file_path: str = os.path.join(TEMP_DIR, "chunks.json"),
+            file_path: str = JSON_CHUNK_FILE ,
             max_rows_per_chunk: Optional[int] = None,
             metadata: Optional[Dict[str, Any]] = None
     ) -> None:

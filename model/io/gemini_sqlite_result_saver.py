@@ -23,7 +23,8 @@ class GeminiSQLiteResultSaver:
                     response TEXT NOT NULL,
                     used_tokens INTEGER,
                     model_version TEXT NOT NULL,
-                    timestamp TEXT NOT NULL
+                    timestamp TEXT NOT NULL,
+                    UNIQUE(source_id, prompt)  -- Prevent duplicates
                 );
             """)
             conn.commit()
@@ -47,7 +48,7 @@ class GeminiSQLiteResultSaver:
             cursor = conn.cursor()
             for item in results:
                 cursor.execute("""
-                    INSERT INTO results (
+                    INSERT OR IGNORE INTO results (
                         source_id,
                         chunk_id,
                         prompt,
@@ -65,9 +66,8 @@ class GeminiSQLiteResultSaver:
                     item["model_version"],
                     datetime.utcnow().isoformat() + "Z"
                 ))
-
             conn.commit()
-            print(f"Saved {len(results)} results to {self.db_path}")
+            print(f"Tried saving {len(results)} rows (duplicates ignored).")
 
     def get_all(self) -> List[Dict[str, Any]]:
         """
@@ -94,3 +94,23 @@ class GeminiSQLiteResultSaver:
             }
             for row in rows
         ]
+
+    def has_source_ids(self, source_ids: List[str], prompt: str) -> List[str]:
+        """
+        Return source_ids that already exist in the DB for a given prompt.
+        """
+        if not source_ids:
+            return []
+
+        placeholders = ",".join("?" for _ in source_ids)
+        query = f"""
+            SELECT source_id FROM results
+            WHERE source_id IN ({placeholders}) AND prompt = ?
+        """
+
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (*source_ids, prompt))
+            existing = cursor.fetchall()
+
+        return [row[0] for row in existing]

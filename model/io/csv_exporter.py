@@ -1,12 +1,13 @@
 import pandas as pd
 from pathlib import Path
 from typing import List, Dict, Any
-from model.utils.constants import CHUNK_JSON_PATH
-from model.savers.sqlite_saver import GeminiSQLiteResultSaver
+
+from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
+from model.utils.constants import JSON_CHUNK_FILE
 
 
 class CSVExporter:
-    def __init__(self, json_path: str = CHUNK_JSON_PATH, db_saver: GeminiSQLiteResultSaver = None):
+    def __init__(self, json_path: str = JSON_CHUNK_FILE, db_saver: GeminiSQLiteResultSaver = None):
         self.json_path = Path(json_path)
         self.db_saver = db_saver or GeminiSQLiteResultSaver()
 

@@ -55,7 +55,7 @@ def render_status_panel(
     st.info(
         f"🧮 **Total Tokens:** `{total_tokens}` &nbsp;&nbsp;&nbsp; 🔁 **Remaining:** `{remaining_tokens}` &nbsp;&nbsp;&nbsp; ✅ **Consumed:** `{processed_tokens}`"
     )
-    render_token_usage_gauge(processed_ratio, key=f"token_gauge_{curr_processed_chunks}")
+    render_token_usage_gauge(processed_ratio)
 
 
 def render_progress_with_info(label: str, processed: int, total: int, icon: str = "📦"):

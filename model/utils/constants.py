@@ -9,6 +9,7 @@ RESULTS_DB_NAME = "processed_chunks.db"
 TEMP_FOLDER_NAME = "temp"
 CONFIG_FOLDER_NAME = "config"  # Optional: for preferences/configs
 
+# 📂 Directories
 DOCUMENTS_DIR = os.path.join(os.path.expanduser("~"), "Documents")
 APP_DIR = os.path.join(DOCUMENTS_DIR, APP_NAME)
 DATA_DIR = os.path.join(APP_DIR, DATA_FOLDER_NAME)
@@ -16,6 +17,9 @@ RESULTS_DIR = os.path.join(APP_DIR, RESULTS_FOLDER_NAME)
 TEMP_DIR = os.path.join(APP_DIR, TEMP_FOLDER_NAME)
 CONFIG_DIR = os.path.join(APP_DIR, CONFIG_FOLDER_NAME)
 RESULTS_DB_PATH = os.path.join(RESULTS_DIR, RESULTS_DB_NAME)
+
+# 📂 Files
+JSON_CHUNK_FILE = os.path.join(DATA_DIR, "chunks.json")
 
 DEFAULT_CHUNK_SIZE = 100
 
