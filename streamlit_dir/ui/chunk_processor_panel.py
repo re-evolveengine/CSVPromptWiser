@@ -18,34 +18,40 @@ logging.basicConfig(
 )
 
 
-def render_status_panel(chunk_manager:ChunkManager
-                        ,model_prefs:ModelPreference,
-                        curr_processed_chunks:int,
-                        curr_total_chunks:int):
+def remaining_to_processed(remaining: int, total: int) -> int:
+    return total - remaining
+
+
+def render_status_panel(
+    chunk_manager: ChunkManager,
+    model_prefs: ModelPreference,
+    curr_processed_chunks: int,
+    curr_total_chunks: int
+):
     """Unified display of chunk progress, token usage, and stats."""
 
+    # === Chunks ===
     total_chunks = chunk_manager.total_chunks
     remaining_chunks = chunk_manager.remaining_chunks
     processed_chunks = remaining_to_processed(remaining_chunks, total_chunks)
 
-    st.markdown("### 🧠 Chunk Processing Progress")
-    render_progress_with_info("Current Chunk Processed", curr_processed_chunks, curr_total_chunks)
+    st.markdown("#### 📦 Current Session Progress")
+    render_progress_with_info("🔄 Chunks Processed (This Run)", curr_processed_chunks, curr_total_chunks)
 
-    st.markdown("### 🧠 Total Chunk Processing Progress")
-    render_progress_with_info("Total Chunks Processed", processed_chunks, total_chunks)
+    st.markdown("#### 📊 Overall Chunk Progress")
+    render_progress_with_info("🧩 Total Chunks Processed", processed_chunks, total_chunks)
 
+    # === Tokens ===
     total_tokens = model_prefs.total_tokens
     remaining_tokens = model_prefs.remaining_total_tokens
     processed_tokens = remaining_to_processed(remaining_tokens, total_tokens)
-    processed_ratio = processed_tokens / total_tokens * 100
+    processed_ratio = (processed_tokens / total_tokens) * 100
 
-    st.markdown("### 🧠 Token Usage Gauge")
-    st.info(f"Total Tokens: {total_tokens} 🔁 Remaining: {remaining_tokens} 🔁 Consumed: {processed_tokens}")
-    render_token_usage_gauge(processed_ratio)
-
-
-def remaining_to_processed(remaining: int, total: int):
-    return total - remaining
+    st.markdown("#### 🔋 Token Usage Overview")
+    st.info(
+        f"🧮 **Total Tokens:** `{total_tokens}` &nbsp;&nbsp;&nbsp; 🔁 **Remaining:** `{remaining_tokens}` &nbsp;&nbsp;&nbsp; ✅ **Consumed:** `{processed_tokens}`"
+    )
+    render_token_usage_gauge(processed_ratio, key=f"token_gauge_{curr_processed_chunks}")
 
 
 def render_progress_with_info(label: str, processed: int, total: int, icon: str = "📦"):
