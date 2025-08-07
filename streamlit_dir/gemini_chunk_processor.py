@@ -24,7 +24,7 @@ class GeminiChunkProcessor:
 
         self.runner = GeminiResilientRunner(client=self.client)
         self.prefs = ModelPreference()
-        self.remaining_tokens = self.prefs.get_remaining_total_tokens()
+        self.remaining_tokens = self.prefs.remaining_total_tokens
 
         self._validate_inputs()
 
@@ -36,7 +36,7 @@ class GeminiChunkProcessor:
         if not self.chunk_manager:
             raise ValueError("Chunk manager is not initialized.")
 
-    def process_one_chunk(self) -> ChunkProcessResult:
+    def process_next_chunk(self) -> ChunkProcessResult:
         """Processes a single chunk and returns a typed result."""
         df,chunk_id = self.chunk_manager.get_next_chunk()
         if df is None:
@@ -45,7 +45,7 @@ class GeminiChunkProcessor:
         try:
             response, used_tokens = self.runner.run(self.prompt, df)
             self.remaining_tokens -= used_tokens
-            self.prefs.save_remaining_total_tokens(self.remaining_tokens)
+            self.prefs.remaining_total_tokens = self.remaining_tokens
 
             self.chunk_manager.mark_chunk_processed(chunk_id)
             self.chunk_manager.save_state()

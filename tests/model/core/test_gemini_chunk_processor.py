@@ -60,7 +60,7 @@ def test_process_one_chunk_success(mock_client, mock_chunk_manager, sample_dataf
         
         # Mock the prefs to have the same initial token count
         with patch.object(processor.prefs, 'get_remaining_total_tokens', return_value=initial_tokens):
-            result = processor.process_one_chunk()
+            result = processor.process_next_chunk()
 
         # Assertions
         assert result.result_type == ResultType.SUCCESS
@@ -78,7 +78,7 @@ def test_process_one_chunk_no_more_chunks(mock_client, mock_chunk_manager):
 
     # Test
     processor = GeminiChunkProcessor("test prompt", mock_client, mock_chunk_manager)
-    result = processor.process_one_chunk()
+    result = processor.process_next_chunk()
 
     # Assertions
     assert result.result_type == ResultType.NO_MORE_CHUNKS
@@ -98,7 +98,7 @@ def test_process_one_chunk_fatal_error(mock_client, mock_chunk_manager, sample_d
 
         # Test
         processor = GeminiChunkProcessor("test prompt", mock_client, mock_chunk_manager)
-        result = processor.process_one_chunk()
+        result = processor.process_next_chunk()
 
         # Assertions
         assert result.result_type == ResultType.FATAL_ERROR
@@ -119,7 +119,7 @@ def test_process_one_chunk_retry_error(mock_client, mock_chunk_manager, sample_d
 
         # Test
         processor = GeminiChunkProcessor("test prompt", mock_client, mock_chunk_manager)
-        result = processor.process_one_chunk()
+        result = processor.process_next_chunk()
 
         # Assertions
         assert result.result_type == ResultType.RETRYABLE_ERROR
@@ -140,7 +140,7 @@ def test_process_one_chunk_unexpected_error(mock_client, mock_chunk_manager, sam
 
         # Test
         processor = GeminiChunkProcessor("test prompt", mock_client, mock_chunk_manager)
-        result = processor.process_one_chunk()
+        result = processor.process_next_chunk()
 
         # Assertions
         assert result.result_type == ResultType.UNEXPECTED_ERROR

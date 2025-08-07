@@ -5,7 +5,7 @@ import google.generativeai as genai
 
 from model.core.llms.base_llm_client import BaseLLMClient
 
-# Add logger
+# Set up logger
 logger = logging.getLogger(__name__)
 
 
@@ -22,26 +22,34 @@ class GeminiClient(BaseLLMClient):
 
     def call(self, prompt: str, df: pd.DataFrame) -> Tuple[str, int]:
         """
-        Call Gemini LLM and return both the response and token count.
+        Call Gemini LLM and return the response along with total token count (input + output).
+
+        Returns:
+            text (str): The generated response text.
+            total_tokens (int): Total tokens used (input + output).
         """
         formatted_input = self._format_input(prompt, df)
+
         try:
-            # First get the token count
-            count_response = self.llm.count_tokens(contents=formatted_input)
-            input_tokens = count_response.total_tokens
-            
-            # Then generate the response
+            # Count input tokens
+            input_tokens = self.llm.count_tokens(contents=formatted_input).total_tokens
+
+            # Generate content
             response = self.llm.generate_content(formatted_input)
-            text = response.text
-            
-            # Log the token usage
-            logger.info(f"Token count for Gemini API call - Input: {input_tokens}")
-            
-            # Note: The Gemini API doesn't provide output token count in the response
-            # For now, we'll return input_tokens as the token count
-            # You might want to estimate output tokens or find another way to get this info
-            return text, input_tokens
-            
+            text = response.text or ""
+
+            # Count output tokens
+            output_tokens = self.llm.count_tokens(contents=text).total_tokens
+
+            total_tokens = input_tokens + output_tokens
+
+            logger.info(
+                f"Gemini token usage — Input: {input_tokens}, "
+                f"Output: {output_tokens}, Total: {total_tokens}"
+            )
+
+            return text, total_tokens
+
         except Exception as e:
             logger.error(f"Gemini call failed: {e}")
             raise RuntimeError(f"Gemini call failed: {e}")

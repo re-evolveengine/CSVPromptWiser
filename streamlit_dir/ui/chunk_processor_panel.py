@@ -34,8 +34,8 @@ def render_status_panel(chunk_manager:ChunkManager
     st.markdown("### 🧠 Total Chunk Processing Progress")
     render_progress_with_info("Total Chunks Processed", processed_chunks, total_chunks)
 
-    total_tokens = model_prefs.get_remaining_total_tokens()
-    remaining_tokens = model_prefs.get_remaining_total_tokens()
+    total_tokens = model_prefs.total_tokens
+    remaining_tokens = model_prefs.remaining_total_tokens
     processed_tokens = remaining_to_processed(remaining_tokens, total_tokens)
     processed_ratio = processed_tokens / total_tokens * 100
 
@@ -82,7 +82,7 @@ def process_chunks_ui(
 
         for i in range(chunk_count):
             try:
-                result = processor.process_one_chunk()
+                result = processor.process_next_chunk()
             except Exception as e:
                 update_area.error(f"❌ Exception: {e}", icon="🚨")
                 logger.exception("Unexpected exception during chunk processing")
