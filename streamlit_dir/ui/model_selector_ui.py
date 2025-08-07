@@ -13,8 +13,8 @@ def get_available_models(api_key: str):
 
 def model_selector_ui(container, api_key: str):
     model_pref = ModelPreference()
-    saved_models = model_pref.get_model_list()
-    saved_selected_model = model_pref.get_selected_model_name()
+    saved_models = model_pref.model_list
+    saved_selected_model = model_pref.selected_model_name
     selected_model = None
 
     # Step 1: Check if previously selected model exists and prompt to use it
@@ -27,8 +27,8 @@ def model_selector_ui(container, api_key: str):
         if use_saved:
             try:
                 client = GeminiClient(model=saved_selected_model, api_key=api_key, 
-                                   generation_config=model_pref.get_generation_config())
-                return saved_selected_model, client, model_pref.get_generation_config()
+                                   generation_config=model_pref.generation_config)
+                return saved_selected_model, client, model_pref.generation_config
             except Exception as e:
                 container.error(f"❌ Failed to create Gemini client: {e}")
                 st.stop()
@@ -48,7 +48,7 @@ def model_selector_ui(container, api_key: str):
                 if not model_names:
                     container.error("❌ No usable models found. Please check your API key.")
                     st.stop()
-                model_pref.save_model_list(model_names)
+                model_pref.model_list = model_names
         else:
             model_names = saved_models
 
@@ -64,7 +64,7 @@ def model_selector_ui(container, api_key: str):
 
     # --- Model generation config UI ---
     container.markdown("#### ⚙️ Model Generation Configuration")
-    gen_config = model_pref.get_generation_config()
+    gen_config = model_pref.generation_config
 
     temperature = container.slider("🌡️ Temperature", 0.0, 1.0, gen_config.get("temperature", 0.2), 0.01)
     top_k = container.slider("🔢 Top-K", 1, 100, gen_config.get("top_k", 40), 1)
@@ -78,12 +78,12 @@ def model_selector_ui(container, api_key: str):
 
     # Save config (shared for all models)
     if container.button("💾 Save Generation Settings"):
-        model_pref.save_generation_config(updated_config)
+        model_pref.generation_config = updated_config
         container.success("✅ Generation settings saved.")
 
     # Save selected model if changed
     if selected_model != saved_selected_model:
-        model_pref.save_selected_model_name(selected_model)
+        model_pref.model_name = selected_model
         container.success(f"✅ Model `{selected_model}` saved.")
 
     # ✅ Create GeminiClient here

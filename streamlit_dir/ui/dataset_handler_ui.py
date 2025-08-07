@@ -120,7 +120,10 @@ def configure_and_process_chunks(df: pd.DataFrame,prompt:str,response_example:st
         value=100000,
         help="The maximum number of tokens you'd like to spend across all chunks."
     )
-    ModelPreference().save_remaining_total_tokens(total_token_budget)
+    prefs = ModelPreference()
+    prefs.total_tokens = total_token_budget
+    prefs.remaining_total_tokens = total_token_budget
+
 
     # Chunk size input
     chunk_size = st.number_input(
