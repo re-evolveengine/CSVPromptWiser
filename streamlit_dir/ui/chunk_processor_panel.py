@@ -5,9 +5,13 @@ from typing import Any
 import streamlit as st
 
 from model.core.chunk.chunk_manager import ChunkManager
+from model.core.llms.base_llm_client import BaseLLMClient
+from model.core.llms.gemini_client import GeminiClient
 from model.io.gemini_result_saver import GeminiResultSaver
+from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
 from model.io.model_prefs import ModelPreference
 from model.utils.result_type import ResultType
+from model.utils.save_processed_chunks_to_db import save_processed_chunk_to_db
 from streamlit_dir.gemini_chunk_processor import GeminiChunkProcessor
 from streamlit_dir.ui.token_usage_gauge import render_token_usage_gauge
 
@@ -61,7 +65,7 @@ def render_progress_with_info(label: str, processed: int, total: int, icon: str 
 
 
 def process_chunks_ui(
-        client: Any,
+        client: GeminiClient,
         prompt: str,
         chunk_file_path: str,
         chunk_count: int,
@@ -96,6 +100,15 @@ def process_chunks_ui(
 
             if result.result_type == ResultType.SUCCESS:
                 results.append(result)
+
+                save_processed_chunk_to_db(
+                    result=result,
+                    chunk_id=result.chunk_id,
+                    prompt=prompt,
+                    model_version=client.model_name,
+                    saver=GeminiSQLiteResultSaver()
+                )
+
                 processed += 1
 
             elif result.result_type == ResultType.FATAL_ERROR:

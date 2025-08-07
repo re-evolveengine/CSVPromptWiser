@@ -22,6 +22,7 @@ class BaseLLMClient(ABC):
             "top_k": DEFAULT_TOP_K,
             "top_p": DEFAULT_TOP_P
         }
+        self.model_name = model  # ✅ Add this to make it accessible externally
         self.llm = self._init_llm()
 
     @abstractmethod

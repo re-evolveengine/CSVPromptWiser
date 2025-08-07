@@ -54,7 +54,8 @@ class GeminiChunkProcessor:
                 result_type=ResultType.SUCCESS,
                 response=response,
                 chunk=df,
-                remaining_tokens=self.remaining_tokens
+                remaining_tokens=self.remaining_tokens,
+                chunk_id=chunk_id
             )
 
         except self.runner.fatal_errors as ue:

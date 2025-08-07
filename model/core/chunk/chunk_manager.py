@@ -12,12 +12,18 @@ class ChunkManager:
     def __init__(self, json_path: str):
         self.json_path = Path(json_path)
         self._validate_json_file()
+        self._current_chunk_id = None
 
         with open(self.json_path, "r") as f:
             self.data = json.load(f)
 
         self._check_version()
         self._init_chunk_state()
+
+
+    @property
+    def current_chunk_id(self):
+        return self._current_chunk_id
 
     def _validate_json_file(self):
         if not self.json_path.exists():
