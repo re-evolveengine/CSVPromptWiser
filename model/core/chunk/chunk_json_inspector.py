@@ -1,9 +1,8 @@
 import json
-import os
 from pathlib import Path
 from typing import Optional, Dict, Any
 
-from model.utils.constants import TEMP_DIR
+from utils import TEMP_DIR
 
 
 class ChunkJSONInspector:

@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 from datetime import datetime
 
-from model.utils.constants import RESULTS_DB_PATH
+from utils import RESULTS_DB_PATH
 
 
 class GeminiSQLiteResultSaver:

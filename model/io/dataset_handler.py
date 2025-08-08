@@ -5,10 +5,10 @@ from typing import Optional
 import pandas as pd
 import streamlit as st
 
-from model.utils.constants import DATA_DIR
+from utils import DATA_DIR
 
 
-class StreamlitDatasetHandler:
+class DatasetHandler:
     """Handles dataset upload, parsing, and optional saving for Streamlit."""
 
     def __init__(self, save_dir: str = DATA_DIR):

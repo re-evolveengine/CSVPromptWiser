@@ -1,9 +1,6 @@
-from typing import List
-import pandas as pd
-
 from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
-from model.utils.chunk_process_result import ChunkProcessResult
-from model.utils.result_type import ResultType
+from utils.chunk_process_result import ChunkProcessResult
+from utils.result_type import ResultType
 
 
 def save_processed_chunk_to_db(

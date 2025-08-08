@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 import io
 
-from model.io.stramlit_dataset_handler import StreamlitDatasetHandler
+from model.io.dataset_handler import DatasetHandler
 
 # Sample data for testing
 SAMPLE_CSV = """name,age,city
@@ -22,12 +22,12 @@ SAMPLE_DATA = [
 @pytest.fixture
 def handler(tmp_path):
     """Fixture that provides a StreamlitDatasetHandler with a temporary directory."""
-    return StreamlitDatasetHandler(save_dir=str(tmp_path))
+    return DatasetHandler(save_dir=str(tmp_path))
 
 class TestStreamlitDatasetHandler:
     def test_initialization(self, tmp_path):
         """Test that the handler initializes with the correct save directory."""
-        handler = StreamlitDatasetHandler(save_dir=str(tmp_path))
+        handler = DatasetHandler(save_dir=str(tmp_path))
         assert handler.save_dir == Path(tmp_path)
         assert handler.uploaded_file is None
         assert handler.dataframe is None

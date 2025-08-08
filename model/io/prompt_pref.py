@@ -1,7 +1,6 @@
 import json
-from pathlib import Path
 
-from model.utils.constants import PROMPT_PREF_PATH
+from utils import PROMPT_PREF_PATH
 
 
 class PromptPreference:

@@ -7,8 +7,8 @@ import pandas as pd
 from model.core.chunk.chunk_json_inspector import ChunkJSONInspector
 from model.core.chunk.chunker import DataFrameChunker
 from model.io.model_prefs import ModelPreference
-from model.utils.constants import TEMP_DIR, DEFAULT_TOKEN_BUDGET
-from model.io.stramlit_dataset_handler import StreamlitDatasetHandler
+from utils import TEMP_DIR, DEFAULT_TOKEN_BUDGET
+from model.io.dataset_handler import DatasetHandler
 from model.core.llms.prompt_optimizer import PromptOptimizer
 
 
@@ -35,7 +35,7 @@ def handle_dataset_upload_or_load() -> Tuple[Optional[pd.DataFrame], Optional[st
     Returns:
         Tuple containing (dataframe, saved_filename)
     """
-    handler = StreamlitDatasetHandler()
+    handler = DatasetHandler()
     saved_filename = st.session_state.get("saved_filename") or handler.get_saved_file_name()
     df = None
 

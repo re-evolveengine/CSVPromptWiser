@@ -1,14 +1,11 @@
-from typing import List, Tuple, Optional, Callable
-import pandas as pd
 from tenacity import RetryError
-from enum import Enum, auto
 
 from model.core.chunk.chunk_manager import ChunkManager
 from model.core.llms.gemini_client import GeminiClient
 from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
 from model.io.model_prefs import ModelPreference
-from model.utils.chunk_process_result import ChunkProcessResult
-from model.utils.result_type import ResultType
+from utils.chunk_process_result import ChunkProcessResult
+from utils.result_type import ResultType
 
 
 class GeminiChunkProcessor:

@@ -1,6 +1,6 @@
 from typing import Optional
 import pandas as pd
-from model.utils.result_type import ResultType
+from utils.result_type import ResultType
 
 
 class ChunkProcessResult:

@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, List, Tuple
 import pandas as pd
 from pathlib import Path
 
-from model.utils.constants import JSON_CHUNK_VERSION
+from utils import JSON_CHUNK_VERSION
 
 
 class ChunkManager:

@@ -7,7 +7,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 import streamlit as st
-from model.utils.constants import APP_NAME, STREAMLIT_CSS_STYLES
+from utils import APP_NAME, STREAMLIT_CSS_STYLES
 from streamlit_dir.side_bar import cwp_sidebar
 from streamlit_dir.elements.chunk_processor_panel import process_chunks_ui
 

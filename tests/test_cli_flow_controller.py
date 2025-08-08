@@ -1,10 +1,8 @@
 import unittest
-from unittest.mock import patch, MagicMock, mock_open
-from pathlib import Path
+from unittest.mock import patch, MagicMock
 import pandas as pd
 
 from cli.cli_flow_controller import CLIFlowController
-from model.utils.constants import TEMP_DIR_CLI, DATA_DIR_CLI, RESULTS_DIR_CLI
 
 
 class TestCLIFlowController(unittest.TestCase):

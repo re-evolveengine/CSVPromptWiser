@@ -1,8 +1,7 @@
-from typing import Optional
 import tiktoken
 import pandas as pd
 
-from model.utils.constants import SAFE_PROMPT_LIMITS
+from utils import SAFE_PROMPT_LIMITS
 
 
 class PromptOptimizer:

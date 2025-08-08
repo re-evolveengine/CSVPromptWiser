@@ -6,7 +6,7 @@ from tenacity import RetryError
 from model.core.chunk.gemini_chunk_processor import GeminiChunkProcessor
 from model.core.llms.gemini_client import GeminiClient
 from model.core.chunk.chunk_manager import ChunkManager
-from model.utils.result_type import ResultType
+from utils.result_type import ResultType
 
 
 @pytest.fixture

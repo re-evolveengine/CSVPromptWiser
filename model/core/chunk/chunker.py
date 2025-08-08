@@ -5,7 +5,7 @@ from typing import List, Optional, Dict, Any
 from uuid import uuid4
 import pandas as pd
 
-from model.utils.constants import JSON_CHUNK_VERSION, DEFAULT_CHUNK_SIZE, JSON_CHUNK_FILE
+from utils import JSON_CHUNK_VERSION, DEFAULT_CHUNK_SIZE, JSON_CHUNK_FILE
 
 
 class DataFrameChunker:

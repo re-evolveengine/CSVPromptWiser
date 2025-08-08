@@ -1,9 +1,8 @@
 import streamlit as st
 
 from model.core.llms.prompt_optimizer import PromptOptimizer
-from model.utils.constants import APP_NAME
+from utils import APP_NAME
 from streamlit_dir.elements.api_key_ui import load_api_key_ui
-from streamlit_dir.elements.chunk_processor_panel import process_chunks_ui
 from streamlit_dir.elements.dataset_handler_ui import handle_dataset_upload_or_load, configure_and_process_chunks
 from streamlit_dir.elements.model_selector_ui import model_selector_ui
 from streamlit_dir.elements.prompt_input_ui import prompt_input_ui

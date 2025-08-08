@@ -1,12 +1,12 @@
 import json
 import os
 from pathlib import Path
-from typing import List, Dict, Any, Union
+from typing import List, Dict, Any
 from uuid import uuid4
 from datetime import datetime
 import pandas as pd
 
-from model.utils.constants import JSON_CHUNK_VERSION
+from utils import JSON_CHUNK_VERSION
 
 
 class GeminiResultSaver:

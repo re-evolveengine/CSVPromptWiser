@@ -6,7 +6,7 @@ import pytest
 import pandas as pd
 
 from model.io.gemini_result_saver import GeminiResultSaver
-from model.utils.constants import JSON_CHUNK_VERSION
+from utils import JSON_CHUNK_VERSION
 
 
 class TestGeminiResultSaver:
