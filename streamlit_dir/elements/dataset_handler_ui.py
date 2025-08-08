@@ -85,15 +85,14 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
         optimizer: Optional PromptOptimizer for optimal chunk size calculation
 
     Returns:
-        Tuple containing (chunk_file_path, chunk_summary)
+        Tuple containing (chunk_file_path, chunk_summary, token_budget)
     """
-    # --- MODIFICATION START: Retrieve results from session_state ---
+    # --- SECTION 1: Load state from previous runs ---
     # This ensures that after a rerun (from the dialog), the values persist.
     chunk_file_path = st.session_state.get("chunk_file_path", None)
     chunk_summary = st.session_state.get("chunk_summary", None)
-    # --- MODIFICATION END ---
 
-    # Load existing chunk summary if the path isn't already in session state
+    # Load existing chunk summary from disk if not already in session state
     if not chunk_file_path:
         chunk_file = Path(TEMP_DIR) / "chunks.json"
         if chunk_file.exists():
@@ -106,9 +105,10 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
             except Exception as e:
                 st.warning(f"⚠️ Failed to read chunk summary: {e}")
 
+    # --- SECTION 2: UI for settings and recommendations ---
     st.markdown("### Chunking Settings")
 
-    # Show optimal chunk size
+    # Show optimal chunk size recommendation
     if optimizer is not None and len(df) > 0:
         try:
             optimal_size = optimizer.find_optimal_row_number(
@@ -133,6 +133,7 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
         "🔢 Set Chunk Size", min_value=1, value=50, help="Number of rows per chunk."
     )
 
+    # Estimate and display token usage based on settings
     if optimizer is not None and len(df) > 0:
         try:
             tokens_per_chunk = optimizer.calculate_used_tokens(
@@ -148,48 +149,43 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
         except Exception as e:
             st.warning(f"⚠️ Error estimating chunks: {e}")
 
-    # --- MODIFICATION START: Define the callback and handle the button logic ---
+    # --- MODIFICATION START: Refined button, callback, and dialog logic ---
 
-    # 1. Define the action to perform as a callback function.
-    # In your main UI file, modify the chunking_action callback
-
+    # 1. Define the action to be performed on confirmation. This is our callback.
     def chunking_action():
-        # 1. Clear the existing results from the database
+        """Clears the DB, chunks the dataframe, and saves results to session_state."""
         st.info("Clearing previous results from the database...")
         db_saver = GeminiSQLiteResultSaver()
         db_saver.clear()
 
-        # 2. Proceed with the original chunking logic
         with st.spinner("Chunking new dataset..."):
             result = chunk_and_save_dataframe(df, chunk_size)
 
-        # 3. Save results to session_state and show success message
+        # Save results to session_state to survive the dialog's rerun
         st.session_state.chunk_file_path = result["chunk_file_path"]
         st.session_state.chunk_summary = result["summary"]
         st.success(f"✅ Database cleared and new dataset chunked successfully!")
 
-    # 2. When the button is clicked, check the database.
+    # 2. Handle the "Chunk & Save" button click.
     if st.button("📦 Chunk & Save"):
         db_saver = GeminiSQLiteResultSaver()
+        # If the database has results, set a flag to show the warning dialog.
         if db_saver.has_results():
-            # If results exist, set a flag to show the warning dialog.
             st.session_state.show_chunking_warning = True
+        # Otherwise, perform the chunking action immediately.
         else:
-            # Otherwise, perform the chunking action immediately.
             chunking_action()
 
-    # 3. Call your existing dialog function, passing the action as the callback.
-    # The dialog will only render if the session_state flag is True.
+    # 3. Initialize the warning flag and call the dialog function on every script run.
+    # The dialog will only display itself if the `show_chunking_warning` flag is True.
     if 'show_chunking_warning' not in st.session_state:
         st.session_state.show_chunking_warning = False
-
     render_chunking_warning_dialog(on_confirm_callback=chunking_action)
 
     # --- MODIFICATION END ---
 
-    # Return the values, which may have been updated from session_state
+    # Return the final values, which may have been updated from session_state by the callback.
     return st.session_state.get("chunk_file_path"), st.session_state.get("chunk_summary"), token_budget
-
 
 def handle_dataset_upload_or_load_and_chunk(optimizer: Optional[PromptOptimizer] = None) -> Tuple[Optional[pd.DataFrame], Optional[str], Optional[str], Optional[Dict]]:
     """Handle dataset upload/load and chunking process.

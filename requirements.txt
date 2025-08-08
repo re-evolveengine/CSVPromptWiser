@@ -1,5 +1,5 @@
 # Core Dependencies
-streamlit==1.46.0
+streamlit==1.48.0
 pandas==2.2.1
 google-generativeai==0.3.2
 plotly==6.2.0
