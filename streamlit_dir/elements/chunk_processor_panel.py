@@ -6,6 +6,7 @@ from model.core.chunk.chunk_manager import ChunkManager
 from model.core.llms.gemini_client import GeminiClient
 from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
 from model.io.model_prefs import ModelPreference
+from streamlit_dir.elements.render_export_section import render_export_section
 from utils.result_type import ResultType
 from model.io.save_processed_chunks_to_db import save_processed_chunk_to_db
 from model.core.chunk.gemini_chunk_processor import GeminiChunkProcessor
@@ -134,3 +135,5 @@ def process_chunks_ui(
 
     else:
         update_area.info("ℹ️ Click 'Start Processing' to begin.", icon="🟢")
+
+    render_export_section()

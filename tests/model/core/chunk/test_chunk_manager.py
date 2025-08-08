@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 from model.core.chunk.chunk_manager import ChunkManager
-from utils import JSON_CHUNK_VERSION
+from utils.constants import JSON_CHUNK_VERSION
 
 # Add project root to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
