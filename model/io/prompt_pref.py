@@ -1,6 +1,6 @@
 import json
 
-from utils import PROMPT_PREF_PATH
+from utils.constants import PROMPT_PREF_PATH
 
 
 class PromptPreference:

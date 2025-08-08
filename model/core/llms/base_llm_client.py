@@ -2,11 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Tuple
 import pandas as pd
 
-from utils import (
-    DEFAULT_TEMPERATURE,
-    DEFAULT_TOP_K,
-    DEFAULT_TOP_P
-)
+from utils.constants import DEFAULT_TEMPERATURE, DEFAULT_TOP_K, DEFAULT_TOP_P
 
 
 class BaseLLMClient(ABC):

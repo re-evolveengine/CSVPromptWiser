@@ -5,7 +5,7 @@ from cx_Freeze import setup, Executable
 # Dependencies are automatically detected, but it might need fine tuning
 build_exe_options = {
     "packages": ["os", "sys", "streamlit", "pandas", "google.generativeai", "dotenv", 
-                 "protobuf", "typing_extensions", "pydantic", "model", "streamlit_dir"],
+                 "protobuf", "typing_extensions", "pydantic", "model", "streamlit_dir", "utils"],
     "excludes": ["tkinter"],
     "include_files": [],
     "include_msvcr": True,

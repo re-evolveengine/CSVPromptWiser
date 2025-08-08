@@ -2,10 +2,9 @@ import os
 import shelve
 from contextlib import contextmanager
 from typing import List, Dict
-from utils import (
-    MODEL_PREFS_DB_PATH, MODEL_KEY, MODEL_LIST_KEY,
-    MODEL_CONFIG_KEY, REMAINING_TOTAL_TOKENS_KEY, TOTAL_TOKENS_KEY
-)
+
+from utils.constants import MODEL_PREFS_DB_PATH, MODEL_KEY, MODEL_LIST_KEY, MODEL_CONFIG_KEY, \
+    REMAINING_TOTAL_TOKENS_KEY, TOTAL_TOKENS_KEY
 
 
 class ModelPreference:

@@ -6,7 +6,7 @@ from uuid import uuid4
 from datetime import datetime
 import pandas as pd
 
-from utils import JSON_CHUNK_VERSION
+from utils.constants import JSON_CHUNK_VERSION
 
 
 class GeminiResultSaver:
