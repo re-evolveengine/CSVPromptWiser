@@ -6,9 +6,11 @@ import pandas as pd
 
 from model.core.chunk.chunk_json_inspector import ChunkJSONInspector
 from model.core.chunk.chunker import DataFrameChunker
+from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
 from model.io.model_prefs import ModelPreference
 from model.io.dataset_handler import DatasetHandler
 from model.core.llms.prompt_optimizer import PromptOptimizer
+from streamlit_dir.elements.render_chunking_warning_dialog import render_chunking_warning_dialog
 from utils.constants import TEMP_DIR, DEFAULT_TOKEN_BUDGET
 
 
@@ -72,92 +74,6 @@ def handle_dataset_upload_or_load() -> Tuple[Optional[pd.DataFrame], Optional[st
                 st.rerun()
     
     return df, saved_filename
-
-
-def configure_and_process_chunks(df: pd.DataFrame,prompt:str,response_example:str, optimizer: Optional[PromptOptimizer] = None) -> Tuple[Optional[str], Optional[Dict], Optional[int]]:
-    """Configure chunking settings and process the dataframe into chunks.
-
-    Args:
-        df: The dataframe to chunk
-        optimizer: Optional PromptOptimizer for optimal chunk size calculation
-
-    Returns:
-        Tuple containing (chunk_file_path, chunk_summary)
-    """
-    chunk_summary = None
-    chunk_file_path = None
-
-    # Load existing chunk summary
-    chunk_file = Path(TEMP_DIR) / "chunks.json"
-    if chunk_file.exists():
-        try:
-            inspector = ChunkJSONInspector(directory_path=TEMP_DIR)
-            chunk_summary = inspector.inspect_chunk_file(chunk_file)
-            chunk_file_path = str(chunk_file)
-        except Exception as e:
-            st.warning(f"⚠️ Failed to read chunk summary: {e}")
-
-    st.markdown("### Chunking Settings")
-
-    # Show optimal chunk size
-    if optimizer is not None and len(df) > 0:
-        try:
-            optimal_size = optimizer.find_optimal_row_number(
-                prompt=prompt,
-                row_df=df.head(1),
-                example_response=response_example
-            )
-            st.info(f"ℹ️ Recommended chunk size: **{optimal_size}** rows (based on model context window)")
-        except Exception as e:
-            st.warning(f"⚠️ Could not calculate optimal chunk size: {str(e)}")
-    else:
-        st.info("ℹ️ Connect a model to see recommended chunk size")
-
-    prefs = ModelPreference()
-
-    token_budget = st.number_input(
-        "Enter Token Budget",
-        min_value=1,
-        value=prefs.total_tokens,
-    )
-    prefs.total_tokens = token_budget
-    prefs.remaining_total_tokens = token_budget
-
-    # Chunk size input
-    chunk_size = st.number_input(
-        "🔢 Set Chunk Size",
-        min_value=1,
-        value=50,
-        help="Number of rows per chunk. Consider the recommended size above for optimal performance."
-    )
-
-    # Show tokens per chunk and number of chunks possible
-    if optimizer is not None and len(df) > 0:
-        try:
-            tokens_per_chunk = optimizer.calculate_used_tokens(
-                prompt=prompt,
-                row_df=df.head(1),
-                example_response=response_example,
-                num_rows=chunk_size
-            )
-
-            if tokens_per_chunk > 0:
-                max_chunks = token_budget // tokens_per_chunk
-                st.caption(f"📊 Estimated tokens per chunk: **{tokens_per_chunk:,}**")
-                st.success(f"🔢 You can process approximately **{max_chunks} chunks** with your budget.")
-            else:
-                st.warning("⚠️ Could not estimate tokens per chunk.")
-        except Exception as e:
-            st.warning(f"⚠️ Error estimating chunks: {e}")
-
-    if st.button("📦 Chunk & Save"):
-        result = chunk_and_save_dataframe(df, chunk_size)
-        chunk_file_path = result["chunk_file_path"]
-        chunk_summary = result["summary"]
-        st.success(f"✅ Chunks saved to: `{chunk_file_path}`")
-
-    return chunk_file_path, chunk_summary, token_budget
-
 
 def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example: str,
                                  optimizer: Optional[PromptOptimizer] = None) -> Tuple[
@@ -235,13 +151,22 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
     # --- MODIFICATION START: Define the callback and handle the button logic ---
 
     # 1. Define the action to perform as a callback function.
+    # In your main UI file, modify the chunking_action callback
+
     def chunking_action():
-        with st.spinner("Chunking dataset..."):
+        # 1. Clear the existing results from the database
+        st.info("Clearing previous results from the database...")
+        db_saver = GeminiSQLiteResultSaver()
+        db_saver.clear()
+
+        # 2. Proceed with the original chunking logic
+        with st.spinner("Chunking new dataset..."):
             result = chunk_and_save_dataframe(df, chunk_size)
-        # Save results to session_state so they are not lost on rerun
+
+        # 3. Save results to session_state and show success message
         st.session_state.chunk_file_path = result["chunk_file_path"]
         st.session_state.chunk_summary = result["summary"]
-        st.success(f"✅ Chunks saved to: `{st.session_state.chunk_file_path}`")
+        st.success(f"✅ Database cleared and new dataset chunked successfully!")
 
     # 2. When the button is clicked, check the database.
     if st.button("📦 Chunk & Save"):

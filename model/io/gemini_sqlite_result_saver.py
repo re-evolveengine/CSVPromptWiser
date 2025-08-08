@@ -129,3 +129,17 @@ class GeminiSQLiteResultSaver:
             existing = cursor.fetchall()
 
         return [row[0] for row in existing]
+
+
+    def clear(self):
+        """
+        Deletes all records from the 'results' table, resetting it.
+        """
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM results;")
+                conn.commit()
+                print("✅ Database results cleared successfully.")
+        except sqlite3.Error as e:
+            print(f"❌ Database error while clearing results: {e}")

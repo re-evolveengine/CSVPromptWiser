@@ -280,3 +280,63 @@ class TestGeminiSQLiteResultSaver:
         
         # Should return False on database error
         assert not sqlite_saver.has_results()
+
+    def test_clear_empty_database(self, sqlite_saver, capsys):
+        """Test clearing an empty database."""
+        # Clear an empty database
+        sqlite_saver.clear()
+        
+        # Verify no errors occurred
+        captured = capsys.readouterr()
+        assert "Database results cleared successfully" in captured.out
+        
+        # Verify the table is still accessible
+        assert not sqlite_saver.has_results()
+
+    def test_clear_with_data(self, sqlite_saver, capsys):
+        """Test clearing a database with data."""
+        # Insert test data
+        with sqlite3.connect(sqlite_saver.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO results 
+                (source_id, chunk_id, prompt, response, used_tokens, model_version, timestamp)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                "test_source", 
+                "test_chunk", 
+                "test_prompt", 
+                "test_response", 
+                100, 
+                "test_model", 
+                "2023-01-01T00:00:00"
+            ))
+            conn.commit()
+        
+        # Verify data exists
+        assert sqlite_saver.has_results()
+        
+        # Clear the database
+        sqlite_saver.clear()
+        
+        # Verify success message
+        captured = capsys.readouterr()
+        assert "Database results cleared successfully" in captured.out
+        
+        # Verify the table is now empty
+        assert not sqlite_saver.has_results()
+
+    def test_clear_database_error(self, sqlite_saver, monkeypatch, capsys):
+        """Test error handling when clearing the database fails."""
+        # Mock sqlite3.connect to raise an error on clear
+        def mock_connect(*args, **kwargs):
+            raise sqlite3.Error("Test clear database error")
+            
+        monkeypatch.setattr(sqlite3, 'connect', mock_connect)
+        
+        # Attempt to clear the database
+        sqlite_saver.clear()
+        
+        # Verify error message was printed
+        captured = capsys.readouterr()
+        assert "Database error while clearing results" in captured.out
