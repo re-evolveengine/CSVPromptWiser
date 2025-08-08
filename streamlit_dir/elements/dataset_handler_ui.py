@@ -7,8 +7,8 @@ import pandas as pd
 from model.core.chunk.chunk_json_inspector import ChunkJSONInspector
 from model.core.chunk.chunker import DataFrameChunker
 from model.io.model_prefs import ModelPreference
-from model.utils.constants import TEMP_DIR
-from streamlit_dir.stramlit_dataset_handler import StreamlitDatasetHandler
+from model.utils.constants import TEMP_DIR, DEFAULT_TOKEN_BUDGET
+from model.io.stramlit_dataset_handler import StreamlitDatasetHandler
 from model.core.llms.prompt_optimizer import PromptOptimizer
 
 
@@ -113,23 +113,25 @@ def configure_and_process_chunks(df: pd.DataFrame,prompt:str,response_example:st
     else:
         st.info("ℹ️ Connect a model to see recommended chunk size")
 
-    # Token budget input
-    total_token_budget = st.number_input(
-        "💰 Enter Total Token Budget",
-        min_value=1,
-        value=100000,
-        help="The maximum number of tokens you'd like to spend across all chunks."
-    )
     prefs = ModelPreference()
-    prefs.total_tokens = total_token_budget
-    prefs.remaining_total_tokens = total_token_budget
+    use_token_budget = st.checkbox("💰 Enable Token Budget")
 
+    token_budget = None
+
+    if use_token_budget:
+        token_budget = st.number_input(
+            "Enter Token Budget",
+            min_value=1,
+            value=DEFAULT_TOKEN_BUDGET,
+        )
+        prefs.total_tokens = token_budget
+        prefs.remaining_total_tokens = token_budget
 
     # Chunk size input
     chunk_size = st.number_input(
         "🔢 Set Chunk Size",
         min_value=1,
-        value=100,
+        value=50,
         help="Number of rows per chunk. Consider the recommended size above for optimal performance."
     )
 
@@ -144,7 +146,7 @@ def configure_and_process_chunks(df: pd.DataFrame,prompt:str,response_example:st
             )
 
             if tokens_per_chunk > 0:
-                max_chunks = total_token_budget // tokens_per_chunk
+                max_chunks = token_budget // tokens_per_chunk
                 st.caption(f"📊 Estimated tokens per chunk: **{tokens_per_chunk:,}**")
                 st.success(f"🔢 You can process approximately **{max_chunks} chunks** with your budget.")
             else:
@@ -158,7 +160,7 @@ def configure_and_process_chunks(df: pd.DataFrame,prompt:str,response_example:st
         chunk_summary = result["summary"]
         st.success(f"✅ Chunks saved to: `{chunk_file_path}`")
     
-    return chunk_file_path, chunk_summary, total_token_budget
+    return chunk_file_path, chunk_summary, token_budget
 
 
 def handle_dataset_upload_or_load_and_chunk(optimizer: Optional[PromptOptimizer] = None) -> Tuple[Optional[pd.DataFrame], Optional[str], Optional[str], Optional[Dict]]:

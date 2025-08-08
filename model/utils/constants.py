@@ -22,6 +22,7 @@ RESULTS_DB_PATH = os.path.join(RESULTS_DIR, RESULTS_DB_NAME)
 JSON_CHUNK_FILE = os.path.join(DATA_DIR, "chunks.json")
 
 DEFAULT_CHUNK_SIZE = 100
+DEFAULT_TOKEN_BUDGET = 10000
 
 # 🗄️ Model preference DB (shelve) file name and full path
 MODEL_PREFS_DB_NAME = "model_prefs.db"

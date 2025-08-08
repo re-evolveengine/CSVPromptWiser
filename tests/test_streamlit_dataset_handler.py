@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 import io
 
-from streamlit_dir.stramlit_dataset_handler import StreamlitDatasetHandler
+from model.io.stramlit_dataset_handler import StreamlitDatasetHandler
 
 # Sample data for testing
 SAMPLE_CSV = """name,age,city

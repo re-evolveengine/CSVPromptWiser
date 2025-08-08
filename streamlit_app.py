@@ -1,7 +1,5 @@
 import sys
 import os
-import streamlit as st
-import plotly.graph_objects as go
 
 # Add the project root to Python path
 project_root = os.path.dirname(os.path.abspath(__file__))
@@ -11,8 +9,7 @@ if project_root not in sys.path:
 import streamlit as st
 from model.utils.constants import APP_NAME, STREAMLIT_CSS_STYLES
 from streamlit_dir.side_bar import cwp_sidebar
-from streamlit_dir.ui.chunk_processor_panel import process_chunks_ui
-from streamlit_dir.ui.token_usage_gauge import render_token_usage_gauge
+from streamlit_dir.elements.chunk_processor_panel import process_chunks_ui
 
 st.set_page_config(
     page_title=APP_NAME,

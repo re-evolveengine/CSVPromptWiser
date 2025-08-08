@@ -8,8 +8,8 @@ from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
 from model.io.model_prefs import ModelPreference
 from model.utils.result_type import ResultType
 from model.io.save_processed_chunks_to_db import save_processed_chunk_to_db
-from streamlit_dir.gemini_chunk_processor import GeminiChunkProcessor
-from streamlit_dir.ui.token_usage_gauge import render_token_usage_gauge
+from model.core.chunk.gemini_chunk_processor import GeminiChunkProcessor
+from streamlit_dir.elements.token_usage_gauge import render_token_usage_gauge
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(

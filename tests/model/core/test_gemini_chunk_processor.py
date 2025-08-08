@@ -1,12 +1,11 @@
 import pytest
-from unittest.mock import Mock, patch, MagicMock, PropertyMock
+from unittest.mock import Mock, patch, MagicMock
 import pandas as pd
 from tenacity import RetryError
 
-from streamlit_dir.gemini_chunk_processor import GeminiChunkProcessor
+from model.core.chunk.gemini_chunk_processor import GeminiChunkProcessor
 from model.core.llms.gemini_client import GeminiClient
 from model.core.chunk.chunk_manager import ChunkManager
-from model.utils.chunk_process_result import ChunkProcessResult
 from model.utils.result_type import ResultType
 
 

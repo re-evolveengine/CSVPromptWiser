@@ -1,9 +1,7 @@
-import json
-from pathlib import Path
 import pytest
 from unittest import mock
 
-from streamlit_dir.prompt_pref import PromptPreference
+from model.io.prompt_pref import PromptPreference
 
 
 class TestPromptPreference:

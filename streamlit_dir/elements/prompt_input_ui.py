@@ -1,5 +1,4 @@
-import streamlit as st
-from streamlit_dir.prompt_pref import PromptPreference
+from model.io.prompt_pref import PromptPreference
 
 def prompt_input_ui(container):
     prompt_pref = PromptPreference()
