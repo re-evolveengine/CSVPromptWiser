@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 
 from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
-from utils import JSON_CHUNK_FILE
+from utils.constants import JSON_CHUNK_FILE
 
 
 class CSVExporter:

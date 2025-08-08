@@ -5,7 +5,7 @@ from typing import Optional
 import pandas as pd
 import streamlit as st
 
-from utils import DATA_DIR
+from utils.constants import DATA_DIR
 
 
 class DatasetHandler:

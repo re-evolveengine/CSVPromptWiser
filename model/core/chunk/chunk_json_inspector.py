@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Optional, Dict, Any
 
-from utils import TEMP_DIR
+from utils.constants import TEMP_DIR
 
 
 class ChunkJSONInspector:
@@ -90,7 +90,7 @@ class ChunkJSONInspector:
             "processed_chunks": len(processed_ids),
             "unprocessed_chunks": len(unprocessed),
             "can_resume": len(unprocessed) > 0,
-            "chunk_size": summary.get("chunk_size", None),  # ✅ Here’s the fix
+            "chunk_size": summary.get("chunk_size", None),  # 
         }
 
     @staticmethod

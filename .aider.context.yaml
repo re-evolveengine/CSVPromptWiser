@@ -14,7 +14,7 @@ files:
   readOnly: false
 - path: ".prompt_pref.json"
   readOnly: false
-- path: "requirements_all.txt"
+- path: "requirements.txt"
   readOnly: false
 - path: "requirements_cli.txt"
   readOnly: false
