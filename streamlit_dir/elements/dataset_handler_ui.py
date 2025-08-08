@@ -10,7 +10,7 @@ from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
 from model.io.model_prefs import ModelPreference
 from model.io.dataset_handler import DatasetHandler
 from model.core.llms.prompt_optimizer import PromptOptimizer
-from streamlit_dir.elements.render_chunking_warning_dialog import render_chunking_warning_dialog
+from streamlit_dir.elements.render_chunking_warning_dialog import show_chunking_warning_dialog
 from utils.constants import TEMP_DIR, DEFAULT_TOKEN_BUDGET
 
 
@@ -180,9 +180,9 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
     # The dialog will only display itself if the `show_chunking_warning` flag is True.
     if 'show_chunking_warning' not in st.session_state:
         st.session_state.show_chunking_warning = False
-    render_chunking_warning_dialog(on_confirm_callback=chunking_action)
 
-    # --- MODIFICATION END ---
+    # Only show dialog if flag is True
+    show_chunking_warning_dialog(on_confirm_callback=chunking_action)
 
     # Return the final values, which may have been updated from session_state by the callback.
     return st.session_state.get("chunk_file_path"), st.session_state.get("chunk_summary"), token_budget
