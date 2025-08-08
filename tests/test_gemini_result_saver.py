@@ -4,9 +4,11 @@ import tempfile
 import shutil
 import pytest
 import pandas as pd
+import sqlite3
 
 from model.io.gemini_result_saver import GeminiResultSaver
-from utils import JSON_CHUNK_VERSION
+from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
+from utils.constants import JSON_CHUNK_VERSION
 
 
 class TestGeminiResultSaver:
@@ -226,3 +228,55 @@ class TestGeminiResultSaver:
         assert os.path.exists(output_path)
         df = pd.read_csv(output_path)
         assert len(df) == 3  # 2 from first chunk + 1 from second chunk
+
+
+class TestGeminiSQLiteResultSaver:
+    """Test cases for GeminiSQLiteResultSaver class."""
+
+    @pytest.fixture
+    def temp_db_path(self, tmp_path):
+        """Create a temporary database file for testing."""
+        return str(tmp_path / "test_results.db")
+
+    @pytest.fixture
+    def sqlite_saver(self, temp_db_path):
+        """Create a GeminiSQLiteResultSaver instance with a temporary database."""
+        return GeminiSQLiteResultSaver(db_path=temp_db_path)
+
+    def test_has_results_empty_database(self, sqlite_saver):
+        """Test has_results returns False for an empty database."""
+        assert not sqlite_saver.has_results()
+
+    def test_has_results_with_data(self, sqlite_saver):
+        """Test has_results returns True when data exists in the database."""
+        # Insert test data directly using the database connection
+        with sqlite3.connect(sqlite_saver.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO results 
+                (source_id, chunk_id, prompt, response, used_tokens, model_version, timestamp)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                "test_source", 
+                "test_chunk", 
+                "test_prompt", 
+                "test_response", 
+                100, 
+                "test_model", 
+                "2023-01-01T00:00:00"
+            ))
+            conn.commit()
+        
+        # Verify has_results returns True after inserting data
+        assert sqlite_saver.has_results()
+
+    def test_has_results_database_error(self, sqlite_saver, monkeypatch):
+        """Test has_results handles database errors gracefully."""
+        # Mock sqlite3.connect to raise an error
+        def mock_connect(*args, **kwargs):
+            raise sqlite3.Error("Test database error")
+            
+        monkeypatch.setattr(sqlite3, 'connect', mock_connect)
+        
+        # Should return False on database error
+        assert not sqlite_saver.has_results()

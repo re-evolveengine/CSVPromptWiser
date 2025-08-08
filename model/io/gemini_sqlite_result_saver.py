@@ -29,6 +29,21 @@ class GeminiSQLiteResultSaver:
             """)
             conn.commit()
 
+    def has_results(self) -> bool:
+        """
+        Efficiently checks if the 'results' table has any rows.
+        Returns True if at least one row exists, False otherwise.
+        """
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                # Executes a fast query to see if at least one record exists.
+                cursor.execute("SELECT 1 FROM results LIMIT 1;")
+                return cursor.fetchone() is not None
+        except sqlite3.Error as e:
+            print(f"Database error while checking for results: {e}")
+            return False
+
     def save(self, results: List[Dict[str, Any]]):
         """
         Save a list of processed rows to the database.

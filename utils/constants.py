@@ -19,7 +19,7 @@ CONFIG_DIR = os.path.join(APP_DIR, CONFIG_FOLDER_NAME)
 RESULTS_DB_PATH = os.path.join(RESULTS_DIR, RESULTS_DB_NAME)
 
 # 📂 Files
-JSON_CHUNK_FILE = os.path.join(DATA_DIR, "chunks.json")
+JSON_CHUNK_FILE = os.path.join(TEMP_DIR, "chunks.json")
 
 DEFAULT_CHUNK_SIZE = 100
 DEFAULT_TOKEN_BUDGET = 10000
