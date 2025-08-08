@@ -80,8 +80,9 @@ class TestChunkManager:
         manager = ChunkManager(str(json_file))
         
         # Get first chunk
-        chunk = manager.get_next_chunk()
+        chunk, chunk_id = manager.get_next_chunk()
         assert isinstance(chunk, pd.DataFrame)
+        assert chunk_id == '1'  # First chunk ID should be '1'
         assert len(chunk) == 2
         assert list(chunk['col1']) == [1, 2]
         
@@ -89,14 +90,18 @@ class TestChunkManager:
         manager.mark_chunk_processed()
         
         # Get second chunk
-        chunk = manager.get_next_chunk()
+        chunk, chunk_id = manager.get_next_chunk()
+        assert chunk is not None
+        assert chunk_id == '2'  # Second chunk ID should be '2'
         assert len(chunk) == 2
         assert list(chunk['col1']) == [3, 4]
         
-        # No more chunks
+        # Mark second chunk as processed
         manager.mark_chunk_processed()
+        
+        # No more chunks
         assert manager.get_next_chunk() is None
-    
+
     def test_mark_chunk_processed(self, tmp_path):
         json_file = create_test_json_file(tmp_path, processed_ids=[1])
         manager = ChunkManager(str(json_file))
@@ -105,18 +110,27 @@ class TestChunkManager:
         assert manager.remaining_chunks == 1
         
         # Process second chunk
-        chunk = manager.get_next_chunk()  # This should be chunk 2
-        assert chunk is not None  # Make sure we got a chunk
+        chunk, chunk_id = manager.get_next_chunk()  # This should be chunk 2
+        assert chunk is not None
+        assert chunk_id == '2'
         manager.mark_chunk_processed()
         
         assert manager.remaining_chunks == 0
         
         # Create a new manager to test the error case
         fresh_manager = ChunkManager(str(json_file))
-        # Try to mark as processed without getting a chunk first
+        
+        # Verify no chunk is current initially
+        assert fresh_manager.current_chunk_id is None
+        
+        # Verify calling mark_chunk_processed without a current chunk raises an error
         with pytest.raises(RuntimeError, match="No chunk to mark as processed"):
             fresh_manager.mark_chunk_processed()
-    
+            
+        # Verify the processed set wasn't modified
+        assert len(fresh_manager._processed_set) == 1  # Only the initially processed chunk
+        assert '1' in fresh_manager._processed_set
+
     def test_save_state(self, tmp_path):
         json_file = create_test_json_file(tmp_path)
         manager = ChunkManager(str(json_file))

@@ -69,7 +69,7 @@ class ChunkManager:
         """Mark the most recent or specified chunk as processed."""
         if chunk_id:
             self._processed_set.add(str(chunk_id))
-        elif hasattr(self, "_current_chunk_id"):
+        elif self._current_chunk_id is not None:  
             self._processed_set.add(self._current_chunk_id)
             self._current_chunk_id = None
         else:
