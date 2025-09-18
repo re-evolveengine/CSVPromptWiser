@@ -5,14 +5,14 @@ import pandas as pd
 from pathlib import Path
 from typing import List, Dict, Any
 
-from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
+from model.io.gemini_sqlite_result_saver import SQLiteResultSaver
 from utils.constants import JSON_CHUNK_FILE
 
 
 class CSVExporter:
-    def __init__(self, json_path: str = JSON_CHUNK_FILE, db_saver: GeminiSQLiteResultSaver = None):
+    def __init__(self, json_path: str = JSON_CHUNK_FILE, db_saver: SQLiteResultSaver = None):
         self.json_path = Path(json_path)
-        self.db_saver = db_saver or GeminiSQLiteResultSaver()
+        self.db_saver = db_saver or SQLiteResultSaver()
 
     def export_processed_with_original_rows(self, csv_path: str):
         """

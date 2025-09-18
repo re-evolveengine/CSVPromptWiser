@@ -6,7 +6,7 @@ from datetime import datetime
 from utils.constants import RESULTS_DB_PATH
 
 
-class GeminiSQLiteResultSaver:
+class SQLiteResultSaver:
     def __init__(self, db_path: str = RESULTS_DB_PATH):
         self.db_path = Path(db_path)
         self._init_db()

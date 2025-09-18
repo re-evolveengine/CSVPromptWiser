@@ -7,7 +7,7 @@ import pandas as pd
 import sqlite3
 
 from model.io.gemini_result_saver import GeminiResultSaver
-from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
+from model.io.gemini_sqlite_result_saver import SQLiteResultSaver
 from utils.constants import JSON_CHUNK_VERSION
 
 
@@ -241,7 +241,7 @@ class TestGeminiSQLiteResultSaver:
     @pytest.fixture
     def sqlite_saver(self, temp_db_path):
         """Create a GeminiSQLiteResultSaver instance with a temporary database."""
-        return GeminiSQLiteResultSaver(db_path=temp_db_path)
+        return SQLiteResultSaver(db_path=temp_db_path)
 
     def test_has_results_empty_database(self, sqlite_saver):
         """Test has_results returns False for an empty database."""

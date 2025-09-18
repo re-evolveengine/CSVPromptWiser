@@ -6,7 +6,7 @@ import pandas as pd
 
 from model.core.chunk.chunk_json_inspector import ChunkJSONInspector
 from model.core.chunk.chunker import DataFrameChunker
-from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
+from model.io.gemini_sqlite_result_saver import SQLiteResultSaver
 from model.io.model_prefs import ModelPreference
 from model.io.dataset_handler import DatasetHandler
 from model.core.llms.prompt_optimizer import PromptOptimizer
@@ -155,7 +155,7 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
     def chunking_action():
         """Clears the DB, chunks the dataframe, and saves results to session_state."""
         st.info("Clearing previous results from the database...")
-        db_saver = GeminiSQLiteResultSaver()
+        db_saver = SQLiteResultSaver()
         db_saver.clear()
 
         with st.spinner("Chunking new dataset..."):
@@ -168,7 +168,7 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
 
     # 2. Handle the "Chunk & Save" button click.
     if st.button("📦 Chunk & Save"):
-        db_saver = GeminiSQLiteResultSaver()
+        db_saver = SQLiteResultSaver()
         # If the database has results, set a flag to show the warning dialog.
         if db_saver.has_results():
             st.session_state.show_chunking_warning = True

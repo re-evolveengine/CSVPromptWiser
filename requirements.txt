@@ -8,6 +8,8 @@ langchain==0.3.26
 langchain-core==0.3.72
 langchain-openai==0.3.28
 tenacity==8.5.0
+python-dotenv==1.1.1
+
 
 # Google API Dependencies
 google-ai-generativelanguage==0.4.0

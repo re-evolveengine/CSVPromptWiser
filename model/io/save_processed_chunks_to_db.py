@@ -1,4 +1,4 @@
-from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
+from model.io.gemini_sqlite_result_saver import SQLiteResultSaver
 from utils.chunk_process_result import ChunkProcessResult
 from utils.result_type import ResultType
 
@@ -8,7 +8,7 @@ def save_processed_chunk_to_db(
     chunk_id: str,
     prompt: str,
     model_version: str,
-    saver: GeminiSQLiteResultSaver
+    saver: SQLiteResultSaver
 ) -> None:
     if result.result_type != ResultType.SUCCESS:
         return

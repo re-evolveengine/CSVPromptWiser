@@ -1,7 +1,7 @@
 import streamlit as st
 
 from model.core.llms.prompt_optimizer import PromptOptimizer
-from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
+from model.io.gemini_sqlite_result_saver import SQLiteResultSaver
 from streamlit_dir.elements.api_key_ui import load_api_key_ui
 from streamlit_dir.elements.dataset_handler_ui import handle_dataset_upload_or_load, configure_and_process_chunks
 from streamlit_dir.elements.model_selector_ui import model_selector_ui
@@ -69,7 +69,7 @@ def cwp_sidebar():
                     if "start_processing" not in st.session_state:
                         st.session_state["start_processing"] = False
 
-    db_saver = GeminiSQLiteResultSaver()
+    db_saver = SQLiteResultSaver()
 
     # The export section will now only appear if a chunk file exists AND the DB is not empty.
     if chunk_file_path and db_saver.has_results():

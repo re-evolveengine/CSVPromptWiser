@@ -4,7 +4,7 @@ import streamlit as st
 
 from model.core.chunk.chunk_manager import ChunkManager
 from model.core.llms.gemini_client import GeminiClient
-from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
+from model.io.gemini_sqlite_result_saver import SQLiteResultSaver
 from model.io.model_prefs import ModelPreference
 from streamlit_dir.elements.render_export_section import render_export_section
 from utils.result_type import ResultType
@@ -101,7 +101,7 @@ def process_chunks_ui(
                     chunk_id=result.chunk_id,
                     prompt=prompt,
                     model_version=client.model_name,
-                    saver=GeminiSQLiteResultSaver()
+                    saver=SQLiteResultSaver()
                 )
 
                 processed += 1

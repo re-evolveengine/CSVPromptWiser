@@ -4,7 +4,7 @@ import tempfile
 import pytest
 from datetime import datetime, timezone
 
-from model.io.gemini_sqlite_result_saver import GeminiSQLiteResultSaver
+from model.io.gemini_sqlite_result_saver import SQLiteResultSaver
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def temp_db():
 def test_database_schema(temp_db):
     """Test that the database is created with the correct schema."""
     # When
-    saver = GeminiSQLiteResultSaver(temp_db)
+    saver = SQLiteResultSaver(temp_db)
     
     # Then
     with sqlite3.connect(temp_db) as conn:
@@ -53,7 +53,7 @@ def test_database_schema(temp_db):
 def test_save_and_retrieve_results(temp_db):
     """Test saving and retrieving results from the database."""
     # Given
-    saver = GeminiSQLiteResultSaver(temp_db)
+    saver = SQLiteResultSaver(temp_db)
     test_results = [
         {
             'source_id': 'src1',
@@ -96,7 +96,7 @@ def test_save_and_retrieve_results(temp_db):
 def test_save_empty_results_raises_error(temp_db):
     """Test that saving an empty list raises a ValueError."""
     # Given
-    saver = GeminiSQLiteResultSaver(temp_db)
+    saver = SQLiteResultSaver(temp_db)
     
     # When/Then
     with pytest.raises(ValueError, match="No results to save"):
@@ -106,7 +106,7 @@ def test_save_empty_results_raises_error(temp_db):
 def test_save_with_optional_fields(temp_db):
     """Test saving results with optional fields."""
     # Given
-    saver = GeminiSQLiteResultSaver(temp_db)
+    saver = SQLiteResultSaver(temp_db)
     test_result = {
         'source_id': 'src1',
         'chunk_id': 'chk1',
@@ -129,7 +129,7 @@ def test_save_with_optional_fields(temp_db):
 def test_required_fields_validation(temp_db):
     """Test that required fields are validated."""
     # Given
-    saver = GeminiSQLiteResultSaver(temp_db)
+    saver = SQLiteResultSaver(temp_db)
     required_fields = ['source_id', 'chunk_id', 'prompt', 'response', 'model_version']
     
     for field in required_fields:
@@ -151,7 +151,7 @@ def test_required_fields_validation(temp_db):
 def test_timestamp_is_utc(temp_db):
     """Test that timestamps are stored in UTC."""
     # Given
-    saver = GeminiSQLiteResultSaver(temp_db)
+    saver = SQLiteResultSaver(temp_db)
     test_result = {
         'source_id': 'src1',
         'chunk_id': 'chk1',
