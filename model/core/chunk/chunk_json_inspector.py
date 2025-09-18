@@ -90,7 +90,7 @@ class ChunkJSONInspector:
             "processed_chunks": len(processed_ids),
             "unprocessed_chunks": len(unprocessed),
             "can_resume": len(unprocessed) > 0,
-            "chunk_size": summary.get("chunk_size", None),  # 
+            "chunk_size": chunk_size,
         }
 
     @staticmethod
