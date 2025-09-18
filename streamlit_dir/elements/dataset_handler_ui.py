@@ -42,7 +42,7 @@ def handle_dataset_upload_or_load() -> Tuple[Optional[pd.DataFrame], Optional[st
     df = None
 
     if saved_filename and not st.session_state.get("upload_new_file"):
-        st.success(f"📁 Using saved file: `{saved_filename}")
+        st.success(f"📁 Using saved file: \"{saved_filename}\"")
 
         if st.button("📤 Upload a new file?"):
             st.session_state["upload_new_file"] = True

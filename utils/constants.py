@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 JSON_CHUNK_VERSION = 1.0
-APP_NAME = "ChunkWisePrompter"
+APP_NAME = "CSV PromptWise"
 DATA_FOLDER_NAME = "data"
 RESULTS_FOLDER_NAME = "results"
 RESULTS_DB_NAME = "processed_chunks.db"

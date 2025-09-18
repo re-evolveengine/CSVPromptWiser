@@ -44,16 +44,16 @@ def main():
     # --- Model Configuration ---
     if model_name and generation_config:
         with st.expander("⚙️ Model Configuration", expanded=st.session_state.expanders.get('model_config', True)):
-            st.metric("Model", model_name)
-            st.metric("Temperature", f"{generation_config.get('temperature', 0.2):.2f}")
-            st.metric("Top K", generation_config.get('top_k', 40))
-            st.metric("Top P", f"{generation_config.get('top_p', 1.0):.2f}")
+            st.markdown(f"**Model**: {model_name}")
+            st.markdown(f"**Temperature**: {generation_config.get('temperature', 0.2):.2f}")
+            st.markdown(f"**Top K**: {generation_config.get('top_k', 40)}")
+            st.markdown(f"**Top P**: {generation_config.get('top_p', 1.0):.2f}")
 
     # --- Chunk Summary ---
     if chunk_summary:
         with st.expander("📦 Chunk Summary", expanded=st.session_state.expanders.get('chunk_summary', True)):
             for key, value in chunk_summary.items():
-                st.markdown(f"- **{key.replace('_', ' ').capitalize()}**: {value}")
+                st.markdown(f"**{key.replace('_', ' ').capitalize()}**: {value}")
 
     # --- Dataset Preview ---
     if df is not None:

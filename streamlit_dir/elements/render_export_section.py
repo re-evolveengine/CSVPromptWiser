@@ -6,7 +6,8 @@ from model.io.csv_exporter import CSVExporter
 logger = logging.getLogger(__name__)
 
 
-def render_export_section():
+# --- MODIFICATION 1: Add 'chunk_file_path' as a parameter ---
+def render_export_section(chunk_file_path: str):
     """
     Renders the UI section for exporting processed results to a CSV file
     and provides a download button.
@@ -31,7 +32,8 @@ def render_export_section():
         try:
             # Use a spinner to show that work is being done
             with st.spinner(f"Exporting data to {file_name}..."):
-                exporter = CSVExporter()
+                # --- MODIFICATION 2: Pass the path to the exporter ---
+                exporter = CSVExporter(json_path=chunk_file_path)
                 exporter.export_processed_with_original_rows(file_name)
 
             # Provide a download button upon success

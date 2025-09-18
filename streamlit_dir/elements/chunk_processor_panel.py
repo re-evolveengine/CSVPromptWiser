@@ -58,7 +58,7 @@ def render_status_panel(
 def render_progress_with_info(label: str, processed: int, total: int, icon: str = "📦"):
     """Renders a progress bar and a stat info block below it."""
     st.progress(processed / total, text=f"{label}: {processed}/{total}")
-    st.info(f"{icon} {label}: {total} 🔁 Total: {total}")
+    st.info(f"{icon} {label}: {processed} 🔁 Total: {total}")
 
 
 def process_chunks_ui(
@@ -78,12 +78,10 @@ def process_chunks_ui(
     processor = GeminiChunkProcessor(client=client, prompt=prompt, chunk_manager=chunk_manager)
     prefs = ModelPreference()
 
-    start = st.button("Start Processing")
-
     # placeholders for live updates
     update_area = st.empty()
 
-    if start:
+    if "start_processing" in st.session_state and st.session_state.get("start_processing"):
         results = []
         processed = 0
 
@@ -135,5 +133,3 @@ def process_chunks_ui(
 
     else:
         update_area.info("ℹ️ Click 'Start Processing' to begin.", icon="🟢")
-
-    render_export_section()
