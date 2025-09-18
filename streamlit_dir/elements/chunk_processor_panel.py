@@ -9,7 +9,7 @@ from model.io.model_prefs import ModelPreference
 from streamlit_dir.elements.render_export_section import render_export_section
 from utils.result_type import ResultType
 from model.io.save_processed_chunks_to_db import save_processed_chunk_to_db
-from model.core.chunk.gemini_chunk_processor import GeminiChunkProcessor
+from model.core.chunk.chunk_processor import ChunkProcessor
 from streamlit_dir.elements.token_usage_gauge import render_token_usage_gauge
 
 logger = logging.getLogger(__name__)
@@ -75,7 +75,7 @@ def process_chunks_ui(
 
     # Load manager & processor
     chunk_manager = ChunkManager(json_path=chunk_file_path)
-    processor = GeminiChunkProcessor(client=client, prompt=prompt, chunk_manager=chunk_manager)
+    processor = ChunkProcessor(client=client, prompt=prompt, chunk_manager=chunk_manager)
     prefs = ModelPreference()
 
     # placeholders for live updates

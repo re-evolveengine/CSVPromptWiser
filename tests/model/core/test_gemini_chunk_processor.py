@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch, MagicMock, PropertyMock
 import pandas as pd
 from tenacity import RetryError
 
-from model.core.chunk.gemini_chunk_processor import GeminiChunkProcessor
+from model.core.chunk.chunk_processor import ChunkProcessor
 from model.core.llms.gemini_client import GeminiClient
 from model.core.chunk.chunk_manager import ChunkManager
 from utils.result_type import ResultType
@@ -26,13 +26,13 @@ def sample_dataframe():
 
 def test_initialization_validation(mock_client, mock_chunk_manager):
     with pytest.raises(ValueError, match="Prompt must not be empty"):
-        GeminiChunkProcessor("", mock_client, mock_chunk_manager)
+        ChunkProcessor("", mock_client, mock_chunk_manager)
 
     with pytest.raises(ValueError, match="LLM client is not configured"):
-        GeminiChunkProcessor("test prompt", None, mock_chunk_manager)
+        ChunkProcessor("test prompt", None, mock_chunk_manager)
 
     with pytest.raises(ValueError, match="Chunk manager is not initialized"):
-        GeminiChunkProcessor("test prompt", mock_client, None)
+        ChunkProcessor("test prompt", mock_client, None)
 
 
 from unittest.mock import patch, PropertyMock
@@ -48,7 +48,7 @@ def test_process_one_chunk_success(mock_client, mock_chunk_manager, sample_dataf
         runner_instance.run.return_value = (expected_response, expected_tokens)
         runner_instance.fatal_errors = (ValueError,)
 
-        processor = GeminiChunkProcessor("test prompt", mock_client, mock_chunk_manager)
+        processor = ChunkProcessor("test prompt", mock_client, mock_chunk_manager)
         initial_tokens = processor.remaining_tokens
 
         # Patch remaining_total_tokens property from ModelPreference
@@ -68,7 +68,7 @@ def test_process_one_chunk_success(mock_client, mock_chunk_manager, sample_dataf
 
 def test_process_one_chunk_no_more_chunks(mock_client, mock_chunk_manager):
     mock_chunk_manager.get_next_chunk.return_value = (None, None)
-    processor = GeminiChunkProcessor("test prompt", mock_client, mock_chunk_manager)
+    processor = ChunkProcessor("test prompt", mock_client, mock_chunk_manager)
     result = processor.process_next_chunk()
 
     assert result.result_type == ResultType.NO_MORE_CHUNKS
@@ -87,7 +87,7 @@ def test_process_one_chunk_fatal_error(mock_client, mock_chunk_manager, sample_d
         runner_instance.run.side_effect = test_exception
         runner_instance.fatal_errors = (ValueError,)  # Must match exception type
 
-        processor = GeminiChunkProcessor("test prompt", mock_client, mock_chunk_manager)
+        processor = ChunkProcessor("test prompt", mock_client, mock_chunk_manager)
         result = processor.process_next_chunk()
 
     # Assertions
@@ -108,7 +108,7 @@ def test_process_one_chunk_retry_error(mock_client, mock_chunk_manager, sample_d
         runner_instance.run.side_effect = retry_exc
         runner_instance.fatal_errors = (ValueError,)
 
-        processor = GeminiChunkProcessor("test prompt", mock_client, mock_chunk_manager)
+        processor = ChunkProcessor("test prompt", mock_client, mock_chunk_manager)
         result = processor.process_next_chunk()
 
     assert result.result_type == ResultType.RETRYABLE_ERROR
@@ -126,7 +126,7 @@ def test_process_one_chunk_unexpected_error(mock_client, mock_chunk_manager, sam
         runner_instance.run.side_effect = Exception("Unexpected error")
         runner_instance.fatal_errors = (ValueError,)
 
-        processor = GeminiChunkProcessor("test prompt", mock_client, mock_chunk_manager)
+        processor = ChunkProcessor("test prompt", mock_client, mock_chunk_manager)
         result = processor.process_next_chunk()
 
     assert result.result_type == ResultType.UNEXPECTED_ERROR
@@ -145,7 +145,7 @@ def test_fatal_error_result_contains_none_chunk_id(mock_client, mock_chunk_manag
         mock_runner_instance.run.side_effect = ValueError("Fatal error")
         mock_runner_instance.fatal_errors = (ValueError,)
 
-        processor = GeminiChunkProcessor("test prompt", mock_client, mock_chunk_manager)
+        processor = ChunkProcessor("test prompt", mock_client, mock_chunk_manager)
         result = processor.process_next_chunk()
 
     assert result.result_type == ResultType.FATAL_ERROR

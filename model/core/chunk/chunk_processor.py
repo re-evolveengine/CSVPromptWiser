@@ -1,29 +1,37 @@
 from tenacity import RetryError
 
 from model.core.chunk.chunk_manager import ChunkManager
+from model.core.llms.base_llm_client import BaseLLMClient
 from model.core.llms.gemini_client import GeminiClient
 from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
+from model.core.llms.resilient_llm_runner import ResilientLLMRunner
 from model.io.model_prefs import ModelPreference
 from utils.chunk_process_result import ChunkProcessResult
 from utils.result_type import ResultType
 
 
-class GeminiChunkProcessor:
+class ChunkProcessor:
     def __init__(
         self,
         prompt: str,
-        client: GeminiClient,
+        client: BaseLLMClient,
         chunk_manager: ChunkManager,
     ):
         self.prompt = prompt
         self.client = client
         self.chunk_manager = chunk_manager
 
-        self.runner = GeminiResilientRunner(client=self.client)
+        self._validate_inputs()
+
+        if isinstance(client, GeminiClient):
+            self.runner = GeminiResilientRunner(client=self.client)
+        else:
+            raise ValueError("Unsupported LLM client type")
+
         self.prefs = ModelPreference()
+        # TODO: create a dictionary for different llms to get each remaining tokens
         self.remaining_tokens = self.prefs.remaining_total_tokens
 
-        self._validate_inputs()
 
     def _validate_inputs(self):
         if not self.prompt:
