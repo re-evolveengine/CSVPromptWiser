@@ -64,14 +64,17 @@ class GeminiClient(BaseLLMClient):
 
             # Pass through retryable API exceptions without wrapping
             if isinstance(e, (
-                api_exceptions.DeadlineExceeded,
-                api_exceptions.ServiceUnavailable,
-                api_exceptions.InternalServerError,
-                api_exceptions.Aborted,
-                ConnectionError,
-                TimeoutError,
+                    api_exceptions.DeadlineExceeded,
+                    api_exceptions.ServiceUnavailable,
+                    api_exceptions.InternalServerError,
+                    api_exceptions.Aborted,
+                    api_exceptions.PermissionDenied,
+                    api_exceptions.Unauthenticated,
+                    api_exceptions.InvalidArgument,
+                    ConnectionError,
+                    TimeoutError,
             )):
                 raise  # Let retry logic see the original error
 
-            # Everything else becomes a RuntimeError
-            raise RuntimeError(f"Gemini call failed: {e}")
+            # Let unknown custom exceptions propagate
+            raise
