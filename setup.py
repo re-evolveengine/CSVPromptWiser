@@ -23,7 +23,7 @@ setup(
     options={"build_exe": build_exe_options},
     executables=[
         Executable(
-            "streamlit_app.py",
+            "app.py",
             base=base,
             target_name="PromptPilot",
             icon=None,  # You can add an .ico file here if you have one

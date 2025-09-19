@@ -80,6 +80,12 @@ def process_chunks_ui(
 
     # placeholders for live updates
     update_area = st.empty()
+    error_box = st.container()
+
+    status_area = st.container()  # for progress/status panels
+    fatal_area = st.container()  # for fatal errors
+    retry_area = st.container()  # for retryable errors
+    unexpected_area = st.container()  # for unexpected errors
 
     if "start_processing" in st.session_state and st.session_state.get("start_processing"):
         results = []
@@ -92,6 +98,8 @@ def process_chunks_ui(
                 update_area.error(f"❌ Exception: {e}", icon="🚨")
                 logger.exception("Unexpected exception during chunk processing")
                 break
+
+            print("DEBUG result_type:", getattr(result, "result_type", None))
 
             if result.result_type == ResultType.SUCCESS:
                 results.append(result)
@@ -107,9 +115,10 @@ def process_chunks_ui(
                 processed += 1
 
             elif result.result_type == ResultType.FATAL_ERROR:
-                update_area.error(f"❌ Fatal Error: {result.error}", icon="🚨")
-                with update_area.container():
-                    render_status_panel(chunk_manager, prefs, processed, chunk_count)
+                error_box.error(f"❓ Unexpected Error: {result.error}", icon="❓")
+                # update_area.error(f"❌ Fatal Error: {result.error}", icon="🚨")
+                # with update_area.container():
+                #     render_status_panel(chunk_manager, prefs, processed, chunk_count)
                 break
 
             elif result.result_type == ResultType.RETRYABLE_ERROR:
@@ -120,7 +129,8 @@ def process_chunks_ui(
                 break
 
             else:
-                update_area.error(f"❓ Unexpected Error: {result.error}", icon="❓")
+                error_box.error(f"❓ Unexpected Error: {result.error}", icon="❓")
+                # update_area.error(f"❓ Unexpected Error: {result.error}", icon="❓")
 
             # UI updates after every step
             with update_area.container():

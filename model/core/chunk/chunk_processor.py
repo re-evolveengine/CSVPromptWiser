@@ -8,6 +8,7 @@ from model.core.llms.resilient_llm_runner import ResilientLLMRunner
 from model.io.model_prefs import ModelPreference
 from utils.chunk_process_result import ChunkProcessResult
 from utils.result_type import ResultType
+from google.api_core import exceptions as api_exceptions
 
 
 class ChunkProcessor:
@@ -48,6 +49,8 @@ class ChunkProcessor:
             return ChunkProcessResult(ResultType.NO_MORE_CHUNKS)
 
         try:
+            raise api_exceptions.ResourceExhausted("Resource exhausted")
+
             response, used_tokens = self.runner.run(self.prompt, df)
             self.remaining_tokens -= used_tokens
             self.prefs.remaining_total_tokens = self.remaining_tokens
