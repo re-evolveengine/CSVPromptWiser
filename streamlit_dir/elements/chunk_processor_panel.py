@@ -78,68 +78,69 @@ def process_chunks_ui(
     processor = ChunkProcessor(client=client, prompt=prompt, chunk_manager=chunk_manager)
     prefs = ModelPreference()
 
-    # placeholders for live updates
-    update_area = st.empty()
-    error_box = st.container()
-
-    status_area = st.container()  # for progress/status panels
-    fatal_area = st.container()  # for fatal errors
-    retry_area = st.container()  # for retryable errors
-    unexpected_area = st.container()  # for unexpected errors
-
     if "start_processing" in st.session_state and st.session_state.get("start_processing"):
         results = []
         processed = 0
+
+        # Persistent containers for different UI sections
+        progress_placeholder = st.empty()  # will overwrite each iteration
+        fatal_error_box = st.container()  # persistent fatal errors
+        retry_error_box = st.container()  # persistent retryable errors
+        unexpected_error_box = st.container()  # persistent unexpected errors
+
+        had_error = False
 
         for i in range(chunk_count):
             try:
                 result = processor.process_next_chunk()
             except Exception as e:
-                update_area.error(f"❌ Exception: {e}", icon="🚨")
+                # This is truly unexpected — didn't go through error handling
                 logger.exception("Unexpected exception during chunk processing")
+                fatal_error_box.error(
+                    "❌ An unexpected error occurred. Please check logs or contact support.",
+                    icon="🚨"
+                )
+                had_error = True
                 break
 
-            print("DEBUG result_type:", getattr(result, "result_type", None))
-
             if result.result_type == ResultType.SUCCESS:
-                results.append(result)
-
-                save_processed_chunk_to_db(
-                    result=result,
-                    chunk_id=result.chunk_id,
-                    prompt=prompt,
-                    model_version=client.model_name,
-                    saver=SQLiteResultSaver()
-                )
-
                 processed += 1
 
             elif result.result_type == ResultType.FATAL_ERROR:
-                error_box.error(f"❓ Unexpected Error: {result.error}", icon="❓")
-                # update_area.error(f"❌ Fatal Error: {result.error}", icon="🚨")
-                # with update_area.container():
-                #     render_status_panel(chunk_manager, prefs, processed, chunk_count)
+                fatal_error_box.error(f"❌ Fatal Error: {result.error}", icon="🚨")
+                had_error = True
                 break
 
             elif result.result_type == ResultType.RETRYABLE_ERROR:
-                update_area.warning(f"⚠️ Retryable Error: {result.error}", icon="🔁")
+                retry_error_box.warning(f"⚠️ Retryable Error: {result.error}", icon="🔁")
+                had_error = True
+
+            elif result.result_type == ResultType.UNEXPECTED_ERROR:
+                unexpected_error_box.error(f"❓ Unexpected Error: {result.error}", icon="❓")
+                had_error = True
+                break
 
             elif result.result_type == ResultType.NO_MORE_CHUNKS:
-                update_area.info("✅ No more chunks to process.", icon="📭")
+                # No more chunks left to process
                 break
 
             else:
-                error_box.error(f"❓ Unexpected Error: {result.error}", icon="❓")
-                # update_area.error(f"❓ Unexpected Error: {result.error}", icon="❓")
+                unexpected_error_box.error(f"❓ unknown result type: {result}", icon="❓")
+                had_error = True
 
-            # UI updates after every step
-            with update_area.container():
-                render_status_panel(chunk_manager, prefs, processed, chunk_count)
+            # Always update the live progress — only one panel at a time
+            with progress_placeholder.container():
+                render_status_panel(
+                    chunk_manager=chunk_manager,
+                    model_prefs=prefs,
+                    curr_processed_chunks=processed,
+                    curr_total_chunks=chunk_count
+                )
 
-        else:
-            with update_area.container():
-                render_status_panel(chunk_manager, prefs, processed, chunk_count)
-                st.success("✅ Finished processing all requested chunks.")
+        # After loop finishes
+        if not had_error:
+            st.success("✅ Finished processing all requested chunks.")
+
 
     else:
-        update_area.info("ℹ️ Click 'Start Processing' to begin.", icon="🟢")
+        st.info("ℹ️ Click 'Start Processing' to begin.", icon="🟢")

@@ -49,7 +49,9 @@ class ChunkProcessor:
             return ChunkProcessResult(ResultType.NO_MORE_CHUNKS)
 
         try:
-            raise api_exceptions.ResourceExhausted("Resource exhausted")
+            # raise api_exceptions.ResourceExhausted("Resource exhausted")
+            # raise api_exceptions.InternalServerError("Internal server error")
+            # raise Exception("Exception")
 
             response, used_tokens = self.runner.run(self.prompt, df)
             self.remaining_tokens -= used_tokens
