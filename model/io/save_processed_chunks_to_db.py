@@ -1,4 +1,4 @@
-from model.io.gemini_sqlite_result_saver import SQLiteResultSaver
+from model.io.sqlite_result_saver import SQLiteResultSaver
 from utils.chunk_process_result import ChunkProcessResult
 from utils.result_type import ResultType
 

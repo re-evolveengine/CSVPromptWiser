@@ -2,6 +2,7 @@ from typing import Any, Tuple
 import logging
 import pandas as pd
 import google.generativeai as genai
+from google.api_core import exceptions as api_exceptions
 
 from model.core.llms.base_llm_client import BaseLLMClient
 
@@ -11,6 +12,9 @@ logger = logging.getLogger(__name__)
 
 class GeminiClient(BaseLLMClient):
     def _init_llm(self) -> Any:
+        """
+        Initialize the Google Gemini LLM client.
+        """
         try:
             genai.configure(api_key=self.api_key)
             return genai.GenerativeModel(
@@ -24,9 +28,12 @@ class GeminiClient(BaseLLMClient):
         """
         Call Gemini LLM and return the response along with total token count (input + output).
 
+        Args:
+            prompt: The prompt string to provide to the LLM.
+            df: A pandas DataFrame to be formatted and passed with the prompt.
+
         Returns:
-            text (str): The generated response text.
-            total_tokens (int): Total tokens used (input + output).
+            Tuple of (generated text, total token usage).
         """
         formatted_input = self._format_input(prompt, df)
 
@@ -44,12 +51,27 @@ class GeminiClient(BaseLLMClient):
             total_tokens = input_tokens + output_tokens
 
             logger.info(
-                f"Gemini token usage — Input: {input_tokens}, "
-                f"Output: {output_tokens}, Total: {total_tokens}"
+                f"Gemini token usage — "
+                f"Input: {input_tokens}, "
+                f"Output: {output_tokens}, "
+                f"Total: {total_tokens}"
             )
 
             return text, total_tokens
 
         except Exception as e:
             logger.error(f"Gemini call failed: {e}")
+
+            # Pass through retryable API exceptions without wrapping
+            if isinstance(e, (
+                api_exceptions.DeadlineExceeded,
+                api_exceptions.ServiceUnavailable,
+                api_exceptions.InternalServerError,
+                api_exceptions.Aborted,
+                ConnectionError,
+                TimeoutError,
+            )):
+                raise  # Let retry logic see the original error
+
+            # Everything else becomes a RuntimeError
             raise RuntimeError(f"Gemini call failed: {e}")

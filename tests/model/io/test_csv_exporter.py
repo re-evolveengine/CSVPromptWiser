@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch, mock_open
 
 from model.io.csv_exporter import CSVExporter
-from model.io.gemini_sqlite_result_saver import SQLiteResultSaver
+from model.io.sqlite_result_saver import SQLiteResultSaver
 
 
 @pytest.fixture

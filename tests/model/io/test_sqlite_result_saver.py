@@ -4,7 +4,7 @@ import tempfile
 import pytest
 from datetime import datetime, timezone
 
-from model.io.gemini_sqlite_result_saver import SQLiteResultSaver
+from model.io.sqlite_result_saver import SQLiteResultSaver
 
 
 @pytest.fixture

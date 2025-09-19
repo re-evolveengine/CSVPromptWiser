@@ -37,3 +37,4 @@ Thumbs.db
 
 # Streamlit temporary files
 .streamlit/
+/windsurf-plugin-diagnostics.zip

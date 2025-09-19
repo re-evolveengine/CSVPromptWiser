@@ -6,7 +6,7 @@ import pandas as pd
 
 from model.core.chunk.chunk_json_inspector import ChunkJSONInspector
 from model.core.chunk.chunker import DataFrameChunker
-from model.io.gemini_sqlite_result_saver import SQLiteResultSaver
+from model.io.sqlite_result_saver import SQLiteResultSaver
 from model.io.model_prefs import ModelPreference
 from model.io.dataset_handler import DatasetHandler
 from model.core.llms.prompt_optimizer import PromptOptimizer
