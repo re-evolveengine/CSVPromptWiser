@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 from model.core.chunk.chunker import DataFrameChunker
 from model.core.chunk.chunk_manager import ChunkManager
 from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
-from model.io.gemini_result_saver import GeminiResultSaver
+from model.io.result_saver import ResultSaver
 
 @pytest.fixture
 def dummy_df():
@@ -75,7 +75,7 @@ def test_chunkwise_pause_resume_with_mock(dummy_df, prompt, tmp_paths):
     results += manager.process_chunks(process_chunk, show_progress=False)
 
     # === 6. Save results ===
-    GeminiResultSaver.save_results_to_json(results, str(tmp_paths["result_file"]))
+    ResultSaver.save_results_to_json(results, str(tmp_paths["result_file"]))
 
     # === 7. Validate output ===
     with open(tmp_paths["result_file"]) as f:

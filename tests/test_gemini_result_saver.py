@@ -6,7 +6,7 @@ import pytest
 import pandas as pd
 import sqlite3
 
-from model.io.gemini_result_saver import GeminiResultSaver
+from model.io.result_saver import ResultSaver
 from model.io.gemini_sqlite_result_saver import SQLiteResultSaver
 from utils.constants import JSON_CHUNK_VERSION
 
@@ -46,7 +46,7 @@ class TestGeminiResultSaver:
         metadata = {"test_metadata": "test_value"}
 
         # Call the method under test
-        GeminiResultSaver.save_results_to_json(
+        ResultSaver.save_results_to_json(
             results=sample_results,
             file_path=output_path,
             metadata=metadata
@@ -77,14 +77,14 @@ class TestGeminiResultSaver:
     def test_save_results_empty_input(self):
         """Test that empty results raise a ValueError."""
         with pytest.raises(ValueError, match="No results to save"):
-            GeminiResultSaver.save_results_to_json([], "dummy_path.json")
+            ResultSaver.save_results_to_json([], "dummy_path.json")
 
     def test_save_results_file_creation(self, sample_results, temp_dir):
         """Test that files are created with proper permissions and structure."""
         output_path = os.path.join(temp_dir, "nested", "output.json")
 
         # Call the method under test
-        GeminiResultSaver.save_results_to_json(sample_results, output_path)
+        ResultSaver.save_results_to_json(sample_results, output_path)
 
         # Verify the file was created in the nested directory
         assert os.path.exists(output_path)
@@ -105,7 +105,7 @@ class TestGeminiResultSaver:
 
         # Test that PermissionError is raised when write fails
         with pytest.raises((OSError, PermissionError)):  # Accept either exception type
-            GeminiResultSaver.save_results_to_json(sample_results, output_path)
+            ResultSaver.save_results_to_json(sample_results, output_path)
 
         # Clean up permissions for test cleanup
         os.chmod(output_path, 0o644)
@@ -120,7 +120,7 @@ class TestGeminiResultSaver:
 
         # Test that the temporary file is cleaned up on error
         with pytest.raises(OSError):
-            GeminiResultSaver.save_results_to_json(sample_results, output_path)
+            ResultSaver.save_results_to_json(sample_results, output_path)
 
         # Verify the temporary file was cleaned up
         assert not os.path.exists(temp_path)
@@ -135,7 +135,7 @@ class TestGeminiResultSaver:
         }
 
         # Call the method under test
-        GeminiResultSaver.save_results_to_json(
+        ResultSaver.save_results_to_json(
             results=sample_results,
             file_path=output_path,
             metadata=metadata
@@ -152,7 +152,7 @@ class TestGeminiResultSaver:
         output_path = os.path.join(temp_dir, "output.csv")
 
         # Call the method under test
-        GeminiResultSaver.save_results_to_csv(
+        ResultSaver.save_results_to_csv(
             results=sample_results,
             file_path=output_path
         )
@@ -181,7 +181,7 @@ class TestGeminiResultSaver:
     def test_save_results_to_csv_empty_input(self):
         """Test that empty results raise a ValueError."""
         with pytest.raises(ValueError, match="No results to save"):
-            GeminiResultSaver.save_results_to_csv([], "dummy_path.csv")
+            ResultSaver.save_results_to_csv([], "dummy_path.csv")
 
     def test_save_results_to_csv_invalid_chunk_format(self, temp_dir):
         """Test that invalid chunk format raises a ValueError."""
@@ -195,7 +195,7 @@ class TestGeminiResultSaver:
         output_path = os.path.join(temp_dir, "output.csv")
         
         with pytest.raises(ValueError, match="Invalid chunk format at index 0"):
-            GeminiResultSaver.save_results_to_csv(invalid_results, output_path)
+            ResultSaver.save_results_to_csv(invalid_results, output_path)
 
     def test_save_results_to_csv_with_custom_columns(self, temp_dir):
         """Test that custom columns in input data are preserved."""
@@ -211,7 +211,7 @@ class TestGeminiResultSaver:
         ]
         output_path = os.path.join(temp_dir, "custom_output.csv")
         
-        GeminiResultSaver.save_results_to_csv(custom_results, output_path)
+        ResultSaver.save_results_to_csv(custom_results, output_path)
         
         df = pd.read_csv(output_path)
         assert set(df.columns) == {"chunk_id", "prompt", "response", "timestamp", "custom_col1", "custom_col2"}
@@ -223,7 +223,7 @@ class TestGeminiResultSaver:
         output_path = os.path.join(temp_dir, "nested", "dir", "output.csv")
         
         # Should create the nested directories
-        GeminiResultSaver.save_results_to_csv(sample_results, output_path)
+        ResultSaver.save_results_to_csv(sample_results, output_path)
         
         assert os.path.exists(output_path)
         df = pd.read_csv(output_path)

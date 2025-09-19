@@ -9,7 +9,7 @@ import pandas as pd
 from utils.constants import JSON_CHUNK_VERSION
 
 
-class GeminiResultSaver:
+class ResultSaver:
     """Handles saving Gemini results along with input chunks to JSON."""
 
     @staticmethod
