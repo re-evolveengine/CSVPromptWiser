@@ -3,6 +3,7 @@ import streamlit as st
 from model.core.llms.gemini_client import GeminiClient
 from model.io.model_prefs import ModelPreference
 from model.core.llms.gemini_model_provider import GeminiModelProvider
+from model.utils.providers import get_model_prefs
 
 
 @st.cache_data(show_spinner="🔍 Fetching available Gemini models...")
@@ -12,7 +13,7 @@ def get_available_models(api_key: str):
 
 
 def model_selector_ui(container, api_key: str):
-    model_pref = ModelPreference()
+    model_pref = get_model_prefs()
     saved_models = model_pref.model_list
     saved_selected_model = model_pref.selected_model_name
     selected_model = None

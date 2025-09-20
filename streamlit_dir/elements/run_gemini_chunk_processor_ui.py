@@ -7,6 +7,7 @@ from model.core.chunk.chunk_manager import ChunkManager
 from model.core.llms.gemini_client import GeminiClient
 from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
 from model.io.model_prefs import ModelPreference
+from model.utils.providers import get_model_prefs
 
 
 def run_gemini_chunk_processor_ui(
@@ -39,7 +40,7 @@ def run_gemini_chunk_processor_ui(
         return results, errors
 
     total = chunk_manager.remaining_chunks if chunk_count is None else min(chunk_count, chunk_manager.remaining_chunks)
-    prefs = ModelPreference()
+    prefs = get_model_prefs()
     count = 0
     current_remaining_total = prefs.get_remaining_total_tokens()
 

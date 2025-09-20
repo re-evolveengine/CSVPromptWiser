@@ -10,6 +10,7 @@ from model.io.sqlite_result_saver import SQLiteResultSaver
 from model.io.model_prefs import ModelPreference
 from model.io.dataset_handler import DatasetHandler
 from model.core.llms.prompt_optimizer import PromptOptimizer
+from model.utils.providers import get_model_prefs
 from streamlit_dir.elements.render_chunking_warning_dialog import show_chunking_warning_dialog
 from utils.constants import TEMP_DIR, DEFAULT_TOKEN_BUDGET
 
@@ -122,12 +123,26 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
     else:
         st.info("ℹ️ Connect a model to see recommended chunk size")
 
-    prefs = ModelPreference()
+    prefs = get_model_prefs()
     token_budget = st.number_input(
         "Enter Token Budget", min_value=1, value=prefs.total_tokens
     )
+    # Persist the configured total budget
     prefs.total_tokens = token_budget
-    prefs.remaining_total_tokens = token_budget
+
+    # Initialize or adjust remaining tokens without clobbering on every rerun
+    current_remaining = prefs.remaining_total_tokens
+    # If uninitialized, set remaining to the budget
+    if current_remaining == 0:
+        prefs.remaining_total_tokens = token_budget
+    # If user lowered the budget below current remaining, clamp it
+    elif current_remaining > token_budget:
+        prefs.remaining_total_tokens = token_budget
+
+    # Provide an explicit reset action instead of implicit reset every rerun
+    if st.button("🔄 Reset Remaining Tokens to Budget"):
+        prefs.remaining_total_tokens = token_budget
+        st.success("Remaining tokens reset to current budget.")
 
     chunk_size = st.number_input(
         "🔢 Set Chunk Size", min_value=1, value=50, help="Number of rows per chunk."

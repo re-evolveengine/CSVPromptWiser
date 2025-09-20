@@ -66,6 +66,8 @@ def render_status_panel(
         f" &nbsp;&nbsp;&nbsp; ✅ **Consumed:** `{processed_tokens}`"
     )
     render_token_usage_gauge(processed_ratio)
+    logger.info(f"Processed {processed_tokens} tokens out of {total_tokens} total tokens")
+    logger.info(f"Remaining {remaining_tokens} tokens out of {total_tokens} total tokens")
 
 
 # --- Main UI ---

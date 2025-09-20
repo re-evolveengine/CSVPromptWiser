@@ -1,3 +1,5 @@
+import logging
+
 from tenacity import RetryError
 
 from model.core.chunk.chunk_manager import ChunkManager
@@ -10,6 +12,13 @@ from model.utils.providers import get_model_prefs
 from utils.chunk_process_result import ChunkProcessResult
 from utils.result_type import ResultType
 from google.api_core import exceptions as api_exceptions
+
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 
 
 class ChunkProcessor:
@@ -61,6 +70,11 @@ class ChunkProcessor:
             response, used_tokens = self.runner.run(self.prompt, df)
             self.remaining_tokens -= used_tokens
             self.prefs.remaining_total_tokens = self.remaining_tokens
+
+            logger.info(f"Processed chunk {chunk_id} with {used_tokens} tokens. Remaining tokens: {self.remaining_tokens}")
+            logger.info(f"Processed chunk {chunk_id} with {used_tokens} tokens. Remaining tokens: {self.prefs.remaining_total_tokens} saved")
+
+
 
             self.chunk_manager.mark_chunk_processed(chunk_id)
             self.chunk_manager.save_state()
