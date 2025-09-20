@@ -75,7 +75,6 @@ def process_chunks_ui(
     chunk_count: int,
     run_now: bool = False,
 ):
-    st.markdown("### 🧠 Chunk Processing Progress")
 
     if not all([client, prompt, chunk_file_path]):
         st.warning("⚠️ Please make sure client, prompt, and chunk file are all set.")
@@ -88,13 +87,18 @@ def process_chunks_ui(
 
     # --- When not running: just show last known status once ---
     if not run_now:
+
         last_status = st.session_state.get(
             "last_status", {"processed": 0, "chunk_count": chunk_count}
         )
+
         render_status_panel(
-            chunk_manager, prefs,
-            last_status["processed"], last_status["chunk_count"]
+            chunk_manager,
+            prefs,
+            last_status["processed"],
+            st.session_state.get("num_chunks", chunk_count)
         )
+
         st.info("ℹ️ Click 'Start Processing' to begin.", icon="🟢")
         return
 

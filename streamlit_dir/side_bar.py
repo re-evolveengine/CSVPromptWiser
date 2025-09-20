@@ -62,7 +62,13 @@ def cwp_sidebar():
                     step=1,
                     key="num_chunks_input"
                 )
+
                 if st.form_submit_button("⚙️ Set Processing Parameters"):
+                    st.session_state["last_status"] = {
+                        "processed": 0,
+                        "chunk_count": st.session_state["num_chunks"]
+                    }
+
                     st.session_state["processing_ready"] = True
 
     db_saver = SQLiteResultSaver()
