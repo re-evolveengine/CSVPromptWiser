@@ -7,6 +7,7 @@ from model.core.llms.gemini_client import GeminiClient
 from model.io.save_processed_chunks_to_db import save_processed_chunk_to_db
 from model.io.model_prefs import ModelPreference
 from model.io.sqlite_result_saver import SQLiteResultSaver
+from model.utils.providers import get_model_prefs
 from streamlit_dir.elements.token_usage_gauge import render_token_usage_gauge
 from utils.result_type import ResultType
 
@@ -82,7 +83,7 @@ def process_chunks_ui(
 
     # Load manager & processor
     chunk_manager = ChunkManager(json_path=chunk_file_path)
-    prefs = ModelPreference()
+    prefs = get_model_prefs()
     processor = ChunkProcessor(client=client, prompt=prompt, chunk_manager=chunk_manager)
 
     # --- When not running: just show last known status once ---
@@ -132,6 +133,7 @@ def process_chunks_ui(
                 model_version=client.model_name,
                 saver=SQLiteResultSaver(),
             )
+            # prefs.remaining_total_tokens = processor.client.remaining_tokens
             processed += 1
 
         elif result.result_type == ResultType.FATAL_ERROR:

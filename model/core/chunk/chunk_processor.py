@@ -6,6 +6,7 @@ from model.core.llms.gemini_client import GeminiClient
 from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
 from model.core.llms.resilient_llm_runner import ResilientLLMRunner
 from model.io.model_prefs import ModelPreference
+from model.utils.providers import get_model_prefs
 from utils.chunk_process_result import ChunkProcessResult
 from utils.result_type import ResultType
 from google.api_core import exceptions as api_exceptions
@@ -17,6 +18,7 @@ class ChunkProcessor:
         prompt: str,
         client: BaseLLMClient,
         chunk_manager: ChunkManager,
+        model_preference: ModelPreference = get_model_prefs(),
     ):
         self.prompt = prompt
         self.client = client
@@ -29,7 +31,7 @@ class ChunkProcessor:
         else:
             raise ValueError("Unsupported LLM client type")
 
-        self.prefs = ModelPreference()
+        self.prefs = model_preference
         # TODO: create a dictionary for different llms to get each remaining tokens
         self.remaining_tokens = self.prefs.remaining_total_tokens
 
