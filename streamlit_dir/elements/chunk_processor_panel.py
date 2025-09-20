@@ -1,30 +1,39 @@
 import logging
-
 import streamlit as st
 
 from model.core.chunk.chunk_manager import ChunkManager
 from model.core.chunk.chunk_processor import ChunkProcessor
 from model.core.llms.gemini_client import GeminiClient
+from model.io.save_processed_chunks_to_db import save_processed_chunk_to_db
 from model.io.model_prefs import ModelPreference
+from model.io.sqlite_result_saver import SQLiteResultSaver
 from streamlit_dir.elements.token_usage_gauge import render_token_usage_gauge
 from utils.result_type import ResultType
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 
 
+# --- Helpers ---
 def remaining_to_processed(remaining: int, total: int) -> int:
     return total - remaining
+
+
+def render_progress_with_info(label: str, processed: int, total: int, icon: str = "📦"):
+    total = max(total, 1)  # prevent divide-by-zero crash
+    st.progress(processed / total, text=f"{label}: {processed}/{total}")
+    st.info(f"{icon} {label}: {processed} 🔁 Total: {total}")
 
 
 def render_status_panel(
     chunk_manager: ChunkManager,
     model_prefs: ModelPreference,
     curr_processed_chunks: int,
-    curr_total_chunks: int
+    curr_total_chunks: int,
 ):
     """Unified display of chunk progress, token usage, and stats."""
 
@@ -33,38 +42,40 @@ def render_status_panel(
     remaining_chunks = chunk_manager.remaining_chunks
     processed_chunks = remaining_to_processed(remaining_chunks, total_chunks)
 
-    st.markdown("###### 📦 Current Session Progress")
-    render_progress_with_info("🔄 Chunks Processed (This Run)", curr_processed_chunks, curr_total_chunks)
+    st.markdown("#### 📦 Current Session Progress")
+    render_progress_with_info(
+        "🔄 Chunks Processed (This Run)", curr_processed_chunks, curr_total_chunks
+    )
 
-    st.markdown("###### 📊 Overall Chunk Progress")
-    render_progress_with_info("🧩 Total Chunks Processed", processed_chunks, total_chunks)
+    st.markdown("#### 📊 Overall Chunk Progress")
+    render_progress_with_info(
+        "🧩 Total Chunks Processed", processed_chunks, total_chunks
+    )
 
     # === Tokens ===
     total_tokens = model_prefs.total_tokens
     remaining_tokens = model_prefs.remaining_total_tokens
     processed_tokens = remaining_to_processed(remaining_tokens, total_tokens)
-    processed_ratio = (processed_tokens / total_tokens) * 100
+    processed_ratio = (processed_tokens / total_tokens) * 100 if total_tokens > 0 else 0
 
-    st.markdown("###### 🔋 Token Usage Overview")
+    st.markdown("#### 🔋 Token Usage Overview")
     st.info(
-        f"🧮 **Total Tokens:** `{total_tokens}` &nbsp;&nbsp;&nbsp; 🔁 **Remaining:** `{remaining_tokens}` &nbsp;&nbsp;&nbsp; ✅ **Consumed:** `{processed_tokens}`"
+        f"🧮 **Total Tokens:** `{total_tokens}`"
+        f" &nbsp;&nbsp;&nbsp; 🔁 **Remaining:** `{remaining_tokens}`"
+        f" &nbsp;&nbsp;&nbsp; ✅ **Consumed:** `{processed_tokens}`"
     )
     render_token_usage_gauge(processed_ratio)
 
 
-def render_progress_with_info(label: str, processed: int, total: int, icon: str = "📦"):
-    """Renders a progress bar and a stat info block below it."""
-    st.progress(processed / total, text=f"{label}: {processed}/{total}")
-    st.info(f"{icon} {label}: {processed} 🔁 Total: {total}")
-
-
+# --- Main UI ---
 def process_chunks_ui(
-        client: GeminiClient,
-        prompt: str,
-        chunk_file_path: str,
-        chunk_count: int,
+    client: GeminiClient,
+    prompt: str,
+    chunk_file_path: str,
+    chunk_count: int,
+    run_now: bool = False,
 ):
-    # st.markdown("### 🧠 Chunk Processing Progress")
+    st.markdown("### 🧠 Chunk Processing Progress")
 
     if not all([client, prompt, chunk_file_path]):
         st.warning("⚠️ Please make sure client, prompt, and chunk file are all set.")
@@ -72,71 +83,83 @@ def process_chunks_ui(
 
     # Load manager & processor
     chunk_manager = ChunkManager(json_path=chunk_file_path)
-    processor = ChunkProcessor(client=client, prompt=prompt, chunk_manager=chunk_manager)
     prefs = ModelPreference()
+    processor = ChunkProcessor(client=client, prompt=prompt, chunk_manager=chunk_manager)
 
-    if "processing_ready" in st.session_state and st.session_state.get("processing_ready"):
-        processed = 0
-
-        # Persistent containers for different UI sections
-        progress_placeholder = st.empty()  # will overwrite each iteration
-        fatal_error_box = st.container()  # persistent fatal errors
-        retry_error_box = st.container()  # persistent retryable errors
-        unexpected_error_box = st.container()  # persistent unexpected errors
-
-        had_error = False
-
-        for i in range(chunk_count):
-            try:
-                result = processor.process_next_chunk()
-            except Exception as e:
-                # This is truly unexpected — didn't go through error handling
-                logger.exception("Unexpected exception during chunk processing")
-                fatal_error_box.error(
-                    "❌ An unexpected error occurred. Please check logs or contact support.",
-                    icon="🚨"
-                )
-                had_error = True
-                break
-
-            if result.result_type == ResultType.SUCCESS:
-                processed += 1
-
-            elif result.result_type == ResultType.FATAL_ERROR:
-                fatal_error_box.error(f"❌ Fatal Error: {result.error}", icon="🚨")
-                had_error = True
-                break
-
-            elif result.result_type == ResultType.RETRYABLE_ERROR:
-                retry_error_box.warning(f"⚠️ Retryable Error: {result.error}", icon="🔁")
-                had_error = True
-
-            elif result.result_type == ResultType.UNEXPECTED_ERROR:
-                unexpected_error_box.error(f"❓ Unexpected Error: {result.error}", icon="❓")
-                had_error = True
-                break
-
-            elif result.result_type == ResultType.NO_MORE_CHUNKS:
-                # No more chunks left to process
-                break
-
-            else:
-                unexpected_error_box.error(f"❓ unknown result type: {result}", icon="❓")
-                had_error = True
-
-            # Always update the live progress — only one panel at a time
-            with progress_placeholder.container():
-                render_status_panel(
-                    chunk_manager=chunk_manager,
-                    model_prefs=prefs,
-                    curr_processed_chunks=processed,
-                    curr_total_chunks=chunk_count
-                )
-
-        # After loop finishes
-        if not had_error:
-            st.success("✅ Finished processing all requested chunks.")
-
-
-    else:
+    # --- When not running: just show last known status once ---
+    if not run_now:
+        last_status = st.session_state.get(
+            "last_status", {"processed": 0, "chunk_count": chunk_count}
+        )
+        render_status_panel(
+            chunk_manager, prefs,
+            last_status["processed"], last_status["chunk_count"]
+        )
         st.info("ℹ️ Click 'Start Processing' to begin.", icon="🟢")
+        return
+
+    # --- Running processing loop ---
+    processed = 0
+    had_error = False
+
+    # Containers for error messages
+    fatal_area = st.container()
+    retry_area = st.container()
+    unexpected_area = st.container()
+    exception_area = st.container()
+
+    # Status placeholder for live updates
+    status_placeholder = st.empty()
+
+    for _ in range(chunk_count):
+        try:
+            result = processor.process_next_chunk()
+        except Exception as e:
+            exception_area.error(f"❌ Exception: {e}", icon="🚨")
+            logger.exception("Unexpected exception during chunk processing")
+            had_error = True
+            break
+
+        if result.result_type == ResultType.SUCCESS:
+            save_processed_chunk_to_db(
+                result=result,
+                chunk_id=result.chunk_id,
+                prompt=prompt,
+                model_version=client.model_name,
+                saver=SQLiteResultSaver(),
+            )
+            processed += 1
+
+        elif result.result_type == ResultType.FATAL_ERROR:
+            fatal_area.error(f"❌ Fatal Error: {result.error}", icon="🚨")
+            had_error = True
+            break
+
+        elif result.result_type == ResultType.RETRYABLE_ERROR:
+            retry_area.warning(f"⚠️ Retryable Error: {result.error}", icon="🔁")
+            had_error = True
+
+        elif result.result_type == ResultType.UNEXPECTED_ERROR:
+            unexpected_area.error(f"❓ Unexpected Error: {result.error}", icon="❓")
+            had_error = True
+            break
+
+        elif result.result_type == ResultType.NO_MORE_CHUNKS:
+            st.info("✅ No more chunks to process.", icon="📭")
+            break
+
+        else:
+            unexpected_area.error(f"❓ Unknown result type: {result}", icon="❓")
+            had_error = True
+
+        # Update persistent last status and render live progress
+        st.session_state["last_status"] = {
+            "processed": processed,
+            "chunk_count": chunk_count
+        }
+        with status_placeholder.container():
+            render_status_panel(chunk_manager, prefs, processed, chunk_count)
+
+    # --- Wrap-up ---
+    if not had_error:
+        st.success("✅ Finished processing all requested chunks.")

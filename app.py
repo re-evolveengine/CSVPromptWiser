@@ -67,23 +67,18 @@ def main():
             st.code(prompt, language="markdown")
 
     # -- Chunk Processing Output (Always visible) ---
-    if "first_run" not in st.session_state:
-        st.session_state.first_run = False
-
     if st.session_state.get("processing_ready"):
         st.subheader("🧩 Process Chunks")
 
-        start = st.button("🚀 Start Chunk Processing", key="start_processing_btn")
-        if start:
-            st.session_state.first_run = start
+        start_btn = st.button("🚀 Start Chunk Processing")
 
-        if "first_run" in st.session_state and st.session_state.get("first_run"):
-            process_chunks_ui(
-                gemini_client,
-                prompt,
-                chunk_file_path,
-                chunk_count=st.session_state.get("num_chunks", 2),
-            )
+        process_chunks_ui(
+            gemini_client,
+            prompt,
+            chunk_file_path,
+            chunk_count=st.session_state.get("num_chunks", 2),
+            run_now=start_btn
+        )
     else:
         st.warning("Please provide all required parameters (API key, model, prompt, and chunks) to enable processing.")
 
