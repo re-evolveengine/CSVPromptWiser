@@ -21,7 +21,7 @@ RESULTS_DB_PATH = os.path.join(RESULTS_DIR, RESULTS_DB_NAME)
 # 📂 Files
 JSON_CHUNK_FILE = os.path.join(TEMP_DIR, "chunks.json")
 
-DEFAULT_CHUNK_SIZE = 100
+DEFAULT_CHUNK_SIZE = 25
 DEFAULT_TOKEN_BUDGET = 10000
 
 # 🗄️ Model preference DB (shelve) file name and full path
@@ -32,6 +32,7 @@ MODEL_LIST_KEY = "gemini_model_list"
 MODEL_CONFIG_KEY = "gemini_model_config"
 REMAINING_TOTAL_TOKENS_KEY = "remaining_total_tokens"
 TOTAL_TOKENS_KEY = "total_tokens_key"
+CHUNK_SIZE_KEY = "chunk_size_key2"
 
 # 📝 Prompt preferences file
 PROMPT_PREF_PATH = Path(CONFIG_DIR) / ".prompt_pref.json"

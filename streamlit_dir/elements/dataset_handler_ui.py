@@ -136,8 +136,10 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
         st.success("Remaining tokens reset to current budget.")
 
     chunk_size = st.number_input(
-        "🔢 Set Chunk Size", min_value=1, value=50, help="Number of rows per chunk."
+        "🔢 Set Chunk Size", min_value=1, value=prefs.chunk_size, help="Number of rows per chunk."
     )
+
+    prefs.chunk_size = chunk_size
 
     # Estimate and display token usage based on settings
     if optimizer is not None and len(df) > 0:

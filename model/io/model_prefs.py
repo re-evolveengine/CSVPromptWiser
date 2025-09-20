@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from typing import List, Dict
 
 from utils.constants import MODEL_PREFS_DB_PATH, MODEL_KEY, MODEL_LIST_KEY, MODEL_CONFIG_KEY, \
-    REMAINING_TOTAL_TOKENS_KEY, TOTAL_TOKENS_KEY
+    REMAINING_TOTAL_TOKENS_KEY, TOTAL_TOKENS_KEY, CHUNK_SIZE_KEY, DEFAULT_CHUNK_SIZE
 
 
 class ModelPreference:
@@ -20,6 +20,7 @@ class ModelPreference:
         self.config_key = MODEL_CONFIG_KEY
         self.remaining_tokens_key = REMAINING_TOTAL_TOKENS_KEY
         self.total_tokens_key = TOTAL_TOKENS_KEY
+        self.chunk_size_key = CHUNK_SIZE_KEY
         self._ensure_db_dir()
 
     def _ensure_db_dir(self) -> None:
@@ -42,6 +43,18 @@ class ModelPreference:
             yield db
         finally:
             db.close()
+
+
+    @property
+    def chunk_size(self) -> int:
+        """int: Get or set the chunk size."""
+        with self._shelve_operation() as db:
+            return db.get(self.chunk_size_key, DEFAULT_CHUNK_SIZE)
+
+    @chunk_size.setter
+    def chunk_size(self, chunk_size: int) -> None:
+        with self._shelve_operation() as db:
+            db[self.chunk_size_key] = chunk_size
 
     # === Token count properties ===
     @property
