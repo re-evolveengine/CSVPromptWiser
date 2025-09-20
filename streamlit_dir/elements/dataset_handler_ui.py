@@ -130,17 +130,8 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
     # Persist the configured total budget
     prefs.total_tokens = token_budget
 
-    # Initialize or adjust remaining tokens without clobbering on every rerun
-    current_remaining = prefs.remaining_total_tokens
-    # If uninitialized, set remaining to the budget
-    if current_remaining == 0:
-        prefs.remaining_total_tokens = token_budget
-    # If user lowered the budget below current remaining, clamp it
-    elif current_remaining > token_budget:
-        prefs.remaining_total_tokens = token_budget
-
     # Provide an explicit reset action instead of implicit reset every rerun
-    if st.button("🔄 Reset Remaining Tokens to Budget"):
+    if st.button("🔄 Reset Remaining Tokens"):
         prefs.remaining_total_tokens = token_budget
         st.success("Remaining tokens reset to current budget.")
 
