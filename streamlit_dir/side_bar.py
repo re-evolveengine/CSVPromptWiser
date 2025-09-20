@@ -47,11 +47,11 @@ def cwp_sidebar():
         else:
             st.info("ℹ️ Upload a file first to configure chunking")
 
-
-    with st.sidebar.expander("🧩 Process Chunks", expanded=False):
+    # 🧩 Configure Chunk Processing Section
+    with st.sidebar.expander("🧩 Configure Chunk Processing", expanded=False):
         if not all([gemini_client, prompt, chunk_file_path]):
             st.warning("⚠️ Please complete all previous steps: upload data, enter a prompt, and select a model.")
-            st.session_state["start_processing"] = False
+            # Do NOT reset here unless you explicitly want to cancel readiness
         else:
             with st.form("chunk_processing_form"):
                 st.session_state["num_chunks"] = st.number_input(
@@ -62,12 +62,8 @@ def cwp_sidebar():
                     step=1,
                     key="num_chunks_input"
                 )
-                if st.form_submit_button("🚀 Start Processing"):
-                    st.session_state["start_processing"] = True
-                else:
-                    # Only reset if the form wasn't submitted
-                    if "start_processing" not in st.session_state:
-                        st.session_state["start_processing"] = False
+                if st.form_submit_button("⚙️ Set Processing Parameters"):
+                    st.session_state["processing_ready"] = True
 
     db_saver = SQLiteResultSaver()
 

@@ -33,10 +33,10 @@ def render_status_panel(
     remaining_chunks = chunk_manager.remaining_chunks
     processed_chunks = remaining_to_processed(remaining_chunks, total_chunks)
 
-    st.markdown("#### 📦 Current Session Progress")
+    st.markdown("###### 📦 Current Session Progress")
     render_progress_with_info("🔄 Chunks Processed (This Run)", curr_processed_chunks, curr_total_chunks)
 
-    st.markdown("#### 📊 Overall Chunk Progress")
+    st.markdown("###### 📊 Overall Chunk Progress")
     render_progress_with_info("🧩 Total Chunks Processed", processed_chunks, total_chunks)
 
     # === Tokens ===
@@ -45,7 +45,7 @@ def render_status_panel(
     processed_tokens = remaining_to_processed(remaining_tokens, total_tokens)
     processed_ratio = (processed_tokens / total_tokens) * 100
 
-    st.markdown("#### 🔋 Token Usage Overview")
+    st.markdown("###### 🔋 Token Usage Overview")
     st.info(
         f"🧮 **Total Tokens:** `{total_tokens}` &nbsp;&nbsp;&nbsp; 🔁 **Remaining:** `{remaining_tokens}` &nbsp;&nbsp;&nbsp; ✅ **Consumed:** `{processed_tokens}`"
     )
@@ -64,7 +64,7 @@ def process_chunks_ui(
         chunk_file_path: str,
         chunk_count: int,
 ):
-    st.markdown("### 🧠 Chunk Processing Progress")
+    # st.markdown("### 🧠 Chunk Processing Progress")
 
     if not all([client, prompt, chunk_file_path]):
         st.warning("⚠️ Please make sure client, prompt, and chunk file are all set.")
@@ -75,8 +75,7 @@ def process_chunks_ui(
     processor = ChunkProcessor(client=client, prompt=prompt, chunk_manager=chunk_manager)
     prefs = ModelPreference()
 
-    if "start_processing" in st.session_state and st.session_state.get("start_processing"):
-        results = []
+    if "processing_ready" in st.session_state and st.session_state.get("processing_ready"):
         processed = 0
 
         # Persistent containers for different UI sections

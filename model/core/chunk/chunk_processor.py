@@ -44,9 +44,11 @@ class ChunkProcessor:
 
     def process_next_chunk(self) -> ChunkProcessResult:
         """Processes a single chunk and returns a typed result."""
-        df,chunk_id = self.chunk_manager.get_next_chunk()
-        if df is None:
+        chunk_data = self.chunk_manager.get_next_chunk()
+        if chunk_data is None:
             return ChunkProcessResult(ResultType.NO_MORE_CHUNKS)
+
+        df, chunk_id = chunk_data
 
         try:
             # raise api_exceptions.ResourceExhausted("Resource exhausted")

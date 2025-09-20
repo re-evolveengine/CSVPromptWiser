@@ -37,8 +37,8 @@ def main():
             'prompt': True
         }
 
-    # Update expanded state if processing starts
-    if "start_processing" in st.session_state and st.session_state.get("start_processing"):
+    # Update expanded state if processing ready
+    if "processing_ready" in st.session_state and st.session_state.get("processing_ready"):
         st.session_state.expanders = {k: False for k in st.session_state.expanders}
 
     # --- Model Configuration ---
@@ -66,17 +66,26 @@ def main():
         with st.expander("💬 Your Prompt", expanded=st.session_state.expanders.get('prompt', True)):
             st.code(prompt, language="markdown")
 
-    # --- Chunk Processing Output (Always visible) ---
-    if gemini_client and prompt and chunk_file_path:
-        process_chunks_ui(
-            gemini_client,
-            prompt,
-            chunk_file_path,
-            chunk_count=st.session_state.get("num_chunks", 2),
-        )
+    # -- Chunk Processing Output (Always visible) ---
+    if "first_run" not in st.session_state:
+        st.session_state.first_run = False
+
+    if st.session_state.get("processing_ready"):
+        st.subheader("🧩 Process Chunks")
+
+        start = st.button("🚀 Start Chunk Processing", key="start_processing_btn")
+        if start:
+            st.session_state.first_run = start
+
+        if "first_run" in st.session_state and st.session_state.get("first_run"):
+            process_chunks_ui(
+                gemini_client,
+                prompt,
+                chunk_file_path,
+                chunk_count=st.session_state.get("num_chunks", 2),
+            )
     else:
         st.warning("Please provide all required parameters (API key, model, prompt, and chunks) to enable processing.")
-
 
 if __name__ == "__main__":
     main()
