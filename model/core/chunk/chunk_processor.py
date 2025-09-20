@@ -43,9 +43,10 @@ class ChunkProcessor:
             raise ValueError("Chunk manager is not initialized.")
 
     def process_next_chunk(self) -> ChunkProcessResult:
+
         """Processes a single chunk and returns a typed result."""
         chunk_data = self.chunk_manager.get_next_chunk()
-        if chunk_data is None:
+        if not chunk_data or chunk_data[0] is None:
             return ChunkProcessResult(ResultType.NO_MORE_CHUNKS)
 
         df, chunk_id = chunk_data
