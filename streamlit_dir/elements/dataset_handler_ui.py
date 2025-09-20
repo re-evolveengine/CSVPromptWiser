@@ -7,12 +7,11 @@ import pandas as pd
 from model.core.chunk.chunk_json_inspector import ChunkJSONInspector
 from model.core.chunk.chunker import DataFrameChunker
 from model.io.sqlite_result_saver import SQLiteResultSaver
-from model.io.model_prefs import ModelPreference
 from model.io.dataset_handler import DatasetHandler
 from model.core.llms.prompt_optimizer import PromptOptimizer
-from model.utils.providers import get_model_prefs
+from utils.providers import get_model_prefs
 from streamlit_dir.elements.render_chunking_warning_dialog import show_chunking_warning_dialog
-from utils.constants import TEMP_DIR, DEFAULT_TOKEN_BUDGET
+from utils.constants import TEMP_DIR
 
 
 def chunk_and_save_dataframe(df: pd.DataFrame, chunk_size: int) -> dict:
@@ -139,8 +138,6 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
         "🔢 Set Chunk Size", min_value=1, value=prefs.chunk_size, help="Number of rows per chunk."
     )
 
-    prefs.chunk_size = chunk_size
-
     # Estimate and display token usage based on settings
     if optimizer is not None and len(df) > 0:
         try:
@@ -176,6 +173,7 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
 
     # 2. Handle the "Chunk & Save" button click.
     if st.button("📦 Chunk & Save"):
+        prefs.chunk_size = chunk_size
         db_saver = SQLiteResultSaver()
         # If the database has results, set a flag to show the warning dialog.
         if db_saver.has_results():

@@ -6,13 +6,10 @@ from model.core.chunk.chunk_manager import ChunkManager
 from model.core.llms.base_llm_client import BaseLLMClient
 from model.core.llms.gemini_client import GeminiClient
 from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
-from model.core.llms.resilient_llm_runner import ResilientLLMRunner
 from model.io.model_prefs import ModelPreference
-from model.utils.providers import get_model_prefs
+from utils.providers import get_model_prefs
 from utils.chunk_process_result import ChunkProcessResult
 from utils.result_type import ResultType
-from google.api_core import exceptions as api_exceptions
-
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -27,7 +24,7 @@ class ChunkProcessor:
         prompt: str,
         client: BaseLLMClient,
         chunk_manager: ChunkManager,
-        model_preference: ModelPreference = get_model_prefs(),
+        model_preference: ModelPreference,
     ):
         self.prompt = prompt
         self.client = client

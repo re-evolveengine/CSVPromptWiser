@@ -1,9 +1,8 @@
 import streamlit as st
 
 from model.core.llms.gemini_client import GeminiClient
-from model.io.model_prefs import ModelPreference
 from model.core.llms.gemini_model_provider import GeminiModelProvider
-from model.utils.providers import get_model_prefs
+from utils.providers import get_model_prefs
 
 
 @st.cache_data(show_spinner="🔍 Fetching available Gemini models...")

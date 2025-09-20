@@ -7,7 +7,7 @@ from model.core.llms.gemini_client import GeminiClient
 from model.io.save_processed_chunks_to_db import save_processed_chunk_to_db
 from model.io.model_prefs import ModelPreference
 from model.io.sqlite_result_saver import SQLiteResultSaver
-from model.utils.providers import get_model_prefs
+from utils.providers import get_model_prefs
 from streamlit_dir.elements.token_usage_gauge import render_token_usage_gauge
 from utils.result_type import ResultType
 
@@ -66,8 +66,6 @@ def render_status_panel(
         f" &nbsp;&nbsp;&nbsp; ✅ **Consumed:** `{processed_tokens}`"
     )
     render_token_usage_gauge(processed_ratio)
-    logger.info(f"Processed {processed_tokens} tokens out of {total_tokens} total tokens")
-    logger.info(f"Remaining {remaining_tokens} tokens out of {total_tokens} total tokens")
 
 
 # --- Main UI ---
@@ -85,8 +83,8 @@ def process_chunks_ui(
 
     # Load manager & processor
     chunk_manager = ChunkManager(json_path=chunk_file_path)
-    prefs = get_model_prefs()
-    processor = ChunkProcessor(client=client, prompt=prompt, chunk_manager=chunk_manager)
+    model_prefs = get_model_prefs()
+    processor = ChunkProcessor(client=client, prompt=prompt, chunk_manager=chunk_manager,model_preference=model_prefs)
 
     # --- When not running: just show last known status once ---
     if not run_now:
@@ -97,7 +95,7 @@ def process_chunks_ui(
 
         render_status_panel(
             chunk_manager,
-            prefs,
+            model_prefs,
             last_status["processed"],
             st.session_state.get("num_chunks", chunk_count)
         )
@@ -166,7 +164,7 @@ def process_chunks_ui(
             "chunk_count": chunk_count
         }
         with status_placeholder.container():
-            render_status_panel(chunk_manager, prefs, processed, chunk_count)
+            render_status_panel(chunk_manager, model_prefs, processed, chunk_count)
 
     # --- Wrap-up ---
     if not had_error:
