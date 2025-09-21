@@ -26,7 +26,7 @@ def remaining_to_processed(remaining: int, total: int) -> int:
 
 def render_progress_with_info(label: str, processed: int, total: int, icon: str = "📦"):
     total = max(total, 1)  # prevent divide-by-zero crash
-    st.progress(processed / total, text=f"{label}: {processed}/{total}")
+    # st.progress(processed / total, text=f"{label}: {processed}/{total}")
     st.info(f"{icon} {label}: {processed} 🔁 Total: {total}")
 
 
@@ -43,12 +43,12 @@ def render_status_panel(
     remaining_chunks = chunk_manager.remaining_chunks
     processed_chunks = remaining_to_processed(remaining_chunks, total_chunks)
 
-    st.markdown("#### 📦 Current Session Progress")
+    st.markdown("##### 📦 Current Session Progress")
     render_progress_with_info(
         "🔄 Chunks Processed (This Run)", curr_processed_chunks, curr_total_chunks
     )
 
-    st.markdown("#### 📊 Overall Chunk Progress")
+    st.markdown("##### 📊 Overall Chunk Progress")
     render_progress_with_info(
         "🧩 Total Chunks Processed", processed_chunks, total_chunks
     )
@@ -59,7 +59,7 @@ def render_status_panel(
     processed_tokens = remaining_to_processed(remaining_tokens, total_tokens)
     processed_ratio = (processed_tokens / total_tokens) * 100 if total_tokens > 0 else 0
 
-    st.markdown("#### 🔋 Token Usage Overview")
+    st.markdown("##### 🔋 Token Usage Overview")
     st.info(
         f"🧮 **Total Tokens:** `{total_tokens}`"
         f" &nbsp;&nbsp;&nbsp; 🔁 **Remaining:** `{remaining_tokens}`"

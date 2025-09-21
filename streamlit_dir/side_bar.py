@@ -74,7 +74,6 @@ def cwp_sidebar():
                         "processed": 0,
                         "chunk_count": st.session_state["num_chunks"]
                     }
-
                     st.session_state["processing_ready"] = True
 
     db_saver = SQLiteResultSaver()
