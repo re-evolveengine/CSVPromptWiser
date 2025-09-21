@@ -1,6 +1,6 @@
 import streamlit as st
 
-from utils.llms_list import LLMProvider
+from utils.llm_provider import LLMProvider
 
 def llm_selector(container):
 

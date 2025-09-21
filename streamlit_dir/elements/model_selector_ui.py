@@ -5,7 +5,7 @@ from model.core.llms.gemini_model_provider import GeminiModelProvider
 from utils.providers import get_model_prefs
 
 
-@st.cache_data(show_spinner="🔍 Fetching available Gemini models...")
+@st.cache_data(show_spinner="🔍 Fetching available models...")
 def get_available_models(api_key: str):
     provider = GeminiModelProvider(api_key)
     return provider.get_usable_model_names()
@@ -30,7 +30,7 @@ def model_selector_ui(container, api_key: str):
                                    generation_config=model_pref.generation_config)
                 return saved_selected_model, client, model_pref.generation_config
             except Exception as e:
-                container.error(f"❌ Failed to create Gemini client: {e}")
+                container.error(f"❌ Failed to create client: {e}")
                 st.stop()
 
     # Step 2: Show saved model list if available
@@ -57,7 +57,7 @@ def model_selector_ui(container, api_key: str):
             st.stop()
 
         selected_model = container.selectbox(
-            "🧠 Select a Gemini model",
+            "🧠 Select a model",
             model_names,
             index=model_names.index(saved_selected_model) if saved_selected_model in model_names else 0
         )
@@ -86,11 +86,11 @@ def model_selector_ui(container, api_key: str):
         model_pref.model_name = selected_model
         container.success(f"✅ Model `{selected_model}` saved.")
 
-    # ✅ Create GeminiClient here
+    # ✅ Create Client here
     try:
         client = GeminiClient(model=selected_model, api_key=api_key, generation_config=updated_config)
     except Exception as e:
-        container.error(f"❌ Failed to create Gemini client: {e}")
+        container.error(f"❌ Failed to create client: {e}")
         st.stop()
 
     if selected_model:

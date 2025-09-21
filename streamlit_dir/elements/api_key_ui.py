@@ -7,7 +7,7 @@ def load_api_key_ui(container) -> str:
     saved_key = os.getenv("KEY")
 
     api_key = container.text_input(
-        "🔑 Enter your Gemini API Key",
+        "🔑 Enter your API Key",
         value=saved_key if saved_key else "",
         type="password",
         help="Stored in your .env file"
