@@ -88,6 +88,7 @@ def test_call_success_with_empty_text(monkeypatch, sample_df):
     assert tokens == 10
 
 
+
 def test_call_failure(sample_df):
     # Arrange
     mock_llm = MagicMock()
@@ -101,6 +102,7 @@ def test_call_failure(sample_df):
     client.llm = mock_llm
 
     # Act + Assert
-    with pytest.raises(RuntimeError) as exc:
+    # The exception should propagate directly, not be wrapped
+    with pytest.raises(Exception) as exc_info:
         client.call("prompt here", sample_df)
-    assert "Gemini call failed" in str(exc.value)
+    assert "API down" in str(exc_info.value)

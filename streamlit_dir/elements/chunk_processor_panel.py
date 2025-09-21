@@ -112,6 +112,7 @@ def process_chunks_ui(
     retry_area = st.container()
     unexpected_area = st.container()
     exception_area = st.container()
+    token_area = st.container()
 
     # Status placeholder for live updates
     status_placeholder = st.empty()
@@ -148,6 +149,10 @@ def process_chunks_ui(
         elif result.result_type == ResultType.UNEXPECTED_ERROR:
             unexpected_area.error(f"❓ Unexpected Error: {result.error}", icon="❓")
             had_error = True
+            break
+
+        elif model_prefs.remaining_total_tokens >= model_prefs.total_tokens:
+            token_area.error(f"❌ Not enough tokens left.", icon="🚨")
             break
 
         elif result.result_type == ResultType.NO_MORE_CHUNKS:

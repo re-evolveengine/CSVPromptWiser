@@ -7,6 +7,7 @@ from model.core.llms.base_llm_client import BaseLLMClient
 from model.core.llms.gemini_client import GeminiClient
 from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
 from model.io.model_prefs import ModelPreference
+from utils.exceptions import TokenBudgetExceededError
 from utils.providers import get_model_prefs
 from utils.chunk_process_result import ChunkProcessResult
 from utils.result_type import ResultType
@@ -65,6 +66,13 @@ class ChunkProcessor:
             # raise Exception("Exception")
 
             response, used_tokens = self.runner.run(self.prompt, df)
+
+            if self.remaining_tokens - used_tokens <= 0:
+                raise TokenBudgetExceededError(used_tokens, self.remaining_tokens)
+
+            # rewrite unit and integration tests
+            # custom exception
+
             self.remaining_tokens -= used_tokens
             self.prefs.remaining_total_tokens = self.remaining_tokens
 
@@ -97,6 +105,14 @@ class ChunkProcessor:
                 chunk=df,
                 error=last_exc
             )
+
+        except ValueError as ve:
+            return ChunkProcessResult(
+                result_type=ResultType.TOKENS_EXCEEDED,
+                chunk=df,
+                error=ve
+            )
+
         except Exception as e:
             return ChunkProcessResult(
                 result_type=ResultType.UNEXPECTED_ERROR,
