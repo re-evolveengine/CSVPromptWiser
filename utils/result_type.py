@@ -7,4 +7,4 @@ class ResultType(Enum):
     FATAL_ERROR = auto()
     UNEXPECTED_ERROR = auto()
     NO_MORE_CHUNKS = auto()
-    TOKENS_EXCEEDED = auto()
+    TOKENS_BUDGET_EXCEEDED = auto()

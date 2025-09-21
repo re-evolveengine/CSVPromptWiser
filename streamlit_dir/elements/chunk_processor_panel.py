@@ -151,7 +151,7 @@ def process_chunks_ui(
             had_error = True
             break
 
-        elif model_prefs.remaining_total_tokens >= model_prefs.total_tokens:
+        elif result.result_type == ResultType.TOKENS_BUDGET_EXCEEDED:
             token_area.error(f"❌ Not enough tokens left.", icon="🚨")
             break
 

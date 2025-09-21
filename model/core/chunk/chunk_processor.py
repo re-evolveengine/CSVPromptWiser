@@ -71,7 +71,6 @@ class ChunkProcessor:
                 raise TokenBudgetExceededError(used_tokens, self.remaining_tokens)
 
             # rewrite unit and integration tests
-            # custom exception
 
             self.remaining_tokens -= used_tokens
             self.prefs.remaining_total_tokens = self.remaining_tokens
@@ -106,9 +105,9 @@ class ChunkProcessor:
                 error=last_exc
             )
 
-        except ValueError as ve:
+        except TokenBudgetExceededError as ve:
             return ChunkProcessResult(
-                result_type=ResultType.TOKENS_EXCEEDED,
+                result_type=ResultType.TOKENS_BUDGET_EXCEEDED,
                 chunk=df,
                 error=ve
             )
