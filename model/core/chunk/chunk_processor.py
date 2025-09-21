@@ -61,9 +61,6 @@ class ChunkProcessor:
         df, chunk_id = chunk_data
 
         try:
-            # raise api_exceptions.ResourceExhausted("Resource exhausted")
-            # raise api_exceptions.InternalServerError("Internal server error")
-            # raise Exception("Exception")
 
             response, used_tokens = self.runner.run(self.prompt, df)
 
@@ -74,11 +71,6 @@ class ChunkProcessor:
 
             self.remaining_tokens -= used_tokens
             self.prefs.remaining_total_tokens = self.remaining_tokens
-
-            logger.info(f"Processed chunk {chunk_id} with {used_tokens} tokens. Remaining tokens: {self.remaining_tokens}")
-            logger.info(f"Processed chunk {chunk_id} with {used_tokens} tokens. Remaining tokens: {self.prefs.remaining_total_tokens} saved")
-
-
 
             self.chunk_manager.mark_chunk_processed(chunk_id)
             self.chunk_manager.save_state()
