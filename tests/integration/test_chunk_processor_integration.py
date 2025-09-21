@@ -1,17 +1,15 @@
-import pytest
-import pandas as pd
-import tempfile
 import os
 import shelve
-import dbm
-import io
+import tempfile
 from contextlib import contextmanager
-from google.api_core import exceptions as api_exceptions
 from pathlib import Path
 
+import pytest
+from google.api_core import exceptions as api_exceptions
+
 from model.core.chunk.chunk_manager import ChunkManager
-from model.core.llms.gemini_client import GeminiClient
 from model.core.chunk.chunk_processor import ChunkProcessor
+from model.core.llms.gemini_client import GeminiClient
 from model.io.model_prefs import ModelPreference
 from utils.result_type import ResultType
 
@@ -49,14 +47,15 @@ chunk_file_path = Path(r"C:\Users\Alchemist\PycharmProjects\PromptPilot\tests\in
 
 class DummyModel:
     """Simulates Gemini API responses for testing ChunkProcessor."""
-    def __init__(self, responses=None, errors=None):
+    def __init__(self, responses=None, errors=None, token_count=1):
         self.responses = responses or []
         self.errors = errors or []
         self.call_count = 0
+        self.token_count = token_count
 
     def count_tokens(self, contents):
         class Result:
-            total_tokens = 1
+            total_tokens = self.token_count
         return Result()
 
     def generate_content(self, formatted_input):
@@ -68,8 +67,6 @@ class DummyModel:
 
 
 def test_json_path():
-    from pathlib import Path
-
     # Optional safety check
     assert chunk_file_path.exists(), f"chunks.json not found at {chunk_file_path}"
 
@@ -78,6 +75,7 @@ def test_json_path():
     "retryable",
     "fatal",
     "unexpected",
+    "token_budget_exceeded",
 ])
 def test_chunk_processor_end_to_end(monkeypatch, scenario):
     # Use the real chunks.json from the repo so ChunkManager version check passes
@@ -95,6 +93,9 @@ def test_chunk_processor_end_to_end(monkeypatch, scenario):
         class WeirdError(RuntimeError):
             pass
         model = DummyModel(errors=[WeirdError("boom!")])
+    elif scenario == "token_budget_exceeded":
+        # Set token count higher than the default remaining_tokens (10000)
+        model = DummyModel(responses=["OK-1"], token_count=15000)
     else:
         raise ValueError(f"Unknown scenario {scenario}")
 
@@ -138,3 +139,6 @@ def test_chunk_processor_end_to_end(monkeypatch, scenario):
         elif scenario == "unexpected":
             assert result.result_type == ResultType.UNEXPECTED_ERROR
             assert "boom!" in str(result.error)
+        elif scenario == "token_budget_exceeded":
+            assert result.result_type == ResultType.TOKENS_BUDGET_EXCEEDED
+            assert "exceeds remaining tokens" in str(result.error)

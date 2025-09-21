@@ -67,8 +67,6 @@ class ChunkProcessor:
             if self.remaining_tokens - used_tokens <= 0:
                 raise TokenBudgetExceededError(used_tokens, self.remaining_tokens)
 
-            # rewrite unit and integration tests
-
             self.remaining_tokens -= used_tokens
             self.prefs.remaining_total_tokens = self.remaining_tokens
 

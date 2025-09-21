@@ -74,7 +74,7 @@ def cwp_sidebar():
     db_saver = SQLiteResultSaver()
 
     # The export section will now only appear if a chunk file exists AND the DB is not empty.
-    if chunk_file_path and db_saver.has_results():
+    if chunk_file_path and (st.session_state.get("has_results") or db_saver.has_results()):
         with st.sidebar.expander("💾 Export Processed Results", expanded=False):
             render_export_section(chunk_file_path=chunk_file_path)
 

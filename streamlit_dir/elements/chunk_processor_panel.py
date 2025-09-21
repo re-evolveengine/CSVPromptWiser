@@ -134,7 +134,8 @@ def process_chunks_ui(
                 model_version=client.model_name,
                 saver=SQLiteResultSaver(),
             )
-            # prefs.remaining_total_tokens = processor.client.remaining_tokens
+            # # After saving results
+            st.session_state["has_results"] = True
             processed += 1
 
         elif result.result_type == ResultType.FATAL_ERROR:
@@ -174,3 +175,6 @@ def process_chunks_ui(
     # --- Wrap-up ---
     if not had_error:
         st.success("✅ Finished processing all requested chunks.")
+
+    st.rerun()
+
