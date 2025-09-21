@@ -4,6 +4,7 @@ from model.core.llms.prompt_optimizer import PromptOptimizer
 from model.io.sqlite_result_saver import SQLiteResultSaver
 from streamlit_dir.elements.api_key_ui import load_api_key_ui
 from streamlit_dir.elements.dataset_handler_ui import handle_dataset_upload_or_load, configure_and_process_chunks
+from streamlit_dir.elements.model_family_selector import llm_selector
 from streamlit_dir.elements.model_selector_ui import model_selector_ui
 from streamlit_dir.elements.prompt_input_ui import prompt_input_ui
 from streamlit_dir.elements.render_export_section import render_export_section
@@ -12,6 +13,11 @@ from utils.constants import APP_NAME
 
 def cwp_sidebar():
     st.sidebar.header(f"{APP_NAME} Controls")
+
+    selected_llm = llm_selector(st.sidebar.container())
+
+    if selected_llm is None:
+        return None, None, None, None, None, None, None, None, None, None
 
     # 🔐 Model Configuration Section
     with st.sidebar.expander("🔐 Model Configuration", expanded=False):

@@ -28,6 +28,24 @@ def main():
     # --- Sidebar interaction ---
     api_key, model_name, df, chunk_file_path, chunk_summary, prompt, response_example, generation_config, gemini_client, total_tokens = cwp_sidebar()
 
+    if all(
+            v is None
+            for v in [
+                api_key,
+                model_name,
+                df,
+                chunk_file_path,
+                chunk_summary,
+                prompt,
+                response_example,
+                generation_config,
+                gemini_client,
+                total_tokens
+            ]
+    ):
+        st.warning("Please select an available model from the sidebar before proceeding.")
+        return
+
     # Initialize session state for expanded state
     if 'expanders' not in st.session_state:
         st.session_state.expanders = {
