@@ -3,7 +3,6 @@
 from typing import List
 
 import google.generativeai as genai
-from tqdm import tqdm
 
 
 class GeminiModelProvider:
@@ -29,7 +28,8 @@ class GeminiModelProvider:
         models = genai.list_models()
         working_models = []
 
-        for model in tqdm(models, desc="Evaluating Gemini Models", unit=" model"):
+        # Iterate models without external progress utilities to avoid extra deps
+        for model in models:
             if "generateContent" not in model.supported_generation_methods:
                 continue
             if self._test_model(model.name):
