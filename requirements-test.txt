@@ -5,9 +5,3 @@ pytest-mock>=3.10.0
 pytest-asyncio>=0.21.0
 responses>=0.22.0
 freezegun>=1.2.2
-
-# Optional (uncomment if needed)
-# pytest-xdist>=2.5.0
-# pytest-timeout>=2.1.0
-# factory-boy>=3.2.1
-# Faker>=15.3.0
