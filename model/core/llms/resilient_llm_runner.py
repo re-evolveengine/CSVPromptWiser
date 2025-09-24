@@ -40,16 +40,10 @@ class ResilientLLMRunner(ABC):
             try:
                 return self.client.call(prompt, df)
             except self.fatal_errors as e:
-                # Don't retry on user errors — re-raise immediately
-                print(f"[User Error] {type(e).__name__}: {e}")
                 raise
             except self.retryable_errors as e:
-                # Will be retried by tenacity
-                print(f"[Retryable Error] {type(e).__name__}: {e}")
                 raise
             except Exception as e:
-                # Unknown exceptions — raise to avoid silent failures
-                print(f"[Unexpected Error] {type(e).__name__}: {e}")
                 raise
 
         return _call()

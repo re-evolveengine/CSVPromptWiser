@@ -4,9 +4,6 @@ pandas==2.2.1
 google-generativeai==0.3.2
 plotly==6.2.0
 numpy==1.26.4
-langchain==0.3.26
-langchain-core==0.3.72
-langchain-openai==0.3.28
 tenacity==8.5.0
 python-dotenv==1.1.1
 
