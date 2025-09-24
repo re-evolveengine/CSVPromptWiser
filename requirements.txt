@@ -1,7 +1,6 @@
 # Core Dependencies
 streamlit==1.48.0
 pandas==2.2.1
-google-generativeai==0.3.2
 plotly==6.2.0
 numpy==1.26.4
 tenacity==8.5.0
@@ -9,12 +8,9 @@ python-dotenv==1.1.1
 
 
 # Google API Dependencies
+google-generativeai==0.3.2
 google-ai-generativelanguage==0.4.0
 google-api-core==2.25.1
 google-auth==2.40.3
 google-auth-httplib2==0.2.0
-
-# Required Dependencies
 protobuf==4.25.8
-requests==2.32.4
-urllib3==2.5.0
