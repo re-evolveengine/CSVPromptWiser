@@ -38,3 +38,49 @@ Thumbs.db
 # Streamlit temporary files
 .streamlit/
 /windsurf-plugin-diagnostics.zip
+
+*.prompt_pref.json
+*.aider.context.yaml
+
+# === Additions: project hygiene and tooling caches (2025-09-24) ===
+# Python / tooling caches
+.Python
+.cache/
+.pytest_cache/
+.mypy_cache/
+.pytype/
+.ruff_cache/
+.hypothesis/
+.ipynb_checkpoints/
+
+# Virtual environment variants
+.venv/
+ENV/
+.python-version
+
+# Packaging / build metadata
+pip-wheel-metadata/
+*.whl
+*.spec
+
+# Coverage reports
+.coverage
+coverage.xml
+htmlcov/
+nosetests.xml
+
+# Logs and databases (extended)
+logs/
+*.sqlite3
+*.db
+*.db-journal
+*.bak
+*.dat
+*.dir
+*.lock
+
+# Editor swap files
+*.swo
+
+# Generated runtime artifacts
+processed_results.csv
