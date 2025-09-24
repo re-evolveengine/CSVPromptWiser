@@ -1,10 +1,8 @@
 # model/core/runners/resilient_llm_runner.py
 
 from abc import ABC, abstractmethod
-import logging
 
-from responses import logger
-from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type, wait_exponential, before_sleep_log
+from tenacity import retry, stop_after_attempt, retry_if_exception_type, wait_exponential
 
 
 class ResilientLLMRunner(ABC):
@@ -31,14 +29,11 @@ class ResilientLLMRunner(ABC):
     def _should_fail_fast(self, exception):
         return isinstance(exception, self.fatal_errors)
 
-    logger = logging.getLogger(__name__)
-
     def run(self, prompt, df=None):
         @retry(
             wait=wait_exponential(multiplier=1, min=2, max=60),
             stop=stop_after_attempt(self.max_attempts),
             retry=retry_if_exception_type(self.retryable_errors),
-            before_sleep=before_sleep_log(logger, logging.WARNING),
             reraise=True
         )
         def _call():
