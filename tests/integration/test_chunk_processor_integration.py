@@ -1,4 +1,5 @@
 import os
+import json
 import shelve
 import tempfile
 from contextlib import contextmanager
@@ -43,6 +44,24 @@ def temp_shelf():
             print(f"Warning: Failed to clean up temporary shelf file: {e}")
 
 chunk_file_path = Path(r"C:\Users\Alchemist\PycharmProjects\PromptPilot\tests\integration\chunks.json")
+
+
+@pytest.fixture(autouse=True)
+def reset_processed_chunks():
+    """Ensure integration chunks.json starts unprocessed before each test."""
+    try:
+        with open(chunk_file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        summary = data.get("summary", {})
+        summary["processed_ids"] = []
+        summary["processed"] = 0
+        data["summary"] = summary
+        with open(chunk_file_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+    except FileNotFoundError:
+        # Let the test_json_path assert handle missing file
+        pass
+    yield
 
 
 class DummyModel:

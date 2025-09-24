@@ -59,9 +59,6 @@ def test_get_usable_model_names_filters_and_returns(monkeypatch, provider):
     # Patch _test_model to return True for model1 and False for model2
     monkeypatch.setattr(provider, "_test_model", lambda name: name != "model-beta")
 
-    # Patch tqdm to avoid actual progress bar output in tests
-    monkeypatch.setattr(gmp_module, "tqdm", lambda x, **kwargs: x)
-
     result = provider.get_usable_model_names()
 
     # model1 passes, name split on '/'
@@ -79,7 +76,6 @@ def test_get_usable_model_names_handles_short_names(monkeypatch, provider):
 
     monkeypatch.setattr(gmp_module.genai, "list_models", MagicMock(return_value=[model_short]))
     monkeypatch.setattr(provider, "_test_model", lambda name: True)
-    monkeypatch.setattr(gmp_module, "tqdm", lambda x, **kwargs: x)
 
     result = provider.get_usable_model_names()
 
