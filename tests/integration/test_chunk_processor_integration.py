@@ -43,7 +43,7 @@ def temp_shelf():
         except Exception as e:
             print(f"Warning: Failed to clean up temporary shelf file: {e}")
 
-chunk_file_path = Path(r"C:\Users\Alchemist\PycharmProjects\PromptPilot\tests\integration\chunks.json")
+chunk_file_path = (Path(__file__).parent / "chunks.json").resolve()
 
 
 @pytest.fixture(autouse=True)
