@@ -1,6 +1,3 @@
-/env_promptpilot/
-/env_streamlit/
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -10,6 +7,9 @@ __pycache__/
 venv/
 .env/
 env/
+.venv/
+ENV/
+.python-version
 
 # Environment variables
 .env
@@ -52,11 +52,6 @@ Thumbs.db
 .ruff_cache/
 .hypothesis/
 .ipynb_checkpoints/
-
-# Virtual environment variants
-.venv/
-ENV/
-.python-version
 
 # Packaging / build metadata
 pip-wheel-metadata/
