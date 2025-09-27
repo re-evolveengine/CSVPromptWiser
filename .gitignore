@@ -9,7 +9,7 @@ venv/
 env/
 .venv/
 ENV/
-.python-version
+.python-versionG
 
 # Environment variables
 .env
