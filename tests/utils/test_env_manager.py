@@ -4,7 +4,7 @@ import pytest
 from pathlib import Path
 import streamlit as st
 
-from env_detection import EnvManager, SecretsWriteError
+from utils.env_manager import EnvManager, SecretsWriteError
 
 
 @pytest.fixture
@@ -32,6 +32,10 @@ def temp_env_local(monkeypatch, tmp_path):
     Create a temporary `.env` file in a tmp path and
     patch cwd so EnvManager writes/reads in isolation.
     """
+
+    # Ensure OS env var does not override our test value
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+
     env_path = tmp_path / ".env"
     env_path.write_text("GEMINI_API_KEY=local-gemini\n")
 
