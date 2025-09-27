@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
-from utils.env_manager import get_base_app_dir
+
+from utils.env_manager import EnvManager
 
 JSON_CHUNK_VERSION = 1.0
 APP_NAME = "CSV PromptWiser"
@@ -12,7 +13,8 @@ CONFIG_FOLDER_NAME = "config"
 
 # 📂 Directories (environment-aware)
 # APP_DIR is selected based on CWP_ENV/CWP_BASE_DIR or local Documents fallback
-APP_DIR = get_base_app_dir(APP_NAME)
+env_manager = EnvManager(APP_NAME)
+APP_DIR = env_manager.get_base_app_dir()
 DATA_DIR = os.path.join(APP_DIR, DATA_FOLDER_NAME)
 RESULTS_DIR = os.path.join(APP_DIR, RESULTS_FOLDER_NAME)
 TEMP_DIR = os.path.join(APP_DIR, TEMP_FOLDER_NAME)
