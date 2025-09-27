@@ -42,7 +42,6 @@ Thumbs.db
 *.prompt_pref.json
 *.aider.context.yaml
 
-# === Additions: project hygiene and tooling caches (2025-09-24) ===
 # Python / tooling caches
 .Python
 .cache/
