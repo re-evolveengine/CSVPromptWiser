@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from utils.env_manager import get_base_app_dir
 
 JSON_CHUNK_VERSION = 1.0
 APP_NAME = "CSV PromptWiser"
@@ -7,16 +8,20 @@ DATA_FOLDER_NAME = "data"
 RESULTS_FOLDER_NAME = "results"
 RESULTS_DB_NAME = "processed_chunks.db"
 TEMP_FOLDER_NAME = "temp"
-CONFIG_FOLDER_NAME = "config"  # Optional: for preferences/configs
+CONFIG_FOLDER_NAME = "config"
 
-# 📂 Directories
-DOCUMENTS_DIR = os.path.join(os.path.expanduser("~"), "Documents")
-APP_DIR = os.path.join(DOCUMENTS_DIR, APP_NAME)
+# 📂 Directories (environment-aware)
+# APP_DIR is selected based on CWP_ENV/CWP_BASE_DIR or local Documents fallback
+APP_DIR = get_base_app_dir(APP_NAME)
 DATA_DIR = os.path.join(APP_DIR, DATA_FOLDER_NAME)
 RESULTS_DIR = os.path.join(APP_DIR, RESULTS_FOLDER_NAME)
 TEMP_DIR = os.path.join(APP_DIR, TEMP_FOLDER_NAME)
 CONFIG_DIR = os.path.join(APP_DIR, CONFIG_FOLDER_NAME)
 RESULTS_DB_PATH = os.path.join(RESULTS_DIR, RESULTS_DB_NAME)
+
+# Ensure required directories exist at import time
+for _dir in (DATA_DIR, RESULTS_DIR, TEMP_DIR, CONFIG_DIR):
+    os.makedirs(_dir, exist_ok=True)
 
 # 📂 Files
 JSON_CHUNK_FILE = os.path.join(TEMP_DIR, "chunks.json")
