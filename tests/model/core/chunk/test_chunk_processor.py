@@ -1,7 +1,13 @@
 import pytest
 import pandas as pd
+import types
+import streamlit as st
 from unittest.mock import Mock, patch, MagicMock, PropertyMock
 from tenacity import RetryError
+
+# Mock Streamlit secrets
+st.secrets = types.SimpleNamespace()
+st.secrets.is_local = True
 
 from model.core.chunk.chunk_processor import ChunkProcessor
 from model.core.llms.base_llm_client import BaseLLMClient
@@ -12,6 +18,7 @@ from utils.result_type import ResultType
 from utils.exceptions import TokenBudgetExceededError
 
 runner_path = "model.core.chunk.chunk_processor.GeminiResilientRunner"
+
 
 
 @pytest.fixture

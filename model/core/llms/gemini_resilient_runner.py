@@ -25,5 +25,6 @@ class GeminiResilientRunner(ResilientLLMRunner):
             api_exceptions.PermissionDenied,
             api_exceptions.Unauthenticated,
             api_exceptions.InvalidArgument,
+            api_exceptions.NotFound,
             auth_exceptions.DefaultCredentialsError,
         )

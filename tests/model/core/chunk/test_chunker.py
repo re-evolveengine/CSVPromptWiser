@@ -1,10 +1,16 @@
 import os
 import json
 import tempfile
+import types
 import pandas as pd
 import pytest
+import streamlit as st
 from uuid import UUID
 from pathlib import Path
+
+# Mock Streamlit secrets
+st.secrets = types.SimpleNamespace()
+st.secrets.is_local = True
 
 from model.core.chunk.chunker import DataFrameChunker
 

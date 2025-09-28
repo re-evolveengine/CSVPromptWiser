@@ -1,6 +1,12 @@
 # tests/model/core/llms/test_gemini_model_provider.py
 import pytest
+import types
+import streamlit as st
 from unittest.mock import patch, MagicMock
+
+# Mock Streamlit secrets
+st.secrets = types.SimpleNamespace()
+st.secrets.is_local = True
 
 import model.core.llms.gemini_model_provider as gmp_module
 from model.core.llms.gemini_model_provider import GeminiModelProvider

@@ -29,8 +29,12 @@ class EnvManager:
     def get_is_local(self) -> bool:
         """Return True if running locally, False if on Cloud."""
         try:
-            return bool(st.secrets["is_local"])
-        except KeyError:
+            # Try dictionary access first (for real Streamlit secrets)
+            if hasattr(st.secrets, "__getitem__"):
+                return bool(st.secrets["is_local"])
+            # Fall back to attribute access (for SimpleNamespace mocks)
+            return bool(st.secrets.is_local)
+        except (KeyError, AttributeError):
             raise KeyError(
                 "`is_local` not found in secrets. Please add it to `.streamlit/secrets.toml` locally "
                 "or in Streamlit Cloud secrets dashboard."

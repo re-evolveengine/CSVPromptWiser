@@ -1,6 +1,12 @@
 # tests/model/core/runners/test_resilient_llm_runner.py
 import pytest
+import types
+import streamlit as st
 from unittest.mock import MagicMock, call
+
+# Mock Streamlit secrets
+st.secrets = types.SimpleNamespace()
+st.secrets.is_local = True
 
 from model.core.llms.resilient_llm_runner import ResilientLLMRunner
 

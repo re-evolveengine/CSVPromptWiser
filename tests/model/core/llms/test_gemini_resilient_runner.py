@@ -1,11 +1,16 @@
 # tests/model/core/runners/test_gemini_resilient_runner.py
 import types
 import builtins
+import streamlit as st
 from unittest.mock import MagicMock
 import pytest
 
 from google.api_core import exceptions as api_exceptions
 from google.auth import exceptions as auth_exceptions
+
+# Mock Streamlit secrets
+st.secrets = types.SimpleNamespace()
+st.secrets.is_local = True
 
 from model.core.llms.gemini_resilient_runner import GeminiResilientRunner
 
@@ -47,6 +52,7 @@ def test_fatal_errors_contains_expected_exceptions(runner):
         api_exceptions.PermissionDenied,
         api_exceptions.Unauthenticated,
         api_exceptions.InvalidArgument,
+        api_exceptions.NotFound,
         auth_exceptions.DefaultCredentialsError,
     )
     assert set(fatal) == set(expected)

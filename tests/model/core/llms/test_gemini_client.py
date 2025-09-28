@@ -2,7 +2,13 @@
 import builtins
 import pytest
 import pandas as pd
+import types
+import streamlit as st
 from unittest.mock import patch, MagicMock
+
+# Mock Streamlit secrets
+st.secrets = types.SimpleNamespace()
+st.secrets.is_local = True
 
 import model.core.llms.gemini_client as gemini_client_module
 from model.core.llms.gemini_client import GeminiClient

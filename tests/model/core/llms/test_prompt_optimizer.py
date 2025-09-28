@@ -1,8 +1,14 @@
 # tests/model/core/utils/test_prompt_optimizer.py
 import pytest
 import pandas as pd
+import types
+import streamlit as st
 from types import SimpleNamespace
 from unittest.mock import patch
+
+# Mock Streamlit secrets
+st.secrets = types.SimpleNamespace()
+st.secrets.is_local = True
 
 from model.core.llms.prompt_optimizer import PromptOptimizer
 

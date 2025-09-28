@@ -1,7 +1,13 @@
 import json
 import tempfile
 import pytest
+import types
 from pathlib import Path
+import streamlit as st
+
+# Mock Streamlit secrets
+st.secrets = types.SimpleNamespace()
+st.secrets.is_local = True
 
 from model.core.chunk.chunk_json_inspector import ChunkJSONInspector
 
