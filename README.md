@@ -7,7 +7,9 @@
 ![Streamlit](https://img.shields.io/badge/Streamlit-live-brightgreen)
 
 
-![App Screenshot](73fd99fd-b125-4fa3-af49-76e56759cd92.png)
+![App Screenshot](./assests/CPW_overvies.png)
+![App Screenshot](./assests/cpw_about_to_run.png)
+![App Screenshot](./assests/cpw_run_results.png)
 
 CSV PromptWiser is an **open-source Streamlit app** that enables a **lightweight Retrieval-Augmented Generation (RAG) workflow** on CSV/Parquet files.  
 It chunks your dataset into context-friendly pieces and processes them using **Large Language Models (LLMs) such as ChatGPT and Gemini**.  
