@@ -24,7 +24,7 @@ class EnvManager:
         :param app_name: Name of the application, used for local storage paths.
         """
         self.app_name = app_name
-        load_dotenv()  # Load .env file if present
+        load_dotenv(override=True)  # Load .env file if present
 
     def get_is_local(self) -> bool:
         """Return True if running locally, False if on Cloud."""
@@ -34,6 +34,7 @@ class EnvManager:
                 return bool(st.secrets["is_local"])
             # Fall back to attribute access (for SimpleNamespace mocks)
             return bool(st.secrets.is_local)
+
         except (KeyError, AttributeError):
             raise KeyError(
                 "`is_local` not found in secrets. Please add it to `.streamlit/secrets.toml` locally "
@@ -44,7 +45,9 @@ class EnvManager:
         """Retrieve API key depending on environment."""
         if self.get_is_local():
             value = os.getenv(key_name)
+            print(f'Local API key: {value}')
         else:
+            print(f'Cloud API key: {st.secrets.get(key_name)}')
             value = st.secrets.get(key_name)
 
         if not value:

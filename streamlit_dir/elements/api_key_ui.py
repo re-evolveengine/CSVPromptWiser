@@ -10,13 +10,16 @@ def load_api_key_ui(container) -> str:
     get/set operations.
     """
     env_manager = EnvManager(app_name=APP_NAME)
-    is_local = env_manager.get_is_local()
+    # is_local = env_manager.get_is_local()
+    #
+    # # Try to load saved key via EnvManager
+    # try:
+    #     saved_key = env_manager.get_api_key("GEMINI_API_KEY")
+    # except KeyError:
+    #     saved_key = ""
 
-    # Try to load saved key via EnvManager
-    try:
-        saved_key = env_manager.get_api_key("GEMINI_API_KEY")
-    except KeyError:
-        saved_key = ""
+    print(f'is_local: {env_manager.get_is_local()}')
+    saved_key = env_manager.get_api_key("GEMINI_API_KEY")
 
     api_key = container.text_input(
         "🔑 Enter your API Key",
@@ -31,7 +34,7 @@ def load_api_key_ui(container) -> str:
     # Disable saving option in cloud mode
     save_key_checkbox = container.checkbox(
         "💾 Save this key",
-        disabled=not is_local,
+        disabled=not env_manager.get_is_local(),
         help="Saving is disabled in cloud mode."
     )
 
