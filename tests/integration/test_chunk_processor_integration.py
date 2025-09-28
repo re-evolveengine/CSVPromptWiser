@@ -2,11 +2,17 @@ import os
 import json
 import shelve
 import tempfile
+import types
+import streamlit as st
 from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
 from google.api_core import exceptions as api_exceptions
+
+# Mock Streamlit secrets
+st.secrets = types.SimpleNamespace()
+st.secrets.is_local = True
 
 from model.core.chunk.chunk_manager import ChunkManager
 from model.core.chunk.chunk_processor import ChunkProcessor

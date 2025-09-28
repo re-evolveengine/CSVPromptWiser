@@ -1,8 +1,13 @@
 import types
+import streamlit as st
 import pandas as pd
 import pytest
 from google.api_core import exceptions as api_exceptions
 from google.auth import exceptions as auth_exceptions
+
+# Mock Streamlit secrets
+st.secrets = types.SimpleNamespace()
+st.secrets.is_local = True
 
 import google.generativeai as genai
 
