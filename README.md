@@ -1,9 +1,9 @@
 # CSV PromptWiser — Streamlit App for RAG on CSV Files with LLMs (ChatGPT, Gemini)
 
 ![License](https://img.shields.io/badge/license-BSD_3--Clause-blue)
-![Python](https://img.shields.io/badge/python-3.9%2B-blue)
-![Stars](https://img.shields.io/github/stars/<your-username>/CSVPromptWiser?style=social)
-![Issues](https://img.shields.io/github/issues/<your-username>/CSVPromptWiser)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![Stars](https://img.shields.io/github/stars/reevolvex/CSVPromptWiser?style=social)
+![Issues](https://img.shields.io/github/issues/reevolvex/CSVPromptWiser)
 ![Streamlit](https://img.shields.io/badge/Streamlit-live-brightgreen)
 
 
@@ -52,6 +52,10 @@ source .venv/bin/activate   # macOS/Linux
 
 # 3. Install dependencies
 pip install -r requirements.txt
+
+# 4. Set environment variables
+# create a .env file in the root directory and add the following variables
+GEMINI_API_KEY=your_gemini_api_key
 
 # 4. Run the app
 streamlit run app.py
