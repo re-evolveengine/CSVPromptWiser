@@ -41,6 +41,7 @@ Thumbs.db
 
 *.prompt_pref.json
 *.aider.context.yaml
+.windsurf/
 
 # Python / tooling caches
 .Python

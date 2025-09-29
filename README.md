@@ -42,7 +42,7 @@ By chunking tabular data, you can **avoid LLM context/token limits** while still
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/<your-username>/CSVPromptWiser.git
+git clone https://github.com/reevolvex/CSVPromptWiser.git
 cd CSVPromptWiser
 
 # 2. Create & activate virtual environment
@@ -57,7 +57,7 @@ pip install -r requirements.txt
 # create a .env file in the root directory and add the following variables
 GEMINI_API_KEY=your_gemini_api_key
 
-# 4. Run the app
+# 5. Run the app
 streamlit run app.py
 ```
 
