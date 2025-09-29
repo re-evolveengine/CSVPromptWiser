@@ -18,7 +18,6 @@ def load_api_key_ui(container) -> str:
     # except KeyError:
     #     saved_key = ""
 
-    print(f'is_local: {env_manager.get_is_local()}')
     saved_key = env_manager.get_api_key("GEMINI_API_KEY")
 
     api_key = container.text_input(

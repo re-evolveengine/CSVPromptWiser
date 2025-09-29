@@ -45,9 +45,7 @@ class EnvManager:
         """Retrieve API key depending on environment."""
         if self.get_is_local():
             value = os.getenv(key_name)
-            print(f'Local API key: {value}')
         else:
-            print(f'Cloud API key: {st.secrets.get(key_name)}')
             value = st.secrets.get(key_name)
 
         if not value:

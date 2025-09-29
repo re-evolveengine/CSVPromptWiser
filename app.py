@@ -89,7 +89,7 @@ def main():
         st.subheader("🧩 Process Chunks")
 
         start_btn = st.button(label="🚀 Start Chunk Processing", type="primary")
-        st.markdown("<br>", unsafe_allow_html=True)  # Two empty lines
+        st.markdown("<br>", unsafe_allow_html=True)
 
         process_chunks_ui(
             gemini_client,

@@ -48,7 +48,9 @@ cd CSVPromptWiser
 # 2. Create & activate virtual environment
 python -m venv .venv
 source .venv/bin/activate   # macOS/Linux
-.venv\Scripts\Activate.ps1  # Windows
+.venv\Scripts\Activate.ps1  # Windows (PowerShell)
+.venv\Scripts\activate.bat  # Windows (Command Prompt)
+
 
 # 3. Install dependencies
 pip install -r requirements.txt
@@ -56,6 +58,10 @@ pip install -r requirements.txt
 # 4. Set environment variables
 # create a .env file in the root directory and add the following variables
 GEMINI_API_KEY=your_gemini_api_key
+
+# 5. Create .streamlit directory in the root directory and add a secrets.toml with these variables
+is_local = true
+GEMINI_API_KEY = "your-gemini-key"
 
 # 5. Run the app
 streamlit run app.py
