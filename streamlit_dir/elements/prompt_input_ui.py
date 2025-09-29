@@ -1,4 +1,6 @@
 from model.io.prompt_pref import PromptPreference
+from utils.constants import PROMPT_INSTRUCTION
+
 
 def prompt_input_ui(container):
     prompt_pref = PromptPreference()
@@ -13,5 +15,5 @@ def prompt_input_ui(container):
         prompt_pref.save_example_response(response_example)
         container.success("✅ Prompt and example response saved")
 
-    return prompt, response_example
+    return prompt + '\n' + PROMPT_INSTRUCTION, response_example
 

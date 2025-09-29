@@ -53,6 +53,15 @@ DEFAULT_TEMPERATURE = 0.2
 DEFAULT_TOP_K = 40
 DEFAULT_TOP_P = 1.0
 
+PROMPT_INSTRUCTION = """
+    For each input row, output exactly one line, in order, formatted as:
+    {row_index}: <your result>
+
+    - Start at 1 and increment by 1 for each row
+    - Do not add extra lines or commentary
+    - Ensure the number of lines equals the number of input rows
+"""
+
 # Model token limits (maximum context window sizes)
 MODEL_TOKEN_LIMITS = {
     "gpt-4": 8192,
