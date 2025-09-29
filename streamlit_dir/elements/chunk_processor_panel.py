@@ -147,17 +147,19 @@ def process_chunks_ui(
             retry_area.warning(f"⚠️ Retryable Error: {result.error}", icon="🔁")
             had_error = True
 
-        elif result.result_type == ResultType.UNEXPECTED_ERROR:
-            unexpected_area.error(f"❓ Unexpected Error: {result.error}", icon="❓")
-            had_error = True
-            break
-
         elif result.result_type == ResultType.TOKENS_BUDGET_EXCEEDED:
             token_area.error(f"❌ Not enough tokens left.", icon="🚨")
+            had_error = True
             break
 
         elif result.result_type == ResultType.NO_MORE_CHUNKS:
             st.info("✅ No more chunks to process.", icon="📭")
+            had_error = True
+            break
+
+        elif result.result_type == ResultType.UNEXPECTED_ERROR:
+            unexpected_area.error(f"❓ Unexpected Error: {result.error}", icon="❓")
+            had_error = True
             break
 
         else:
@@ -175,6 +177,5 @@ def process_chunks_ui(
     # --- Wrap-up ---
     if not had_error:
         st.success("✅ Finished processing all requested chunks.")
-
-    st.rerun()
+        st.rerun() #This is to refresh the page to show the export section after the first run
 
