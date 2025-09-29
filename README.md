@@ -2,8 +2,8 @@
 
 ![License](https://img.shields.io/badge/license-BSD_3--Clause-blue)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![Stars](https://img.shields.io/github/stars/reevolvex/CSVPromptWiser?style=social)
-![Issues](https://img.shields.io/github/issues/reevolvex/CSVPromptWiser)
+![Stars](https://img.shields.io/github/stars/re-evolveengine/CSVPromptWiser?style=social)
+![Issues](https://img.shields.io/github/issues/re-evolveengine/CSVPromptWiser)
 ![Streamlit](https://img.shields.io/badge/Streamlit-live-brightgreen)
 
 
@@ -42,7 +42,7 @@ By chunking tabular data, you can **avoid LLM context/token limits** while still
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/reevolvex/CSVPromptWiser.git
+git clone https://github.com/re-evolveengine/CSVPromptWiser.git
 cd CSVPromptWiser
 
 # 2. Create & activate virtual environment

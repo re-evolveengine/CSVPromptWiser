@@ -19,7 +19,7 @@ Unacceptable behaviors include, but are not limited to:
 
 ## Enforcement
 
-If you see someone violating the Code of Conduct, or if you feel you have been a victim of unacceptable behavior, please contact the project maintainer at **reevolvex**.
+If you see someone violating the Code of Conduct, or if you feel you have been a victim of unacceptable behavior, please contact the project maintainer at **re-evolveengine**.
 
 All complaints will be reviewed and investigated. We reserve the right to remove comments, commits, code, issues, and other contributions that are not aligned with this Code of Conduct, or to temporarily or permanently ban any contributor for behaviors that we deem inappropriate, threatening, offensive, or harmful.
 
