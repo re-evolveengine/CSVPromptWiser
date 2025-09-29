@@ -3,6 +3,7 @@ import tempfile
 from pathlib import Path
 from dotenv import load_dotenv
 import streamlit as st
+from platformdirs import user_data_dir
 
 
 class SecretsWriteError(Exception):
@@ -89,5 +90,5 @@ class EnvManager:
     def get_base_app_dir(self) -> str:
         """Return base application directory depending on environment."""
         if self.get_is_local():
-            return os.path.join(os.path.expanduser("~"), "Documents", self.app_name)
+            return user_data_dir(self.app_name, appauthor=False)
         return os.path.join(tempfile.gettempdir(), self.app_name)

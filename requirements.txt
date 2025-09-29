@@ -7,6 +7,9 @@ tenacity==8.5.0
 python-dotenv==1.1.1
 tiktoken==0.11.0
 
+# Cross-platform user data dirs
+platformdirs>=4.0.0
+
 
 # Google API Dependencies
 google-generativeai==0.3.2

@@ -1,18 +1,10 @@
-import pandas as pd
 import pytest
-from types import SimpleNamespace
 from unittest.mock import MagicMock
+from types import SimpleNamespace
+import pandas as pd
 
 from model.io.save_processed_chunks_to_db import save_processed_chunk_to_db
 from utils.result_type import ResultType
-
-import streamlit as st
-import types
-
-st.secrets = types.SimpleNamespace()
-st.secrets.is_local = True
-
-
 
 @pytest.fixture
 def mock_saver():

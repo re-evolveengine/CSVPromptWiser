@@ -123,8 +123,16 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
         st.info("ℹ️ Connect a model to see recommended chunk size")
 
     prefs = get_model_prefs()
+    # Sanitize defaults to respect Streamlit's min_value constraints
+    try:
+        default_token_budget = int(prefs.total_tokens)
+    except Exception:
+        default_token_budget = 1
+    if default_token_budget < 1:
+        default_token_budget = 1
+
     token_budget = st.number_input(
-        "Enter Token Budget", min_value=1, value=prefs.total_tokens
+        "Enter Token Budget", min_value=1, value=default_token_budget
     )
     # Persist the configured total budget
     prefs.total_tokens = token_budget
@@ -134,8 +142,15 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
         prefs.remaining_total_tokens = token_budget
         st.success("Remaining tokens reset to current budget.")
 
+    try:
+        default_chunk_size = int(prefs.chunk_size)
+    except Exception:
+        default_chunk_size = 1
+    if default_chunk_size < 1:
+        default_chunk_size = 1
+
     chunk_size = st.number_input(
-        "🔢 Set Chunk Size", min_value=1, value=prefs.chunk_size, help="Number of rows per chunk."
+        "🔢 Set Chunk Size", min_value=1, value=default_chunk_size, help="Number of rows per chunk."
     )
 
     # Estimate and display token usage based on settings
