@@ -3,3 +3,7 @@ select = ["E", "F"]
 
 [lint.per-file-ignores]
 "tests/**" = ["E402", "F401", "F841", "F541"]
+"app.py" = ["E501"]
+"model/core/chunk/chunk_json_inspector.py" = ["E501"]
+
+line-length = 120
