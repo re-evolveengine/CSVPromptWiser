@@ -25,7 +25,8 @@ class ChunkJSONInspector:
         """
         # Convert to Path object for easier manipulation
         dir_path = Path(directory_path).resolve()
-        
+
+
         # If the directory doesn't exist
         if not dir_path.exists():
             # Check if parent directory exists
