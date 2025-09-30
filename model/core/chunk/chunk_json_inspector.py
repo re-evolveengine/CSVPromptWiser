@@ -20,8 +20,9 @@ class ChunkJSONInspector:
                            If not provided, uses the default TEMP_DIR.
 
         Raises:
-            FileNotFoundError: If the specified directory does not exist and its parent directory
-                             doesn't exist either.
+            FileNotFoundError:
+                If the directory does not exist and its parent directory
+                doesn't exist either.
         """
         # Convert to Path object for easier manipulation
         dir_path = Path(directory_path).resolve()
