@@ -33,6 +33,7 @@ class ChunkJSONInspector:
                 raise FileNotFoundError(
                     f"Parent directory does not exist: {dir_path.parent}"
                 )
+
             # If parent exists, create the directory
             try:
                 dir_path.mkdir(exist_ok=True)
