@@ -46,7 +46,7 @@ jobs:
         else
           source .venv/bin/activate
         fi
-        ruff check . --format=github
+        ruff check . --output-format=github
         ruff format . --check
 
     - name: 5. Basic Streamlit run test (Check if it starts)
