@@ -38,9 +38,7 @@ jobs:
         pip install -r requirements.txt
         pip install ruff
 
-    
-
-    - name: 5. Basic Streamlit run test (Check if it starts)
+    - name: 4. Basic Streamlit run test (Check if it starts)
       shell: bash
       run: |
         if [ "$RUNNER_OS" == "Windows" ]; then
@@ -49,3 +47,18 @@ jobs:
           source .venv/bin/activate
         fi
         streamlit --version
+
+    - name: 5. Run Pytest
+      shell: bash
+      run: |
+        # Activate the virtual environment in a cross-platform way
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          source .venv/Scripts/activate
+        else
+          source .venv/bin/activate
+        fi
+        
+        # Run pytest
+        # The command will automatically discover and run tests in the 'tests/' directory
+        pytest
+
