@@ -39,11 +39,11 @@ class ResilientLLMRunner(ABC):
         def _call():
             try:
                 return self.client.call(prompt, df)
-            except self.fatal_errors as e:
+            except self.fatal_errors:
                 raise
-            except self.retryable_errors as e:
+            except self.retryable_errors:
                 raise
-            except Exception as e:
+            except Exception:
                 raise
 
         return _call()

@@ -184,7 +184,7 @@ def configure_and_process_chunks(df: pd.DataFrame, prompt: str, response_example
         # Save results to session_state to survive the dialog's rerun
         st.session_state.chunk_file_path = result["chunk_file_path"]
         st.session_state.chunk_summary = result["summary"]
-        st.success(f"✅ Database cleared and new dataset chunked successfully!")
+        st.success("✅ Database cleared and new dataset chunked successfully!")
 
     # 2. Handle the "Chunk & Save" button click.
     if st.button("📦 Chunk & Save"):

@@ -1,5 +1,4 @@
 import streamlit as st
-
 from utils.constants import APP_NAME
 from utils.env_manager import EnvManager, SecretsWriteError
 
