@@ -26,7 +26,6 @@ def remaining_to_processed(remaining: int, total: int) -> int:
 
 def render_progress_with_info(label: str, processed: int, total: int, icon: str = "📦"):
     total = max(total, 1)  # prevent divide-by-zero crash
-    # st.progress(processed / total, text=f"{label}: {processed}/{total}")
     st.info(f"{icon} {label}: {processed} 🔁 Total: {total}")
 
 
