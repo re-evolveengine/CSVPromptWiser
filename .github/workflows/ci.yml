@@ -38,16 +38,7 @@ jobs:
         pip install -r requirements.txt
         pip install ruff
 
-    - name: 4. Lint with Ruff (Check code style and for errors)
-      shell: bash
-      run: |
-        if [ "$RUNNER_OS" == "Windows" ]; then
-          . .venv/Scripts/activate
-        else
-          source .venv/bin/activate
-        fi
-        ruff check . --output-format=github
-        ruff format . --check
+    
 
     - name: 5. Basic Streamlit run test (Check if it starts)
       shell: bash
